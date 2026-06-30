@@ -1,0 +1,627 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 77;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		1A2B3C4D5E6F700000000001 /* InvokerApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1A2B3C4D5E6F700000000011 /* InvokerApp.swift */; };
+		1A2B3C4D5E6F700000000002 /* CalendarViewModelTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1A2B3C4D5E6F700000000012 /* CalendarViewModelTests.swift */; };
+		1A2B3C4D5E6F700000000034 /* CalendarDay.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1A2B3C4D5E6F700000000038 /* CalendarDay.swift */; };
+		1A2B3C4D5E6F700000000035 /* CalendarMonthGrid.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1A2B3C4D5E6F700000000039 /* CalendarMonthGrid.swift */; };
+		1A2B3C4D5E6F700000000036 /* CalendarViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1A2B3C4D5E6F700000000040 /* CalendarViewModel.swift */; };
+		1A2B3C4D5E6F700000000037 /* CalendarPopoverView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1A2B3C4D5E6F700000000041 /* CalendarPopoverView.swift */; };
+		1A2B3C4D5E6F700000000043 /* CalendarDisplayFormatterTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1A2B3C4D5E6F700000000045 /* CalendarDisplayFormatterTests.swift */; };
+		1A2B3C4D5E6F700000000044 /* CalendarDisplayFormatter.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1A2B3C4D5E6F700000000046 /* CalendarDisplayFormatter.swift */; };
+		1A2B3C4D5E6F700000000047 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1A2B3C4D5E6F700000000048 /* AppDelegate.swift */; };
+		1A2B3C4D5E6F700000000049 /* StatusBarController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1A2B3C4D5E6F700000000050 /* StatusBarController.swift */; };
+		1A2B3C4D5E6F700000000051 /* CalendarStatusIconRenderer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1A2B3C4D5E6F700000000052 /* CalendarStatusIconRenderer.swift */; };
+		1A2B3C4D5E6F700000000053 /* StatusBarInteractionRouter.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1A2B3C4D5E6F700000000054 /* StatusBarInteractionRouter.swift */; };
+		1A2B3C4D5E6F700000000055 /* StatusBarInteractionRouterTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1A2B3C4D5E6F700000000056 /* StatusBarInteractionRouterTests.swift */; };
+		1A2B3C4D5E6F700000000057 /* CalendarMonthOutlineBuilderTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1A2B3C4D5E6F700000000058 /* CalendarMonthOutlineBuilderTests.swift */; };
+		1A2B3C4D5E6F700000000059 /* CalendarMonthOutlineBuilder.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1A2B3C4D5E6F700000000060 /* CalendarMonthOutlineBuilder.swift */; };
+		1A2B3C4D5E6F700000000070 /* StatusBarMenuContent.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1A2B3C4D5E6F700000000080 /* StatusBarMenuContent.swift */; };
+		1A2B3C4D5E6F700000000071 /* StatusBarMenuMetrics.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1A2B3C4D5E6F700000000081 /* StatusBarMenuMetrics.swift */; };
+		1A2B3C4D5E6F700000000072 /* StatusBarMenuView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1A2B3C4D5E6F700000000082 /* StatusBarMenuView.swift */; };
+		1A2B3C4D5E6F700000000073 /* StatusBarMenuPanelController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1A2B3C4D5E6F700000000083 /* StatusBarMenuPanelController.swift */; };
+		1A2B3C4D5E6F700000000074 /* CalendarPopoverPanelController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1A2B3C4D5E6F700000000084 /* CalendarPopoverPanelController.swift */; };
+		1A2B3C4D5E6F700000000075 /* CalendarPopoverPresentationGeometry.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1A2B3C4D5E6F700000000085 /* CalendarPopoverPresentationGeometry.swift */; };
+		1A2B3C4D5E6F700000000076 /* CalendarPopoverMetrics.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1A2B3C4D5E6F700000000086 /* CalendarPopoverMetrics.swift */; };
+		1A2B3C4D5E6F700000000077 /* CalendarPopoverPresentationState.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1A2B3C4D5E6F700000000087 /* CalendarPopoverPresentationState.swift */; };
+		1A2B3C4D5E6F700000000078 /* CalendarNavigationButtons.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1A2B3C4D5E6F700000000088 /* CalendarNavigationButtons.swift */; };
+		1A2B3C4D5E6F700000000079 /* CalendarPopoverShapes.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1A2B3C4D5E6F700000000089 /* CalendarPopoverShapes.swift */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXContainerItemProxy section */
+		1A2B3C4D5E6F700000000003 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 1A2B3C4D5E6F700000000004 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 1A2B3C4D5E6F700000000005;
+			remoteInfo = Invoker;
+		};
+/* End PBXContainerItemProxy section */
+
+/* Begin PBXFileReference section */
+		1A2B3C4D5E6F700000000006 /* Invoker.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Invoker.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		1A2B3C4D5E6F700000000007 /* InvokerTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = InvokerTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		1A2B3C4D5E6F700000000008 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		1A2B3C4D5E6F700000000011 /* InvokerApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = InvokerApp.swift; sourceTree = "<group>"; };
+		1A2B3C4D5E6F700000000012 /* CalendarViewModelTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CalendarViewModelTests.swift; sourceTree = "<group>"; };
+		1A2B3C4D5E6F700000000038 /* CalendarDay.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CalendarDay.swift; sourceTree = "<group>"; };
+		1A2B3C4D5E6F700000000039 /* CalendarMonthGrid.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CalendarMonthGrid.swift; sourceTree = "<group>"; };
+		1A2B3C4D5E6F700000000040 /* CalendarViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CalendarViewModel.swift; sourceTree = "<group>"; };
+		1A2B3C4D5E6F700000000041 /* CalendarPopoverView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CalendarPopoverView.swift; sourceTree = "<group>"; };
+		1A2B3C4D5E6F700000000045 /* CalendarDisplayFormatterTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CalendarDisplayFormatterTests.swift; sourceTree = "<group>"; };
+		1A2B3C4D5E6F700000000046 /* CalendarDisplayFormatter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CalendarDisplayFormatter.swift; sourceTree = "<group>"; };
+		1A2B3C4D5E6F700000000048 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
+		1A2B3C4D5E6F700000000050 /* StatusBarController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StatusBarController.swift; sourceTree = "<group>"; };
+		1A2B3C4D5E6F700000000052 /* CalendarStatusIconRenderer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CalendarStatusIconRenderer.swift; sourceTree = "<group>"; };
+		1A2B3C4D5E6F700000000054 /* StatusBarInteractionRouter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StatusBarInteractionRouter.swift; sourceTree = "<group>"; };
+		1A2B3C4D5E6F700000000056 /* StatusBarInteractionRouterTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StatusBarInteractionRouterTests.swift; sourceTree = "<group>"; };
+		1A2B3C4D5E6F700000000058 /* CalendarMonthOutlineBuilderTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CalendarMonthOutlineBuilderTests.swift; sourceTree = "<group>"; };
+		1A2B3C4D5E6F700000000060 /* CalendarMonthOutlineBuilder.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CalendarMonthOutlineBuilder.swift; sourceTree = "<group>"; };
+		1A2B3C4D5E6F700000000080 /* StatusBarMenuContent.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StatusBarMenuContent.swift; sourceTree = "<group>"; };
+		1A2B3C4D5E6F700000000081 /* StatusBarMenuMetrics.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StatusBarMenuMetrics.swift; sourceTree = "<group>"; };
+		1A2B3C4D5E6F700000000082 /* StatusBarMenuView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StatusBarMenuView.swift; sourceTree = "<group>"; };
+		1A2B3C4D5E6F700000000083 /* StatusBarMenuPanelController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StatusBarMenuPanelController.swift; sourceTree = "<group>"; };
+		1A2B3C4D5E6F700000000084 /* CalendarPopoverPanelController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CalendarPopoverPanelController.swift; sourceTree = "<group>"; };
+		1A2B3C4D5E6F700000000085 /* CalendarPopoverPresentationGeometry.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CalendarPopoverPresentationGeometry.swift; sourceTree = "<group>"; };
+		1A2B3C4D5E6F700000000086 /* CalendarPopoverMetrics.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CalendarPopoverMetrics.swift; sourceTree = "<group>"; };
+		1A2B3C4D5E6F700000000087 /* CalendarPopoverPresentationState.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CalendarPopoverPresentationState.swift; sourceTree = "<group>"; };
+		1A2B3C4D5E6F700000000088 /* CalendarNavigationButtons.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CalendarNavigationButtons.swift; sourceTree = "<group>"; };
+		1A2B3C4D5E6F700000000089 /* CalendarPopoverShapes.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CalendarPopoverShapes.swift; sourceTree = "<group>"; };
+/* End PBXFileReference section */
+
+/* Begin PBXFileSystemSynchronizedRootGroup section */
+/* End PBXFileSystemSynchronizedRootGroup section */
+
+/* Begin PBXFrameworksBuildPhase section */
+		1A2B3C4D5E6F700000000013 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		1A2B3C4D5E6F700000000014 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXFrameworksBuildPhase section */
+
+/* Begin PBXGroup section */
+		1A2B3C4D5E6F700000000015 = {
+			isa = PBXGroup;
+			children = (
+				1A2B3C4D5E6F700000000016 /* Invoker */,
+				1A2B3C4D5E6F700000000017 /* InvokerTests */,
+				1A2B3C4D5E6F700000000018 /* Products */,
+			);
+			sourceTree = "<group>";
+		};
+		1A2B3C4D5E6F700000000016 /* Invoker */ = {
+			isa = PBXGroup;
+			children = (
+				1A2B3C4D5E6F700000000061 /* App */,
+				1A2B3C4D5E6F700000000062 /* Shell */,
+				1A2B3C4D5E6F700000000064 /* Features */,
+				1A2B3C4D5E6F700000000065 /* Resources */,
+			);
+			path = Invoker;
+			sourceTree = "<group>";
+		};
+		1A2B3C4D5E6F700000000061 /* App */ = {
+			isa = PBXGroup;
+			children = (
+				1A2B3C4D5E6F700000000011 /* InvokerApp.swift */,
+				1A2B3C4D5E6F700000000048 /* AppDelegate.swift */,
+			);
+			path = App;
+			sourceTree = "<group>";
+		};
+		1A2B3C4D5E6F700000000062 /* Shell */ = {
+			isa = PBXGroup;
+			children = (
+				1A2B3C4D5E6F700000000063 /* StatusBar */,
+				1A2B3C4D5E6F700000000090 /* Popover */,
+			);
+			path = Shell;
+			sourceTree = "<group>";
+		};
+		1A2B3C4D5E6F700000000063 /* StatusBar */ = {
+			isa = PBXGroup;
+			children = (
+				1A2B3C4D5E6F700000000050 /* StatusBarController.swift */,
+				1A2B3C4D5E6F700000000054 /* StatusBarInteractionRouter.swift */,
+				1A2B3C4D5E6F700000000080 /* StatusBarMenuContent.swift */,
+				1A2B3C4D5E6F700000000081 /* StatusBarMenuMetrics.swift */,
+				1A2B3C4D5E6F700000000082 /* StatusBarMenuView.swift */,
+				1A2B3C4D5E6F700000000083 /* StatusBarMenuPanelController.swift */,
+			);
+			path = StatusBar;
+			sourceTree = "<group>";
+		};
+		1A2B3C4D5E6F700000000090 /* Popover */ = {
+			isa = PBXGroup;
+			children = (
+				1A2B3C4D5E6F700000000084 /* CalendarPopoverPanelController.swift */,
+				1A2B3C4D5E6F700000000085 /* CalendarPopoverPresentationGeometry.swift */,
+			);
+			path = Popover;
+			sourceTree = "<group>";
+		};
+		1A2B3C4D5E6F700000000064 /* Features */ = {
+			isa = PBXGroup;
+			children = (
+				1A2B3C4D5E6F700000000042 /* Calendar */,
+			);
+			path = Features;
+			sourceTree = "<group>";
+		};
+		1A2B3C4D5E6F700000000065 /* Resources */ = {
+			isa = PBXGroup;
+			children = (
+				1A2B3C4D5E6F700000000008 /* Info.plist */,
+			);
+			path = Resources;
+			sourceTree = "<group>";
+		};
+		1A2B3C4D5E6F700000000042 /* Calendar */ = {
+			isa = PBXGroup;
+			children = (
+				1A2B3C4D5E6F700000000038 /* CalendarDay.swift */,
+				1A2B3C4D5E6F700000000039 /* CalendarMonthGrid.swift */,
+				1A2B3C4D5E6F700000000040 /* CalendarViewModel.swift */,
+				1A2B3C4D5E6F700000000086 /* CalendarPopoverMetrics.swift */,
+				1A2B3C4D5E6F700000000087 /* CalendarPopoverPresentationState.swift */,
+				1A2B3C4D5E6F700000000041 /* CalendarPopoverView.swift */,
+				1A2B3C4D5E6F700000000088 /* CalendarNavigationButtons.swift */,
+				1A2B3C4D5E6F700000000089 /* CalendarPopoverShapes.swift */,
+				1A2B3C4D5E6F700000000046 /* CalendarDisplayFormatter.swift */,
+				1A2B3C4D5E6F700000000060 /* CalendarMonthOutlineBuilder.swift */,
+				1A2B3C4D5E6F700000000052 /* CalendarStatusIconRenderer.swift */,
+			);
+			path = Calendar;
+			sourceTree = "<group>";
+		};
+		1A2B3C4D5E6F700000000017 /* InvokerTests */ = {
+			isa = PBXGroup;
+			children = (
+				1A2B3C4D5E6F700000000066 /* Features */,
+				1A2B3C4D5E6F700000000068 /* Shell */,
+			);
+			path = InvokerTests;
+			sourceTree = "<group>";
+		};
+		1A2B3C4D5E6F700000000066 /* Features */ = {
+			isa = PBXGroup;
+			children = (
+				1A2B3C4D5E6F700000000067 /* Calendar */,
+			);
+			path = Features;
+			sourceTree = "<group>";
+		};
+		1A2B3C4D5E6F700000000067 /* Calendar */ = {
+			isa = PBXGroup;
+			children = (
+				1A2B3C4D5E6F700000000012 /* CalendarViewModelTests.swift */,
+				1A2B3C4D5E6F700000000045 /* CalendarDisplayFormatterTests.swift */,
+				1A2B3C4D5E6F700000000058 /* CalendarMonthOutlineBuilderTests.swift */,
+			);
+			path = Calendar;
+			sourceTree = "<group>";
+		};
+		1A2B3C4D5E6F700000000068 /* Shell */ = {
+			isa = PBXGroup;
+			children = (
+				1A2B3C4D5E6F700000000069 /* StatusBar */,
+			);
+			path = Shell;
+			sourceTree = "<group>";
+		};
+		1A2B3C4D5E6F700000000069 /* StatusBar */ = {
+			isa = PBXGroup;
+			children = (
+				1A2B3C4D5E6F700000000056 /* StatusBarInteractionRouterTests.swift */,
+			);
+			path = StatusBar;
+			sourceTree = "<group>";
+		};
+		1A2B3C4D5E6F700000000018 /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				1A2B3C4D5E6F700000000006 /* Invoker.app */,
+				1A2B3C4D5E6F700000000007 /* InvokerTests.xctest */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXNativeTarget section */
+		1A2B3C4D5E6F700000000005 /* Invoker */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 1A2B3C4D5E6F700000000019 /* Build configuration list for PBXNativeTarget "Invoker" */;
+			buildPhases = (
+				1A2B3C4D5E6F700000000020 /* Sources */,
+				1A2B3C4D5E6F700000000013 /* Frameworks */,
+				1A2B3C4D5E6F700000000021 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = Invoker;
+			productName = Invoker;
+			productReference = 1A2B3C4D5E6F700000000006 /* Invoker.app */;
+			productType = "com.apple.product-type.application";
+		};
+		1A2B3C4D5E6F700000000022 /* InvokerTests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 1A2B3C4D5E6F700000000023 /* Build configuration list for PBXNativeTarget "InvokerTests" */;
+			buildPhases = (
+				1A2B3C4D5E6F700000000024 /* Sources */,
+				1A2B3C4D5E6F700000000014 /* Frameworks */,
+				1A2B3C4D5E6F700000000025 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				1A2B3C4D5E6F700000000026 /* PBXTargetDependency */,
+			);
+			name = InvokerTests;
+			productName = InvokerTests;
+			productReference = 1A2B3C4D5E6F700000000007 /* InvokerTests.xctest */;
+			productType = "com.apple.product-type.bundle.unit-test";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		1A2B3C4D5E6F700000000004 /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				BuildIndependentTargetsInParallel = 1;
+				LastSwiftUpdateCheck = 2630;
+				LastUpgradeCheck = 2630;
+				TargetAttributes = {
+					1A2B3C4D5E6F700000000005 = {
+						CreatedOnToolsVersion = 26.3;
+					};
+					1A2B3C4D5E6F700000000022 = {
+						CreatedOnToolsVersion = 26.3;
+						TestTargetID = 1A2B3C4D5E6F700000000005;
+					};
+				};
+			};
+			buildConfigurationList = 1A2B3C4D5E6F700000000027 /* Build configuration list for PBXProject "Invoker" */;
+			developmentRegion = en;
+			hasScannedForEncodings = 0;
+			knownRegions = (
+				en,
+				Base,
+			);
+			mainGroup = 1A2B3C4D5E6F700000000015;
+			minimizedProjectReferenceProxies = 1;
+			preferredProjectObjectVersion = 77;
+			productRefGroup = 1A2B3C4D5E6F700000000018 /* Products */;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				1A2B3C4D5E6F700000000005 /* Invoker */,
+				1A2B3C4D5E6F700000000022 /* InvokerTests */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXResourcesBuildPhase section */
+		1A2B3C4D5E6F700000000021 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		1A2B3C4D5E6F700000000025 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXResourcesBuildPhase section */
+
+/* Begin PBXSourcesBuildPhase section */
+		1A2B3C4D5E6F700000000020 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				1A2B3C4D5E6F700000000001 /* InvokerApp.swift in Sources */,
+				1A2B3C4D5E6F700000000034 /* CalendarDay.swift in Sources */,
+				1A2B3C4D5E6F700000000035 /* CalendarMonthGrid.swift in Sources */,
+				1A2B3C4D5E6F700000000036 /* CalendarViewModel.swift in Sources */,
+				1A2B3C4D5E6F700000000037 /* CalendarPopoverView.swift in Sources */,
+				1A2B3C4D5E6F700000000044 /* CalendarDisplayFormatter.swift in Sources */,
+				1A2B3C4D5E6F700000000059 /* CalendarMonthOutlineBuilder.swift in Sources */,
+				1A2B3C4D5E6F700000000047 /* AppDelegate.swift in Sources */,
+				1A2B3C4D5E6F700000000049 /* StatusBarController.swift in Sources */,
+				1A2B3C4D5E6F700000000051 /* CalendarStatusIconRenderer.swift in Sources */,
+				1A2B3C4D5E6F700000000053 /* StatusBarInteractionRouter.swift in Sources */,
+				1A2B3C4D5E6F700000000070 /* StatusBarMenuContent.swift in Sources */,
+				1A2B3C4D5E6F700000000071 /* StatusBarMenuMetrics.swift in Sources */,
+				1A2B3C4D5E6F700000000072 /* StatusBarMenuView.swift in Sources */,
+				1A2B3C4D5E6F700000000073 /* StatusBarMenuPanelController.swift in Sources */,
+				1A2B3C4D5E6F700000000074 /* CalendarPopoverPanelController.swift in Sources */,
+				1A2B3C4D5E6F700000000075 /* CalendarPopoverPresentationGeometry.swift in Sources */,
+				1A2B3C4D5E6F700000000076 /* CalendarPopoverMetrics.swift in Sources */,
+				1A2B3C4D5E6F700000000077 /* CalendarPopoverPresentationState.swift in Sources */,
+				1A2B3C4D5E6F700000000078 /* CalendarNavigationButtons.swift in Sources */,
+				1A2B3C4D5E6F700000000079 /* CalendarPopoverShapes.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		1A2B3C4D5E6F700000000024 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				1A2B3C4D5E6F700000000002 /* CalendarViewModelTests.swift in Sources */,
+				1A2B3C4D5E6F700000000043 /* CalendarDisplayFormatterTests.swift in Sources */,
+				1A2B3C4D5E6F700000000057 /* CalendarMonthOutlineBuilderTests.swift in Sources */,
+				1A2B3C4D5E6F700000000055 /* StatusBarInteractionRouterTests.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin PBXTargetDependency section */
+		1A2B3C4D5E6F700000000026 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 1A2B3C4D5E6F700000000005 /* Invoker */;
+			targetProxy = 1A2B3C4D5E6F700000000003 /* PBXContainerItemProxy */;
+		};
+/* End PBXTargetDependency section */
+
+/* Begin XCBuildConfiguration section */
+		1A2B3C4D5E6F700000000028 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = dwarf;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_TESTABILITY = YES;
+				ENABLE_USER_SCRIPT_SANDBOXING = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu17;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"DEBUG=1",
+					"$(inherited)",
+				);
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				MACOSX_DEPLOYMENT_TARGET = 13.0;
+				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
+				MTL_FAST_MATH = YES;
+				ONLY_ACTIVE_ARCH = YES;
+				SDKROOT = macosx;
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "DEBUG $(inherited)";
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+			};
+			name = Debug;
+		};
+		1A2B3C4D5E6F700000000029 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				ENABLE_NS_ASSERTIONS = NO;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_USER_SCRIPT_SANDBOXING = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu17;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				MACOSX_DEPLOYMENT_TARGET = 13.0;
+				MTL_ENABLE_DEBUG_INFO = NO;
+				MTL_FAST_MATH = YES;
+				SDKROOT = macosx;
+				SWIFT_COMPILATION_MODE = wholemodule;
+			};
+			name = Release;
+		};
+		1A2B3C4D5E6F700000000030 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CODE_SIGN_STYLE = Automatic;
+				COMBINE_HIDPI_IMAGES = YES;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = "";
+				GENERATE_INFOPLIST_FILE = NO;
+				INFOPLIST_FILE = Invoker/Resources/Info.plist;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/../Frameworks",
+				);
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.sampwood.invoker;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_VERSION = 6.0;
+			};
+			name = Debug;
+		};
+		1A2B3C4D5E6F700000000031 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CODE_SIGN_STYLE = Automatic;
+				COMBINE_HIDPI_IMAGES = YES;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = "";
+				GENERATE_INFOPLIST_FILE = NO;
+				INFOPLIST_FILE = Invoker/Resources/Info.plist;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/../Frameworks",
+				);
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.sampwood.invoker;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_VERSION = 6.0;
+			};
+			name = Release;
+		};
+		1A2B3C4D5E6F700000000032 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = "";
+				GENERATE_INFOPLIST_FILE = YES;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/../Frameworks",
+					"@loader_path/../Frameworks",
+				);
+				MACOSX_DEPLOYMENT_TARGET = 13.0;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.sampwood.invoker.tests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_EMIT_LOC_STRINGS = NO;
+				SWIFT_VERSION = 6.0;
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/Invoker.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/Invoker";
+			};
+			name = Debug;
+		};
+		1A2B3C4D5E6F700000000033 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = "";
+				GENERATE_INFOPLIST_FILE = YES;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/../Frameworks",
+					"@loader_path/../Frameworks",
+				);
+				MACOSX_DEPLOYMENT_TARGET = 13.0;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.sampwood.invoker.tests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_EMIT_LOC_STRINGS = NO;
+				SWIFT_VERSION = 6.0;
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/Invoker.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/Invoker";
+			};
+			name = Release;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		1A2B3C4D5E6F700000000027 /* Build configuration list for PBXProject "Invoker" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				1A2B3C4D5E6F700000000028 /* Debug */,
+				1A2B3C4D5E6F700000000029 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		1A2B3C4D5E6F700000000019 /* Build configuration list for PBXNativeTarget "Invoker" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				1A2B3C4D5E6F700000000030 /* Debug */,
+				1A2B3C4D5E6F700000000031 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		1A2B3C4D5E6F700000000023 /* Build configuration list for PBXNativeTarget "InvokerTests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				1A2B3C4D5E6F700000000032 /* Debug */,
+				1A2B3C4D5E6F700000000033 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+/* End XCConfigurationList section */
+	};
+	rootObject = 1A2B3C4D5E6F700000000004 /* Project object */;
+}

@@ -1,0 +1,50 @@
+import CoreGraphics
+
+enum CalendarPopoverMetrics {
+    static let panelWidth: CGFloat = 180
+    static let bodyHeight: CGFloat = 202
+    static let arrowWidth: CGFloat = 14
+    static let arrowHeight: CGFloat = 7
+    static let arrowBodyOverlap: CGFloat = 1
+    static let arrowHorizontalMargin: CGFloat = 11
+    static let panelHeight: CGFloat = bodyHeight + arrowHeight - arrowBodyOverlap
+    static let shadowOpacity: Double = 0.13
+    static let shadowRadius: CGFloat = 5
+    static let shadowYOffset: CGFloat = 2
+    static let shadowPadding: CGFloat = 12
+    static let bodyCornerRadius: CGFloat = 8
+    static let shadowSourceWidth: CGFloat = panelWidth
+    static let shadowSourceHeight: CGFloat = bodyHeight
+    static let shadowSourceCornerRadius: CGFloat = bodyCornerRadius
+    static let windowWidth: CGFloat = panelWidth + shadowPadding * 2
+    static let windowHeight: CGFloat = panelHeight + shadowPadding * 2
+    static let bodyBorderOpacity: Double = 0.28
+    static let bodyBorderLineWidth: CGFloat = 1
+    static let arrowBorderOpacity: Double = bodyBorderOpacity
+    static let arrowBorderLineWidth: CGFloat = bodyBorderLineWidth
+    static let horizontalPadding: CGFloat = 8
+    static let topPadding: CGFloat = 10
+    static let titleFontSize: CGFloat = 15
+    static let weekdayFontSize: CGFloat = 12
+    static let weekdayTextHeight: CGFloat = 16
+    static let dayFontSize: CGFloat = 12
+    static let dayTextWidth: CGFloat = 21
+    static let dayTextHeight: CGFloat = 19
+    static let cellWidth: CGFloat = 22
+    static let cellHeight: CGFloat = 21
+    static let columnSpacing: CGFloat = 1.5
+    static let rowSpacing: CGFloat = 1.5
+    static let gridWidth: CGFloat = cellWidth * 7 + columnSpacing * 6
+    static let gridHeight: CGFloat = cellHeight * 6 + rowSpacing * 5
+    static let headerButtonHoverSize: CGFloat = 16
+    static let headerButtonHoverCornerRadius: CGFloat = 3
+    static let headerButtonIconOpacity: Double = 0.38
+    static let headerButtonHoverOpacity: Double = 0.09
+    static let headerButtonHoverIconOpacity: Double = 0.62
+    static let dayHoverOpacity: Double = 0.07
+    static let dayHoverCornerRadius: CGFloat = 3
+    static let todayButtonHitSize: CGFloat = headerButtonHoverSize
+    static let todayButtonDotSize: CGFloat = 8
+    static let todayButtonDotOpacity: Double = headerButtonIconOpacity
+    static let todayButtonHoverDotOpacity: Double = headerButtonHoverIconOpacity
+}
