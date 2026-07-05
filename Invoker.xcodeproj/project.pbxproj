@@ -32,6 +32,7 @@
 		1A2B3C4D5E6F700000000077 /* CalendarPopoverPresentationState.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1A2B3C4D5E6F700000000087 /* CalendarPopoverPresentationState.swift */; };
 		1A2B3C4D5E6F700000000078 /* CalendarNavigationButtons.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1A2B3C4D5E6F700000000088 /* CalendarNavigationButtons.swift */; };
 		1A2B3C4D5E6F700000000079 /* CalendarPopoverShapes.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1A2B3C4D5E6F700000000089 /* CalendarPopoverShapes.swift */; };
+		1A2B3C4D5E6F700000000091 /* GlobalInputSourceLock.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1A2B3C4D5E6F700000000092 /* GlobalInputSourceLock.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -73,6 +74,7 @@
 		1A2B3C4D5E6F700000000087 /* CalendarPopoverPresentationState.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CalendarPopoverPresentationState.swift; sourceTree = "<group>"; };
 		1A2B3C4D5E6F700000000088 /* CalendarNavigationButtons.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CalendarNavigationButtons.swift; sourceTree = "<group>"; };
 		1A2B3C4D5E6F700000000089 /* CalendarPopoverShapes.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CalendarPopoverShapes.swift; sourceTree = "<group>"; };
+		1A2B3C4D5E6F700000000092 /* GlobalInputSourceLock.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GlobalInputSourceLock.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
@@ -99,13 +101,13 @@
 		1A2B3C4D5E6F700000000015 = {
 			isa = PBXGroup;
 			children = (
-				1A2B3C4D5E6F700000000016 /* Invoker */,
-				1A2B3C4D5E6F700000000017 /* InvokerTests */,
+				1A2B3C4D5E6F700000000016 /* Sources */,
+				1A2B3C4D5E6F700000000017 /* Tests */,
 				1A2B3C4D5E6F700000000018 /* Products */,
 			);
 			sourceTree = "<group>";
 		};
-		1A2B3C4D5E6F700000000016 /* Invoker */ = {
+		1A2B3C4D5E6F700000000016 /* Sources */ = {
 			isa = PBXGroup;
 			children = (
 				1A2B3C4D5E6F700000000061 /* App */,
@@ -113,7 +115,7 @@
 				1A2B3C4D5E6F700000000064 /* Features */,
 				1A2B3C4D5E6F700000000065 /* Resources */,
 			);
-			path = Invoker;
+			path = Sources;
 			sourceTree = "<group>";
 		};
 		1A2B3C4D5E6F700000000061 /* App */ = {
@@ -160,8 +162,17 @@
 			isa = PBXGroup;
 			children = (
 				1A2B3C4D5E6F700000000042 /* Calendar */,
+				1A2B3C4D5E6F700000000093 /* InputSource */,
 			);
 			path = Features;
+			sourceTree = "<group>";
+		};
+		1A2B3C4D5E6F700000000093 /* InputSource */ = {
+			isa = PBXGroup;
+			children = (
+				1A2B3C4D5E6F700000000092 /* GlobalInputSourceLock.swift */,
+			);
+			path = InputSource;
 			sourceTree = "<group>";
 		};
 		1A2B3C4D5E6F700000000065 /* Resources */ = {
@@ -190,13 +201,13 @@
 			path = Calendar;
 			sourceTree = "<group>";
 		};
-		1A2B3C4D5E6F700000000017 /* InvokerTests */ = {
+		1A2B3C4D5E6F700000000017 /* Tests */ = {
 			isa = PBXGroup;
 			children = (
 				1A2B3C4D5E6F700000000066 /* Features */,
 				1A2B3C4D5E6F700000000068 /* Shell */,
 			);
-			path = InvokerTests;
+			path = Tests;
 			sourceTree = "<group>";
 		};
 		1A2B3C4D5E6F700000000066 /* Features */ = {
@@ -362,6 +373,7 @@
 				1A2B3C4D5E6F700000000077 /* CalendarPopoverPresentationState.swift in Sources */,
 				1A2B3C4D5E6F700000000078 /* CalendarNavigationButtons.swift in Sources */,
 				1A2B3C4D5E6F700000000079 /* CalendarPopoverShapes.swift in Sources */,
+				1A2B3C4D5E6F700000000091 /* GlobalInputSourceLock.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -510,7 +522,7 @@
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = "";
 				GENERATE_INFOPLIST_FILE = NO;
-				INFOPLIST_FILE = Invoker/Resources/Info.plist;
+				INFOPLIST_FILE = Sources/Resources/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/../Frameworks",
@@ -532,7 +544,7 @@
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = "";
 				GENERATE_INFOPLIST_FILE = NO;
-				INFOPLIST_FILE = Invoker/Resources/Info.plist;
+				INFOPLIST_FILE = Sources/Resources/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/../Frameworks",
