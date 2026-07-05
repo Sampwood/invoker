@@ -4,6 +4,7 @@ struct StatusBarMenuItemContent: Equatable {
 
 enum StatusBarMenuContent {
     static let items = [
+        StatusBarMenuItemContent(title: "检查更新..."),
         StatusBarMenuItemContent(title: "退出 Invoker")
     ]
 }

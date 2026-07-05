@@ -11,14 +11,14 @@ final class StatusBarInteractionRouterTests: XCTestCase {
         XCTAssertEqual(StatusBarInteractionRouter.action(for: .rightMouseUp), .showMenu)
     }
 
-    func testContextMenuOnlyContainsQuitItem() {
-        XCTAssertEqual(StatusBarMenuContent.items.map(\.title), ["退出 Invoker"])
+    func testContextMenuContainsUpdateCheckAndQuitItems() {
+        XCTAssertEqual(StatusBarMenuContent.items.map(\.title), ["检查更新...", "退出 Invoker"])
     }
 
     func testContextMenuUsesCompactWhitePanelMetrics() {
         XCTAssertEqual(StatusBarMenuMetrics.bodyColorName, "white")
         XCTAssertLessThanOrEqual(StatusBarMenuMetrics.bodyWidth, CalendarPopoverMetrics.panelWidth)
-        XCTAssertLessThanOrEqual(StatusBarMenuMetrics.bodyHeight, 48)
+        XCTAssertLessThanOrEqual(StatusBarMenuMetrics.bodyHeight, 90)
         XCTAssertEqual(StatusBarMenuMetrics.bodyCornerRadius, CalendarPopoverMetrics.bodyCornerRadius, accuracy: 0.001)
         XCTAssertEqual(StatusBarMenuMetrics.bodyBorderOpacity, CalendarPopoverMetrics.bodyBorderOpacity, accuracy: 0.001)
         XCTAssertEqual(StatusBarMenuMetrics.shadowRadius, CalendarPopoverMetrics.shadowRadius, accuracy: 0.001)

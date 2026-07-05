@@ -7,9 +7,15 @@ final class StatusBarController: NSObject {
     private let menuController: StatusBarMenuPanelController
 
     override init() {
+        let checker = UpdateChecker()
+
         statusItem = NSStatusBar.system.statusItem(withLength: CalendarStatusIconMetrics.statusItemLength)
         popoverController = CalendarPopoverPanelController()
-        menuController = StatusBarMenuPanelController()
+        menuController = StatusBarMenuPanelController {
+            Task { @MainActor in
+                checker.checkForUpdates()
+            }
+        }
         super.init()
 
         configureStatusItem()

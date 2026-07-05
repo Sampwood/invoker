@@ -1,0 +1,72 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    name: Build and publish
+    runs-on: macos-latest
+
+    env:
+      APP_NAME: Invoker
+      DERIVED_DATA_PATH: .build/DerivedData
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Show Xcode version
+        run: xcodebuild -version
+
+      - name: Build Release app
+        run: |
+          VERSION="${GITHUB_REF_NAME#v}"
+          xcodebuild build \
+            -project Invoker.xcodeproj \
+            -scheme "$APP_NAME" \
+            -configuration Release \
+            -derivedDataPath "$DERIVED_DATA_PATH" \
+            MARKETING_VERSION="$VERSION" \
+            CURRENT_PROJECT_VERSION="$GITHUB_RUN_NUMBER" \
+            CODE_SIGNING_ALLOWED=NO
+
+      - name: Ad-hoc sign app
+        run: |
+          APP_PATH="$DERIVED_DATA_PATH/Build/Products/Release/$APP_NAME.app"
+          codesign --force --deep --sign - "$APP_PATH"
+          codesign --verify --deep --strict --verbose=2 "$APP_PATH"
+
+      - name: Package DMG
+        run: |
+          APP_PATH="$DERIVED_DATA_PATH/Build/Products/Release/$APP_NAME.app"
+          STAGING_DIR="$RUNNER_TEMP/dmg-staging"
+          DMG_PATH="$RUNNER_TEMP/$APP_NAME-${GITHUB_REF_NAME}.dmg"
+
+          rm -rf "$STAGING_DIR"
+          mkdir -p "$STAGING_DIR"
+          cp -R "$APP_PATH" "$STAGING_DIR/"
+          ln -s /Applications "$STAGING_DIR/Applications"
+
+          hdiutil create \
+            -volname "$APP_NAME" \
+            -srcfolder "$STAGING_DIR" \
+            -ov \
+            -format UDZO \
+            "$DMG_PATH"
+
+          echo "DMG_PATH=$DMG_PATH" >> "$GITHUB_ENV"
+
+      - name: Create GitHub Release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release create "$GITHUB_REF_NAME" \
+            "$DMG_PATH#$APP_NAME-${GITHUB_REF_NAME}.dmg" \
+            --title "$APP_NAME $GITHUB_REF_NAME" \
+            --notes "Ad-hoc signed macOS build. This build is not Apple notarized, so macOS may require manual approval on first launch."

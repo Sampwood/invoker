@@ -3,10 +3,15 @@ import SwiftUI
 
 @MainActor
 final class StatusBarMenuPanelController {
+    private let checkForUpdatesAction: () -> Void
     private var panel: NSPanel?
     private var localEventMonitor: Any?
     private var globalEventMonitor: Any?
     private var resignActiveObserver: NSObjectProtocol?
+
+    init(checkForUpdatesAction: @escaping () -> Void) {
+        self.checkForUpdatesAction = checkForUpdatesAction
+    }
 
     var isShown: Bool {
         panel?.isVisible == true
@@ -52,10 +57,18 @@ final class StatusBarMenuPanelController {
         panel.hasShadow = false
         panel.level = .popUpMenu
         panel.collectionBehavior = [.canJoinAllSpaces, .fullScreenAuxiliary, .transient]
-        panel.contentView = NSHostingView(rootView: StatusBarMenuView { [weak self] in
-            self?.close()
-            NSApp.terminate(nil)
-        })
+        panel.contentView = NSHostingView(
+            rootView: StatusBarMenuView(
+                checkForUpdatesAction: { [weak self] in
+                    self?.close()
+                    self?.checkForUpdatesAction()
+                },
+                quitAction: { [weak self] in
+                    self?.close()
+                    NSApp.terminate(nil)
+                }
+            )
+        )
         return panel
     }
 

@@ -33,6 +33,7 @@
 		1A2B3C4D5E6F700000000078 /* CalendarNavigationButtons.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1A2B3C4D5E6F700000000088 /* CalendarNavigationButtons.swift */; };
 		1A2B3C4D5E6F700000000079 /* CalendarPopoverShapes.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1A2B3C4D5E6F700000000089 /* CalendarPopoverShapes.swift */; };
 		1A2B3C4D5E6F700000000091 /* GlobalInputSourceLock.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1A2B3C4D5E6F700000000092 /* GlobalInputSourceLock.swift */; };
+		1A2B3C4D5E6F700000000094 /* UpdateChecker.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1A2B3C4D5E6F700000000095 /* UpdateChecker.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -75,6 +76,7 @@
 		1A2B3C4D5E6F700000000088 /* CalendarNavigationButtons.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CalendarNavigationButtons.swift; sourceTree = "<group>"; };
 		1A2B3C4D5E6F700000000089 /* CalendarPopoverShapes.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CalendarPopoverShapes.swift; sourceTree = "<group>"; };
 		1A2B3C4D5E6F700000000092 /* GlobalInputSourceLock.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GlobalInputSourceLock.swift; sourceTree = "<group>"; };
+		1A2B3C4D5E6F700000000095 /* UpdateChecker.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UpdateChecker.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
@@ -163,8 +165,17 @@
 			children = (
 				1A2B3C4D5E6F700000000042 /* Calendar */,
 				1A2B3C4D5E6F700000000093 /* InputSource */,
+				1A2B3C4D5E6F700000000096 /* Updates */,
 			);
 			path = Features;
+			sourceTree = "<group>";
+		};
+		1A2B3C4D5E6F700000000096 /* Updates */ = {
+			isa = PBXGroup;
+			children = (
+				1A2B3C4D5E6F700000000095 /* UpdateChecker.swift */,
+			);
+			path = Updates;
 			sourceTree = "<group>";
 		};
 		1A2B3C4D5E6F700000000093 /* InputSource */ = {
@@ -374,6 +385,7 @@
 				1A2B3C4D5E6F700000000078 /* CalendarNavigationButtons.swift in Sources */,
 				1A2B3C4D5E6F700000000079 /* CalendarPopoverShapes.swift in Sources */,
 				1A2B3C4D5E6F700000000091 /* GlobalInputSourceLock.swift in Sources */,
+				1A2B3C4D5E6F700000000094 /* UpdateChecker.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
