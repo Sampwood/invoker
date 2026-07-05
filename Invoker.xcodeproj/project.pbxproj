@@ -34,6 +34,7 @@
 		1A2B3C4D5E6F700000000079 /* CalendarPopoverShapes.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1A2B3C4D5E6F700000000089 /* CalendarPopoverShapes.swift */; };
 		1A2B3C4D5E6F700000000091 /* GlobalInputSourceLock.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1A2B3C4D5E6F700000000092 /* GlobalInputSourceLock.swift */; };
 		1A2B3C4D5E6F700000000094 /* UpdateChecker.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1A2B3C4D5E6F700000000095 /* UpdateChecker.swift */; };
+		1A2B3C4D5E6F700000000097 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 1A2B3C4D5E6F700000000098 /* Assets.xcassets */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -77,6 +78,7 @@
 		1A2B3C4D5E6F700000000089 /* CalendarPopoverShapes.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CalendarPopoverShapes.swift; sourceTree = "<group>"; };
 		1A2B3C4D5E6F700000000092 /* GlobalInputSourceLock.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GlobalInputSourceLock.swift; sourceTree = "<group>"; };
 		1A2B3C4D5E6F700000000095 /* UpdateChecker.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UpdateChecker.swift; sourceTree = "<group>"; };
+		1A2B3C4D5E6F700000000098 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
@@ -189,6 +191,7 @@
 		1A2B3C4D5E6F700000000065 /* Resources */ = {
 			isa = PBXGroup;
 			children = (
+				1A2B3C4D5E6F700000000098 /* Assets.xcassets */,
 				1A2B3C4D5E6F700000000008 /* Info.plist */,
 			);
 			path = Resources;
@@ -346,6 +349,7 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				1A2B3C4D5E6F700000000097 /* Assets.xcassets in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

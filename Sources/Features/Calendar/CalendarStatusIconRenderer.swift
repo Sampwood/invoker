@@ -1,13 +1,13 @@
 import AppKit
 
 enum CalendarStatusIconMetrics {
-    static let statusItemLength: CGFloat = 28
-    static let imageSize = NSSize(width: 26, height: 20)
-    static let badgeRect = NSRect(x: 0.75, y: 2, width: 24.5, height: 16)
+    static let statusItemLength: CGFloat = 24
+    static let imageSize = NSSize(width: 22, height: 20)
+    static let badgeRect = NSRect(x: 0.75, y: 2, width: 20.5, height: 16)
     static let badgeCornerRadius: CGFloat = 3
     static let textFontSize: CGFloat = 12
     static let textWeight = NSFont.Weight.semibold
-    static let textRect = NSRect(x: 0, y: 2.5, width: 26, height: 15)
+    static let textRect = NSRect(x: 0, y: 2.5, width: 22, height: 15)
 }
 
 enum CalendarStatusIconRenderer {

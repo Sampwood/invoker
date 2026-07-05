@@ -15,13 +15,18 @@ final class StatusBarInteractionRouterTests: XCTestCase {
         XCTAssertEqual(StatusBarMenuContent.items.map(\.title), ["检查更新...", "退出 Invoker"])
     }
 
-    func testContextMenuUsesCompactWhitePanelMetrics() {
-        XCTAssertEqual(StatusBarMenuMetrics.bodyColorName, "white")
-        XCTAssertLessThanOrEqual(StatusBarMenuMetrics.bodyWidth, CalendarPopoverMetrics.panelWidth)
-        XCTAssertLessThanOrEqual(StatusBarMenuMetrics.bodyHeight, 90)
-        XCTAssertEqual(StatusBarMenuMetrics.bodyCornerRadius, CalendarPopoverMetrics.bodyCornerRadius, accuracy: 0.001)
-        XCTAssertEqual(StatusBarMenuMetrics.bodyBorderOpacity, CalendarPopoverMetrics.bodyBorderOpacity, accuracy: 0.001)
-        XCTAssertEqual(StatusBarMenuMetrics.shadowRadius, CalendarPopoverMetrics.shadowRadius, accuracy: 0.001)
+    func testContextMenuUsesCompactSystemLikePanelMetrics() {
+        XCTAssertEqual(StatusBarMenuMetrics.bodyColorName, "nearWhite")
+        XCTAssertLessThanOrEqual(StatusBarMenuMetrics.bodyWidth, 106)
+        XCTAssertLessThanOrEqual(StatusBarMenuMetrics.bodyHeight, 70)
+        XCTAssertLessThanOrEqual(StatusBarMenuMetrics.rowHeight, 28)
+        XCTAssertLessThanOrEqual(StatusBarMenuMetrics.textFontSize, 13)
+        XCTAssertLessThanOrEqual(StatusBarMenuMetrics.bodyBorderOpacity, 0.16)
+        XCTAssertGreaterThan(StatusBarMenuMetrics.shadowRadius, CalendarPopoverMetrics.shadowRadius)
+        XCTAssertGreaterThanOrEqual(
+            StatusBarMenuMetrics.shadowPadding,
+            StatusBarMenuMetrics.shadowRadius + StatusBarMenuMetrics.shadowYOffset + 6
+        )
     }
 
     func testOtherEventsAreIgnored() {

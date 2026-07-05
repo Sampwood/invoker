@@ -20,7 +20,7 @@ struct StatusBarMenuView: View {
 
     private var bodyShadow: some View {
         RoundedRectangle(cornerRadius: StatusBarMenuMetrics.bodyCornerRadius, style: .continuous)
-            .fill(Color.white)
+            .fill(Color.white.opacity(0.98))
             .frame(width: StatusBarMenuMetrics.bodyWidth, height: StatusBarMenuMetrics.bodyHeight)
             .shadow(
                 color: .black.opacity(StatusBarMenuMetrics.shadowOpacity),
@@ -35,8 +35,9 @@ struct StatusBarMenuView: View {
             StatusBarMenuRow(title: StatusBarMenuContent.items[0].title, action: checkForUpdatesAction)
             StatusBarMenuRow(title: StatusBarMenuContent.items[1].title, action: quitAction)
         }
+        .padding(.vertical, StatusBarMenuMetrics.bodyVerticalPadding)
         .frame(width: StatusBarMenuMetrics.bodyWidth, height: StatusBarMenuMetrics.bodyHeight)
-        .background(Color.white)
+        .background(Color.white.opacity(0.98))
         .clipShape(RoundedRectangle(cornerRadius: StatusBarMenuMetrics.bodyCornerRadius, style: .continuous))
         .overlay(
             RoundedRectangle(cornerRadius: StatusBarMenuMetrics.bodyCornerRadius, style: .continuous)
@@ -59,13 +60,15 @@ private struct StatusBarMenuRow: View {
             HStack {
                 Text(title)
                     .font(.system(size: StatusBarMenuMetrics.textFontSize, weight: .regular))
-                    .foregroundStyle(Color.black.opacity(0.86))
+                    .foregroundStyle(Color.black.opacity(0.82))
                     .lineLimit(1)
 
                 Spacer(minLength: 0)
             }
             .frame(
-                width: StatusBarMenuMetrics.bodyWidth - 8 - StatusBarMenuMetrics.rowHorizontalPadding * 2,
+                width: StatusBarMenuMetrics.bodyWidth
+                    - StatusBarMenuMetrics.rowOuterInset * 2
+                    - StatusBarMenuMetrics.rowHorizontalPadding * 2,
                 height: StatusBarMenuMetrics.rowHeight,
                 alignment: .leading
             )
@@ -74,7 +77,7 @@ private struct StatusBarMenuRow: View {
                 RoundedRectangle(cornerRadius: StatusBarMenuMetrics.rowCornerRadius, style: .continuous)
                     .fill(Color.black.opacity(isHovered ? StatusBarMenuMetrics.rowHoverOpacity : 0))
             )
-            .padding(4)
+            .padding(.horizontal, StatusBarMenuMetrics.rowOuterInset)
             .contentShape(Rectangle())
         }
         .buttonStyle(.plain)

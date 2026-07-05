@@ -14,9 +14,9 @@ watched_file_changed() {
         return 0
     fi
 
-    find "$ROOT_DIR/Invoker" "$PROJECT_PATH" \
+    find "$ROOT_DIR/Sources" "$PROJECT_PATH" \
         -type f \
-        \( -name "*.swift" -o -name "*.plist" -o -name "project.pbxproj" \) \
+        \( -name "*.swift" -o -name "*.plist" -o -name "*.json" -o -name "*.png" -o -name "project.pbxproj" \) \
         -newer "$STAMP_FILE" \
         -print \
         -quit | grep -q .

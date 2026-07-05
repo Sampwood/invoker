@@ -8,6 +8,7 @@ final class CalendarPopoverPanelController {
     private var localEventMonitor: Any?
     private var globalEventMonitor: Any?
     private var resignActiveObserver: NSObjectProtocol?
+    private weak var statusButton: NSStatusBarButton?
 
     var isShown: Bool {
         panel?.isVisible == true
@@ -24,6 +25,7 @@ final class CalendarPopoverPanelController {
     private func show(relativeTo button: NSStatusBarButton) {
         let panel = panel ?? makePanel()
         self.panel = panel
+        statusButton = button
 
         let layout = presentationLayout(relativeTo: button, for: panel.frame.size)
         presentationState.arrowCenterX = layout.arrowCenterX
@@ -81,7 +83,7 @@ final class CalendarPopoverPanelController {
         removeDismissHandlers()
 
         localEventMonitor = NSEvent.addLocalMonitorForEvents(matching: [.leftMouseDown, .rightMouseDown]) { [weak self] event in
-            guard let self, event.window !== self.panel else {
+            guard let self, self.shouldDismiss(for: event) else {
                 return event
             }
 
@@ -104,6 +106,21 @@ final class CalendarPopoverPanelController {
                 self?.close()
             }
         }
+    }
+
+    private func shouldDismiss(for event: NSEvent) -> Bool {
+        if event.window === panel {
+            return false
+        }
+
+        if let statusButton, event.window === statusButton.window {
+            let pointInButton = statusButton.convert(event.locationInWindow, from: nil)
+            if statusButton.bounds.contains(pointInButton) {
+                return false
+            }
+        }
+
+        return true
     }
 
     private func removeDismissHandlers() {

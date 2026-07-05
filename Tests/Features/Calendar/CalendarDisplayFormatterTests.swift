@@ -110,12 +110,12 @@ final class CalendarDisplayFormatterTests: XCTestCase {
     }
 
     func testStatusIconMetricsUseSmallerCenteredBadge() {
-        XCTAssertLessThanOrEqual(CalendarStatusIconMetrics.statusItemLength, 30)
-        XCTAssertLessThanOrEqual(CalendarStatusIconMetrics.imageSize.width, 26)
+        XCTAssertLessThanOrEqual(CalendarStatusIconMetrics.statusItemLength, 24)
+        XCTAssertLessThanOrEqual(CalendarStatusIconMetrics.imageSize.width, 22)
         XCTAssertLessThanOrEqual(CalendarStatusIconMetrics.imageSize.height, 20)
         XCTAssertLessThanOrEqual(CalendarStatusIconMetrics.badgeCornerRadius, 3.5)
         XCTAssertLessThanOrEqual(CalendarStatusIconMetrics.badgeRect.minX, 1)
-        XCTAssertGreaterThanOrEqual(CalendarStatusIconMetrics.badgeRect.width, 24)
+        XCTAssertGreaterThanOrEqual(CalendarStatusIconMetrics.badgeRect.width, 20)
         XCTAssertLessThanOrEqual(CalendarStatusIconMetrics.textWeight.rawValue, NSFont.Weight.semibold.rawValue)
         XCTAssertEqual(CalendarStatusIconMetrics.textRect.midX, CalendarStatusIconMetrics.imageSize.width / 2, accuracy: 0.01)
         XCTAssertEqual(CalendarStatusIconMetrics.textRect.midY, CalendarStatusIconMetrics.imageSize.height / 2, accuracy: 0.01)
