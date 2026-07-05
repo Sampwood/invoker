@@ -100,7 +100,9 @@ final class CalendarPopoverPanelController {
             object: NSApp,
             queue: .main
         ) { [weak self] _ in
-            self?.close()
+            Task { @MainActor in
+                self?.close()
+            }
         }
     }
 

@@ -223,8 +223,3 @@ struct CalendarPopoverView: View {
         }
     }
 }
-
-#Preview("Calendar Popover") {
-    CalendarPopoverView()
-        .padding(24)
-}

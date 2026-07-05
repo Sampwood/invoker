@@ -120,7 +120,9 @@ final class StatusBarMenuPanelController {
             object: NSApp,
             queue: .main
         ) { [weak self] _ in
-            self?.close()
+            Task { @MainActor in
+                self?.close()
+            }
         }
     }
 
