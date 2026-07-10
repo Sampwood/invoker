@@ -1,6 +1,7 @@
 import SwiftUI
 
 struct StatusBarMenuView: View {
+    let screenshotAction: () -> Void
     let checkForUpdatesAction: () -> Void
     let quitAction: () -> Void
 
@@ -32,8 +33,9 @@ struct StatusBarMenuView: View {
 
     private var menuBody: some View {
         VStack(spacing: 0) {
-            StatusBarMenuRow(title: StatusBarMenuContent.items[0].title, action: checkForUpdatesAction)
-            StatusBarMenuRow(title: StatusBarMenuContent.items[1].title, action: quitAction)
+            StatusBarMenuRow(title: StatusBarMenuContent.items[0].title, action: screenshotAction)
+            StatusBarMenuRow(title: StatusBarMenuContent.items[1].title, action: checkForUpdatesAction)
+            StatusBarMenuRow(title: StatusBarMenuContent.items[2].title, action: quitAction)
         }
         .padding(.vertical, StatusBarMenuMetrics.bodyVerticalPadding)
         .frame(width: StatusBarMenuMetrics.bodyWidth, height: StatusBarMenuMetrics.bodyHeight)

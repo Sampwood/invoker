@@ -4,21 +4,28 @@ import AppKit
 final class StatusBarController: NSObject {
     private let statusItem: NSStatusItem
     private let popoverController: CalendarPopoverPanelController
-    private let menuController: StatusBarMenuPanelController
+    private let screenshotController: ScreenshotController
+    private let updateChecker = UpdateChecker()
+    private lazy var screenshotHotKeyController = GlobalHotKeyController { [weak self] in
+        self?.captureSelectionToClipboard()
+    }
+    private lazy var menuController = StatusBarMenuPanelController(
+        screenshotAction: { [weak self] in
+            self?.captureSelectionToClipboard()
+        },
+        checkForUpdatesAction: { [weak self] in
+            self?.updateChecker.checkForUpdates()
+        }
+    )
 
     override init() {
-        let checker = UpdateChecker()
-
         statusItem = NSStatusBar.system.statusItem(withLength: CalendarStatusIconMetrics.statusItemLength)
         popoverController = CalendarPopoverPanelController()
-        menuController = StatusBarMenuPanelController {
-            Task { @MainActor in
-                checker.checkForUpdates()
-            }
-        }
+        screenshotController = ScreenshotController()
         super.init()
 
         configureStatusItem()
+        registerScreenshotHotKey()
     }
 
     private func configureStatusItem() {
@@ -57,5 +64,33 @@ final class StatusBarController: NSObject {
     private func showContextMenu(from button: NSStatusBarButton) {
         popoverController.close()
         menuController.toggle(relativeTo: button)
+    }
+
+    private func captureSelectionToClipboard() {
+        popoverController.close()
+        menuController.close()
+
+        Task { @MainActor in
+            await screenshotController.captureSelectionToClipboard()
+        }
+    }
+
+    private func registerScreenshotHotKey() {
+        do {
+            try screenshotHotKeyController.register()
+        } catch {
+            presentHotKeyRegistrationFailure(error)
+        }
+    }
+
+    private func presentHotKeyRegistrationFailure(_ error: Error) {
+        let alert = NSAlert()
+        alert.messageText = "截图快捷键注册失败"
+        alert.informativeText = "Shift + Command + X 可能已被系统或其他应用占用。\n\n\(error.localizedDescription)"
+        alert.alertStyle = .warning
+        alert.addButton(withTitle: "好")
+
+        NSApp.activate(ignoringOtherApps: true)
+        alert.runModal()
     }
 }

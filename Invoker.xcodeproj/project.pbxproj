@@ -35,6 +35,11 @@
 		1A2B3C4D5E6F700000000091 /* GlobalInputSourceLock.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1A2B3C4D5E6F700000000092 /* GlobalInputSourceLock.swift */; };
 		1A2B3C4D5E6F700000000094 /* UpdateChecker.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1A2B3C4D5E6F700000000095 /* UpdateChecker.swift */; };
 		1A2B3C4D5E6F700000000097 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 1A2B3C4D5E6F700000000098 /* Assets.xcassets */; };
+		1A2B3C4D5E6F700000000099 /* SystemScreenshotCapturer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1A2B3C4D5E6F700000000102 /* SystemScreenshotCapturer.swift */; };
+		1A2B3C4D5E6F700000000100 /* ScreenshotController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1A2B3C4D5E6F700000000103 /* ScreenshotController.swift */; };
+		1A2B3C4D5E6F700000000101 /* ScreenshotControllerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1A2B3C4D5E6F700000000104 /* ScreenshotControllerTests.swift */; };
+		1A2B3C4D5E6F700000000107 /* GlobalHotKeyController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1A2B3C4D5E6F700000000109 /* GlobalHotKeyController.swift */; };
+		1A2B3C4D5E6F700000000108 /* GlobalHotKeyControllerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1A2B3C4D5E6F700000000110 /* GlobalHotKeyControllerTests.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -79,6 +84,11 @@
 		1A2B3C4D5E6F700000000092 /* GlobalInputSourceLock.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GlobalInputSourceLock.swift; sourceTree = "<group>"; };
 		1A2B3C4D5E6F700000000095 /* UpdateChecker.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UpdateChecker.swift; sourceTree = "<group>"; };
 		1A2B3C4D5E6F700000000098 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
+		1A2B3C4D5E6F700000000102 /* SystemScreenshotCapturer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SystemScreenshotCapturer.swift; sourceTree = "<group>"; };
+		1A2B3C4D5E6F700000000103 /* ScreenshotController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ScreenshotController.swift; sourceTree = "<group>"; };
+		1A2B3C4D5E6F700000000104 /* ScreenshotControllerTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ScreenshotControllerTests.swift; sourceTree = "<group>"; };
+		1A2B3C4D5E6F700000000109 /* GlobalHotKeyController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GlobalHotKeyController.swift; sourceTree = "<group>"; };
+		1A2B3C4D5E6F700000000110 /* GlobalHotKeyControllerTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GlobalHotKeyControllerTests.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
@@ -166,6 +176,8 @@
 			isa = PBXGroup;
 			children = (
 				1A2B3C4D5E6F700000000042 /* Calendar */,
+				1A2B3C4D5E6F700000000111 /* HotKey */,
+				1A2B3C4D5E6F700000000105 /* Screenshot */,
 				1A2B3C4D5E6F700000000093 /* InputSource */,
 				1A2B3C4D5E6F700000000096 /* Updates */,
 			);
@@ -215,6 +227,23 @@
 			path = Calendar;
 			sourceTree = "<group>";
 		};
+		1A2B3C4D5E6F700000000111 /* HotKey */ = {
+			isa = PBXGroup;
+			children = (
+				1A2B3C4D5E6F700000000109 /* GlobalHotKeyController.swift */,
+			);
+			path = HotKey;
+			sourceTree = "<group>";
+		};
+		1A2B3C4D5E6F700000000105 /* Screenshot */ = {
+			isa = PBXGroup;
+			children = (
+				1A2B3C4D5E6F700000000102 /* SystemScreenshotCapturer.swift */,
+				1A2B3C4D5E6F700000000103 /* ScreenshotController.swift */,
+			);
+			path = Screenshot;
+			sourceTree = "<group>";
+		};
 		1A2B3C4D5E6F700000000017 /* Tests */ = {
 			isa = PBXGroup;
 			children = (
@@ -228,6 +257,8 @@
 			isa = PBXGroup;
 			children = (
 				1A2B3C4D5E6F700000000067 /* Calendar */,
+				1A2B3C4D5E6F700000000112 /* HotKey */,
+				1A2B3C4D5E6F700000000106 /* Screenshot */,
 			);
 			path = Features;
 			sourceTree = "<group>";
@@ -240,6 +271,22 @@
 				1A2B3C4D5E6F700000000058 /* CalendarMonthOutlineBuilderTests.swift */,
 			);
 			path = Calendar;
+			sourceTree = "<group>";
+		};
+		1A2B3C4D5E6F700000000112 /* HotKey */ = {
+			isa = PBXGroup;
+			children = (
+				1A2B3C4D5E6F700000000110 /* GlobalHotKeyControllerTests.swift */,
+			);
+			path = HotKey;
+			sourceTree = "<group>";
+		};
+		1A2B3C4D5E6F700000000106 /* Screenshot */ = {
+			isa = PBXGroup;
+			children = (
+				1A2B3C4D5E6F700000000104 /* ScreenshotControllerTests.swift */,
+			);
+			path = Screenshot;
 			sourceTree = "<group>";
 		};
 		1A2B3C4D5E6F700000000068 /* Shell */ = {
@@ -390,6 +437,9 @@
 				1A2B3C4D5E6F700000000079 /* CalendarPopoverShapes.swift in Sources */,
 				1A2B3C4D5E6F700000000091 /* GlobalInputSourceLock.swift in Sources */,
 				1A2B3C4D5E6F700000000094 /* UpdateChecker.swift in Sources */,
+				1A2B3C4D5E6F700000000107 /* GlobalHotKeyController.swift in Sources */,
+				1A2B3C4D5E6F700000000099 /* SystemScreenshotCapturer.swift in Sources */,
+				1A2B3C4D5E6F700000000100 /* ScreenshotController.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -401,6 +451,8 @@
 				1A2B3C4D5E6F700000000043 /* CalendarDisplayFormatterTests.swift in Sources */,
 				1A2B3C4D5E6F700000000057 /* CalendarMonthOutlineBuilderTests.swift in Sources */,
 				1A2B3C4D5E6F700000000055 /* StatusBarInteractionRouterTests.swift in Sources */,
+				1A2B3C4D5E6F700000000101 /* ScreenshotControllerTests.swift in Sources */,
+				1A2B3C4D5E6F700000000108 /* GlobalHotKeyControllerTests.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

@@ -3,7 +3,7 @@ import CoreGraphics
 enum StatusBarMenuMetrics {
     static let bodyColorName = "nearWhite"
     static let bodyWidth: CGFloat = 106
-    static let bodyHeight: CGFloat = 66
+    static let bodyHeight: CGFloat = 93
     static let bodyVerticalPadding: CGFloat = 6
     static let rowHeight: CGFloat = 27
     static let rowOuterInset: CGFloat = 4

@@ -3,13 +3,18 @@ import SwiftUI
 
 @MainActor
 final class StatusBarMenuPanelController {
+    private let screenshotAction: () -> Void
     private let checkForUpdatesAction: () -> Void
     private var panel: NSPanel?
     private var localEventMonitor: Any?
     private var globalEventMonitor: Any?
     private var resignActiveObserver: NSObjectProtocol?
 
-    init(checkForUpdatesAction: @escaping () -> Void) {
+    init(
+        screenshotAction: @escaping () -> Void,
+        checkForUpdatesAction: @escaping () -> Void
+    ) {
+        self.screenshotAction = screenshotAction
         self.checkForUpdatesAction = checkForUpdatesAction
     }
 
@@ -59,6 +64,10 @@ final class StatusBarMenuPanelController {
         panel.collectionBehavior = [.canJoinAllSpaces, .fullScreenAuxiliary, .transient]
         panel.contentView = NSHostingView(
             rootView: StatusBarMenuView(
+                screenshotAction: { [weak self] in
+                    self?.close()
+                    self?.screenshotAction()
+                },
                 checkForUpdatesAction: { [weak self] in
                     self?.close()
                     self?.checkForUpdatesAction()
