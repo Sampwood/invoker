@@ -5,27 +5,75 @@ final class StatusBarController: NSObject {
     private let statusItem: NSStatusItem
     private let popoverController: CalendarPopoverPanelController
     private let screenshotController: ScreenshotController
+    private let translationSettings: TranslationSettingsStore
+    private let translationViewModel: TranslationViewModel
+    private let selectedTextReader: SelectedTextReading
     private let updateChecker = UpdateChecker()
-    private lazy var screenshotHotKeyController = GlobalHotKeyController { [weak self] in
+    private lazy var translationSettingsWindowController = TranslationSettingsWindowController(
+        settings: translationSettings
+    )
+    private lazy var translationPanelController = TranslationPanelController(
+        viewModel: translationViewModel,
+        openSettingsAction: { [weak self] in
+            self?.showTranslationSettings()
+        },
+        openAccessibilitySettingsAction: { [weak self] in
+            self?.selectedTextReader.openAccessibilitySettings()
+        }
+    )
+    private lazy var screenshotHotKeyController = GlobalHotKeyController(
+        configuration: .screenshot
+    ) { [weak self] in
         self?.captureSelectionToClipboard()
     }
+    private lazy var translationHotKeyController = GlobalHotKeyController(
+        configuration: .selectionTranslation
+    ) { [weak self] in
+        self?.translateSelectedText()
+    }
     private lazy var menuController = StatusBarMenuPanelController(
+        translationAction: { [weak self] in
+            self?.showManualTranslation()
+        },
         screenshotAction: { [weak self] in
             self?.captureSelectionToClipboard()
+        },
+        settingsAction: { [weak self] in
+            self?.showTranslationSettings()
         },
         checkForUpdatesAction: { [weak self] in
             self?.updateChecker.checkForUpdates()
         }
     )
 
-    override init() {
+    override convenience init() {
+        let translationSettings = TranslationSettingsStore()
+        self.init(
+            translationSettings: translationSettings,
+            translationProviderRegistry: TranslationProviderRegistry(settings: translationSettings),
+            selectedTextReader: AccessibilitySelectedTextReader()
+        )
+    }
+
+    init(
+        translationSettings: TranslationSettingsStore,
+        translationProviderRegistry: TranslationProviderResolving,
+        selectedTextReader: SelectedTextReading
+    ) {
         statusItem = NSStatusBar.system.statusItem(withLength: CalendarStatusIconMetrics.statusItemLength)
         popoverController = CalendarPopoverPanelController()
         screenshotController = ScreenshotController()
+        self.translationSettings = translationSettings
+        translationViewModel = TranslationViewModel(
+            settings: translationSettings,
+            providerRegistry: translationProviderRegistry
+        )
+        self.selectedTextReader = selectedTextReader
         super.init()
 
         configureStatusItem()
-        registerScreenshotHotKey()
+        registerHotKey(screenshotHotKeyController, configuration: .screenshot)
+        registerHotKey(translationHotKeyController, configuration: .selectionTranslation)
     }
 
     private func configureStatusItem() {
@@ -75,18 +123,55 @@ final class StatusBarController: NSObject {
         }
     }
 
-    private func registerScreenshotHotKey() {
+    private func showManualTranslation() {
+        popoverController.close()
+        menuController.close()
+        translationViewModel.prepareManualInput()
+        translationPanelController.show()
+    }
+
+    private func translateSelectedText() {
+        popoverController.close()
+        menuController.close()
+
         do {
-            try screenshotHotKeyController.register()
+            let text = try selectedTextReader.selectedText(promptForPermission: true)
+            translationViewModel.prepareSelectedText(text)
+            translationPanelController.show()
+            translationViewModel.startTranslation()
+        } catch TranslationError.accessibilityPermissionRequired {
+            translationViewModel.prepareManualInput(notice: .accessibilityPermissionRequired)
+            translationPanelController.show()
         } catch {
-            presentHotKeyRegistrationFailure(error)
+            translationViewModel.prepareManualInput(notice: .noSelectedText)
+            translationPanelController.show()
         }
     }
 
-    private func presentHotKeyRegistrationFailure(_ error: Error) {
+    private func showTranslationSettings() {
+        popoverController.close()
+        menuController.close()
+        translationSettingsWindowController.show()
+    }
+
+    private func registerHotKey(
+        _ controller: GlobalHotKeyController,
+        configuration: GlobalHotKeyConfiguration
+    ) {
+        do {
+            try controller.register()
+        } catch {
+            presentHotKeyRegistrationFailure(error, configuration: configuration)
+        }
+    }
+
+    private func presentHotKeyRegistrationFailure(
+        _ error: Error,
+        configuration: GlobalHotKeyConfiguration
+    ) {
         let alert = NSAlert()
-        alert.messageText = "截图快捷键注册失败"
-        alert.informativeText = "Shift + Command + X 可能已被系统或其他应用占用。\n\n\(error.localizedDescription)"
+        alert.messageText = "\(configuration.displayName)快捷键注册失败"
+        alert.informativeText = "\(configuration.shortcutDescription) 可能已被系统或其他应用占用。\n\n\(error.localizedDescription)"
         alert.alertStyle = .warning
         alert.addButton(withTitle: "好")
 

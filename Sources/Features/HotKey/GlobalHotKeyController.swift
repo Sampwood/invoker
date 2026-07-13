@@ -5,11 +5,23 @@ struct GlobalHotKeyConfiguration: Equatable {
     let keyCode: UInt32
     let modifiers: UInt32
     let identifier: EventHotKeyID
+    let displayName: String
+    let shortcutDescription: String
 
     static let screenshot = GlobalHotKeyConfiguration(
         keyCode: UInt32(kVK_ANSI_X),
         modifiers: UInt32(cmdKey | shiftKey),
-        identifier: EventHotKeyID(signature: OSType(0x494E_564B), id: UInt32(1))
+        identifier: EventHotKeyID(signature: OSType(0x494E_564B), id: UInt32(1)),
+        displayName: "截图",
+        shortcutDescription: "Shift + Command + X"
+    )
+
+    static let selectionTranslation = GlobalHotKeyConfiguration(
+        keyCode: UInt32(kVK_ANSI_F),
+        modifiers: UInt32(optionKey),
+        identifier: EventHotKeyID(signature: OSType(0x494E_564B), id: UInt32(2)),
+        displayName: "翻译",
+        shortcutDescription: "Option + F"
     )
 
     static func == (lhs: GlobalHotKeyConfiguration, rhs: GlobalHotKeyConfiguration) -> Bool {
@@ -17,19 +29,21 @@ struct GlobalHotKeyConfiguration: Equatable {
             && lhs.modifiers == rhs.modifiers
             && lhs.identifier.signature == rhs.identifier.signature
             && lhs.identifier.id == rhs.identifier.id
+            && lhs.displayName == rhs.displayName
+            && lhs.shortcutDescription == rhs.shortcutDescription
     }
 }
 
 enum GlobalHotKeyRegistrationError: LocalizedError, Equatable, Sendable {
     case eventHandlerInstallFailed(OSStatus)
-    case hotKeyRegistrationFailed(OSStatus)
+    case hotKeyRegistrationFailed(OSStatus, shortcutDescription: String)
 
     var errorDescription: String? {
         switch self {
         case let .eventHandlerInstallFailed(status):
             return "无法安装快捷键事件处理器，错误码：\(status)。"
-        case let .hotKeyRegistrationFailed(status):
-            return "无法注册 Shift + Command + X，错误码：\(status)。"
+        case let .hotKeyRegistrationFailed(status, shortcutDescription):
+            return "无法注册 \(shortcutDescription)，错误码：\(status)。"
         }
     }
 }
@@ -84,7 +98,10 @@ final class GlobalHotKeyController {
         )
         guard registrationStatus == noErr else {
             unregister()
-            throw GlobalHotKeyRegistrationError.hotKeyRegistrationFailed(registrationStatus)
+            throw GlobalHotKeyRegistrationError.hotKeyRegistrationFailed(
+                registrationStatus,
+                shortcutDescription: configuration.shortcutDescription
+            )
         }
     }
 

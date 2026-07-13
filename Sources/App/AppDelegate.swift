@@ -7,11 +7,26 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
 
     func applicationDidFinishLaunching(_ notification: Notification) {
         NSApp.setActivationPolicy(.accessory)
+        configureMainMenu()
         inputSourceLock.start()
         statusBarController = StatusBarController()
     }
 
     func applicationWillTerminate(_ notification: Notification) {
         inputSourceLock.stop()
+    }
+
+    private func configureMainMenu() {
+        let mainMenu = NSMenu()
+        let editMenuItem = NSMenuItem()
+        let editMenu = NSMenu(title: "编辑")
+        editMenu.addItem(
+            withTitle: "粘贴",
+            action: #selector(NSText.paste(_:)),
+            keyEquivalent: "v"
+        )
+        editMenuItem.submenu = editMenu
+        mainMenu.addItem(editMenuItem)
+        NSApp.mainMenu = mainMenu
     }
 }

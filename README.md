@@ -1,6 +1,6 @@
 # Invoker
 
-Invoker is a macOS menu bar app. The current version focuses on a compact calendar popover with month navigation, today highlighting, date selection, and a lightweight right-click menu.
+Invoker is a macOS menu bar app. It combines a compact calendar, selection screenshots, and a lightweight translation panel with OpenAI-compatible AI and DeepL providers.
 
 ## Requirements
 
@@ -15,7 +15,10 @@ Sources/
   App/                 App entry point and delegate
   Features/
     Calendar/          Calendar model, formatting, status icon, and popover UI
+    HotKey/            Global screenshot and selection-translation shortcuts
     InputSource/       Global input source lock
+    Screenshot/        Interactive selection capture to the clipboard
+    Translation/       Translation providers, secure settings, selection reading, and UI
     Updates/           GitHub Releases update checker
   Shell/
     Popover/           Popover panel positioning
@@ -30,6 +33,20 @@ scripts/               Local development helpers
 Open `Invoker.xcodeproj` in Xcode and run the `Invoker` scheme.
 
 The app is configured as a menu bar utility through `LSUIElement = YES`, so it does not show a Dock icon or main window. Left-click the menu bar icon to open the calendar popover. Right-click it to open the app menu.
+
+## Translation
+
+Choose `翻译...` from the right-click menu to open the translation panel for manual input. Select text in another application and press `Option + F` to read the current Accessibility selection, open the panel, and translate immediately. Invoker does not simulate `Command + C` or alter the clipboard while reading a selection.
+
+Translation settings are available from `设置...` in the right-click menu:
+
+- `AI` uses the OpenAI-compatible Responses API. Configure the provider's `base_url`, model, and optional API key; Invoker appends `/responses` while preserving a versioned custom base path. For example, the cc-switch configuration `base_url = "https://api.krill-ai.com/codex/v1"` maps to `https://api.krill-ai.com/codex/v1/responses`. A non-empty API key sends `Authorization: Bearer ...`, equivalent to `requires_openai_auth = true`; an empty key omits that header for local services. The default base URL is `https://api.openai.com/v1`.
+- `DeepL` uses only the official DeepL API. Keys ending in `:fx` use the Free API host; other keys use the Pro API host.
+- The default smart language pair is Simplified Chinese and English. When the detected source matches the preferred language, Invoker targets the secondary language; otherwise it targets the preferred language.
+
+The selection shortcut requires macOS Accessibility permission. If permission or selected text is unavailable, Invoker opens the input panel without using a clipboard fallback. API keys are stored in macOS Keychain. Source text is sent only to the provider selected for the current request; Invoker does not keep translation history or cache network responses.
+
+The product flow and provider boundaries are informed by [Easydict](https://github.com/tisfeng/Easydict). Invoker does not copy Easydict source code, prompts, artwork, or icons.
 
 ## Testing
 

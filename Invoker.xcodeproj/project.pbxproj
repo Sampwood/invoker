@@ -40,6 +40,22 @@
 		1A2B3C4D5E6F700000000101 /* ScreenshotControllerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1A2B3C4D5E6F700000000104 /* ScreenshotControllerTests.swift */; };
 		1A2B3C4D5E6F700000000107 /* GlobalHotKeyController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1A2B3C4D5E6F700000000109 /* GlobalHotKeyController.swift */; };
 		1A2B3C4D5E6F700000000108 /* GlobalHotKeyControllerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1A2B3C4D5E6F700000000110 /* GlobalHotKeyControllerTests.swift */; };
+		1A2B3C4D5E6F700000000131 /* TranslationModels.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1A2B3C4D5E6F700000000113 /* TranslationModels.swift */; };
+		1A2B3C4D5E6F700000000132 /* TranslationSettingsStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1A2B3C4D5E6F700000000114 /* TranslationSettingsStore.swift */; };
+		1A2B3C4D5E6F700000000133 /* KeychainStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1A2B3C4D5E6F700000000115 /* KeychainStore.swift */; };
+		1A2B3C4D5E6F700000000134 /* TranslationNetworkSupport.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1A2B3C4D5E6F700000000116 /* TranslationNetworkSupport.swift */; };
+		1A2B3C4D5E6F700000000135 /* OpenAICompatibleTranslationProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1A2B3C4D5E6F700000000117 /* OpenAICompatibleTranslationProvider.swift */; };
+		1A2B3C4D5E6F700000000136 /* DeepLTranslationProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1A2B3C4D5E6F700000000118 /* DeepLTranslationProvider.swift */; };
+		1A2B3C4D5E6F700000000137 /* TranslationProviderRegistry.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1A2B3C4D5E6F700000000119 /* TranslationProviderRegistry.swift */; };
+		1A2B3C4D5E6F700000000138 /* SelectedTextReader.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1A2B3C4D5E6F700000000120 /* SelectedTextReader.swift */; };
+		1A2B3C4D5E6F700000000139 /* TranslationViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1A2B3C4D5E6F700000000121 /* TranslationViewModel.swift */; };
+		1A2B3C4D5E6F700000000140 /* TranslationView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1A2B3C4D5E6F700000000122 /* TranslationView.swift */; };
+		1A2B3C4D5E6F700000000141 /* TranslationPanelController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1A2B3C4D5E6F700000000123 /* TranslationPanelController.swift */; };
+		1A2B3C4D5E6F700000000142 /* TranslationSettingsWindow.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1A2B3C4D5E6F700000000124 /* TranslationSettingsWindow.swift */; };
+		1A2B3C4D5E6F700000000143 /* TranslationLanguageResolverTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1A2B3C4D5E6F700000000125 /* TranslationLanguageResolverTests.swift */; };
+		1A2B3C4D5E6F700000000144 /* TranslationProviderTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1A2B3C4D5E6F700000000126 /* TranslationProviderTests.swift */; };
+		1A2B3C4D5E6F700000000145 /* TranslationSettingsStoreTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1A2B3C4D5E6F700000000127 /* TranslationSettingsStoreTests.swift */; };
+		1A2B3C4D5E6F700000000146 /* TranslationViewModelTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1A2B3C4D5E6F700000000128 /* TranslationViewModelTests.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -89,6 +105,22 @@
 		1A2B3C4D5E6F700000000104 /* ScreenshotControllerTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ScreenshotControllerTests.swift; sourceTree = "<group>"; };
 		1A2B3C4D5E6F700000000109 /* GlobalHotKeyController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GlobalHotKeyController.swift; sourceTree = "<group>"; };
 		1A2B3C4D5E6F700000000110 /* GlobalHotKeyControllerTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GlobalHotKeyControllerTests.swift; sourceTree = "<group>"; };
+		1A2B3C4D5E6F700000000113 /* TranslationModels.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TranslationModels.swift; sourceTree = "<group>"; };
+		1A2B3C4D5E6F700000000114 /* TranslationSettingsStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TranslationSettingsStore.swift; sourceTree = "<group>"; };
+		1A2B3C4D5E6F700000000115 /* KeychainStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KeychainStore.swift; sourceTree = "<group>"; };
+		1A2B3C4D5E6F700000000116 /* TranslationNetworkSupport.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TranslationNetworkSupport.swift; sourceTree = "<group>"; };
+		1A2B3C4D5E6F700000000117 /* OpenAICompatibleTranslationProvider.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OpenAICompatibleTranslationProvider.swift; sourceTree = "<group>"; };
+		1A2B3C4D5E6F700000000118 /* DeepLTranslationProvider.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DeepLTranslationProvider.swift; sourceTree = "<group>"; };
+		1A2B3C4D5E6F700000000119 /* TranslationProviderRegistry.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TranslationProviderRegistry.swift; sourceTree = "<group>"; };
+		1A2B3C4D5E6F700000000120 /* SelectedTextReader.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SelectedTextReader.swift; sourceTree = "<group>"; };
+		1A2B3C4D5E6F700000000121 /* TranslationViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TranslationViewModel.swift; sourceTree = "<group>"; };
+		1A2B3C4D5E6F700000000122 /* TranslationView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TranslationView.swift; sourceTree = "<group>"; };
+		1A2B3C4D5E6F700000000123 /* TranslationPanelController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TranslationPanelController.swift; sourceTree = "<group>"; };
+		1A2B3C4D5E6F700000000124 /* TranslationSettingsWindow.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TranslationSettingsWindow.swift; sourceTree = "<group>"; };
+		1A2B3C4D5E6F700000000125 /* TranslationLanguageResolverTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TranslationLanguageResolverTests.swift; sourceTree = "<group>"; };
+		1A2B3C4D5E6F700000000126 /* TranslationProviderTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TranslationProviderTests.swift; sourceTree = "<group>"; };
+		1A2B3C4D5E6F700000000127 /* TranslationSettingsStoreTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TranslationSettingsStoreTests.swift; sourceTree = "<group>"; };
+		1A2B3C4D5E6F700000000128 /* TranslationViewModelTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TranslationViewModelTests.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
@@ -178,6 +210,7 @@
 				1A2B3C4D5E6F700000000042 /* Calendar */,
 				1A2B3C4D5E6F700000000111 /* HotKey */,
 				1A2B3C4D5E6F700000000105 /* Screenshot */,
+				1A2B3C4D5E6F700000000129 /* Translation */,
 				1A2B3C4D5E6F700000000093 /* InputSource */,
 				1A2B3C4D5E6F700000000096 /* Updates */,
 			);
@@ -244,6 +277,25 @@
 			path = Screenshot;
 			sourceTree = "<group>";
 		};
+		1A2B3C4D5E6F700000000129 /* Translation */ = {
+			isa = PBXGroup;
+			children = (
+				1A2B3C4D5E6F700000000113 /* TranslationModels.swift */,
+				1A2B3C4D5E6F700000000114 /* TranslationSettingsStore.swift */,
+				1A2B3C4D5E6F700000000115 /* KeychainStore.swift */,
+				1A2B3C4D5E6F700000000116 /* TranslationNetworkSupport.swift */,
+				1A2B3C4D5E6F700000000117 /* OpenAICompatibleTranslationProvider.swift */,
+				1A2B3C4D5E6F700000000118 /* DeepLTranslationProvider.swift */,
+				1A2B3C4D5E6F700000000119 /* TranslationProviderRegistry.swift */,
+				1A2B3C4D5E6F700000000120 /* SelectedTextReader.swift */,
+				1A2B3C4D5E6F700000000121 /* TranslationViewModel.swift */,
+				1A2B3C4D5E6F700000000122 /* TranslationView.swift */,
+				1A2B3C4D5E6F700000000123 /* TranslationPanelController.swift */,
+				1A2B3C4D5E6F700000000124 /* TranslationSettingsWindow.swift */,
+			);
+			path = Translation;
+			sourceTree = "<group>";
+		};
 		1A2B3C4D5E6F700000000017 /* Tests */ = {
 			isa = PBXGroup;
 			children = (
@@ -259,6 +311,7 @@
 				1A2B3C4D5E6F700000000067 /* Calendar */,
 				1A2B3C4D5E6F700000000112 /* HotKey */,
 				1A2B3C4D5E6F700000000106 /* Screenshot */,
+				1A2B3C4D5E6F700000000130 /* Translation */,
 			);
 			path = Features;
 			sourceTree = "<group>";
@@ -287,6 +340,17 @@
 				1A2B3C4D5E6F700000000104 /* ScreenshotControllerTests.swift */,
 			);
 			path = Screenshot;
+			sourceTree = "<group>";
+		};
+		1A2B3C4D5E6F700000000130 /* Translation */ = {
+			isa = PBXGroup;
+			children = (
+				1A2B3C4D5E6F700000000125 /* TranslationLanguageResolverTests.swift */,
+				1A2B3C4D5E6F700000000126 /* TranslationProviderTests.swift */,
+				1A2B3C4D5E6F700000000127 /* TranslationSettingsStoreTests.swift */,
+				1A2B3C4D5E6F700000000128 /* TranslationViewModelTests.swift */,
+			);
+			path = Translation;
 			sourceTree = "<group>";
 		};
 		1A2B3C4D5E6F700000000068 /* Shell */ = {
@@ -440,6 +504,18 @@
 				1A2B3C4D5E6F700000000107 /* GlobalHotKeyController.swift in Sources */,
 				1A2B3C4D5E6F700000000099 /* SystemScreenshotCapturer.swift in Sources */,
 				1A2B3C4D5E6F700000000100 /* ScreenshotController.swift in Sources */,
+				1A2B3C4D5E6F700000000131 /* TranslationModels.swift in Sources */,
+				1A2B3C4D5E6F700000000132 /* TranslationSettingsStore.swift in Sources */,
+				1A2B3C4D5E6F700000000133 /* KeychainStore.swift in Sources */,
+				1A2B3C4D5E6F700000000134 /* TranslationNetworkSupport.swift in Sources */,
+				1A2B3C4D5E6F700000000135 /* OpenAICompatibleTranslationProvider.swift in Sources */,
+				1A2B3C4D5E6F700000000136 /* DeepLTranslationProvider.swift in Sources */,
+				1A2B3C4D5E6F700000000137 /* TranslationProviderRegistry.swift in Sources */,
+				1A2B3C4D5E6F700000000138 /* SelectedTextReader.swift in Sources */,
+				1A2B3C4D5E6F700000000139 /* TranslationViewModel.swift in Sources */,
+				1A2B3C4D5E6F700000000140 /* TranslationView.swift in Sources */,
+				1A2B3C4D5E6F700000000141 /* TranslationPanelController.swift in Sources */,
+				1A2B3C4D5E6F700000000142 /* TranslationSettingsWindow.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -453,6 +529,10 @@
 				1A2B3C4D5E6F700000000055 /* StatusBarInteractionRouterTests.swift in Sources */,
 				1A2B3C4D5E6F700000000101 /* ScreenshotControllerTests.swift in Sources */,
 				1A2B3C4D5E6F700000000108 /* GlobalHotKeyControllerTests.swift in Sources */,
+				1A2B3C4D5E6F700000000143 /* TranslationLanguageResolverTests.swift in Sources */,
+				1A2B3C4D5E6F700000000144 /* TranslationProviderTests.swift in Sources */,
+				1A2B3C4D5E6F700000000145 /* TranslationSettingsStoreTests.swift in Sources */,
+				1A2B3C4D5E6F700000000146 /* TranslationViewModelTests.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
