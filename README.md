@@ -65,14 +65,9 @@ GitHub Actions runs the same test command on pushes to `main` and on pull reques
 
 ## Release
 
-Create and push a version tag to publish a release:
+Publish releases from the GitHub Releases page. Choose a new tag such as `v1.0.0`, target the commit to release, select **Set as a pre-release**, and publish it. Do not publish it as a stable release initially: the Sparkle feed uses GitHub's `latest` release, which must not point at a release before its signed assets are ready.
 
-```bash
-git tag v1.0.0
-git push origin v1.0.0
-```
-
-The release workflow builds the `Invoker` scheme in Release configuration, sets `MARKETING_VERSION` from the tag name, applies ad-hoc code signing, packages `Invoker.app` into a DMG with an `Applications` shortcut, signs the update archive and feed with Sparkle EdDSA, and uploads both the DMG and `appcast.xml` to a GitHub Release.
+The `published` release event starts the release workflow. It checks out the release tag, builds the `Invoker` scheme in Release configuration, sets `MARKETING_VERSION` from the tag name, applies ad-hoc code signing, packages `Invoker.app` into a DMG with an `Applications` shortcut, and signs the update archive and feed with Sparkle EdDSA. After all validation succeeds, the workflow uploads the DMG and `appcast.xml` to that same pre-release and promotes it to the stable latest release. If the build or validation fails, the release remains a pre-release and the previous stable Sparkle feed stays available.
 
 Current release DMGs contain an ad-hoc signed app and are not Apple notarized. The first Sparkle-enabled release is `v0.1.4`; existing users must download and install that bridge release manually and may need to approve it once in System Settings. Starting with `v0.1.5`, users who already have a Sparkle-enabled build should update in-app instead of downloading each DMG again. For a fully trusted first-install flow, add Developer ID signing, hardened runtime, notarization with `notarytool`, and stapling before publishing.
 

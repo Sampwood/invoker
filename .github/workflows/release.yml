@@ -1,9 +1,9 @@
 name: Release
 
 on:
-  push:
-    tags:
-      - 'v*'
+  release:
+    types:
+      - published
 
 permissions:
   contents: write
@@ -16,16 +16,26 @@ jobs:
     env:
       APP_NAME: Invoker
       DERIVED_DATA_PATH: .build/DerivedData
+      RELEASE_TAG: ${{ github.event.release.tag_name }}
+      IS_PRERELEASE: ${{ github.event.release.prerelease }}
 
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.release.tag_name }}
 
       - name: Show Xcode version
         run: xcodebuild -version
 
-      - name: Resolve version
-        run: echo "VERSION=${GITHUB_REF_NAME#v}" >> "$GITHUB_ENV"
+      - name: Verify pre-release and resolve version
+        run: |
+          test "$IS_PRERELEASE" = "true"
+          case "$RELEASE_TAG" in
+            v?*) ;;
+            *) echo "Release tag must start with v and include a version: $RELEASE_TAG" >&2; exit 1 ;;
+          esac
+          echo "VERSION=${RELEASE_TAG#v}" >> "$GITHUB_ENV"
 
       - name: Verify Sparkle signing key
         env:
@@ -53,7 +63,7 @@ jobs:
         run: |
           APP_PATH="$DERIVED_DATA_PATH/Build/Products/Release/$APP_NAME.app"
           STAGING_DIR="$RUNNER_TEMP/dmg-staging"
-          DMG_PATH="$RUNNER_TEMP/$APP_NAME-${GITHUB_REF_NAME}.dmg"
+          DMG_PATH="$RUNNER_TEMP/$APP_NAME-${RELEASE_TAG}.dmg"
 
           rm -rf "$STAGING_DIR"
           mkdir -p "$STAGING_DIR"
@@ -92,7 +102,7 @@ jobs:
 
           printf '%s' "$SPARKLE_PRIVATE_KEY" | "$GENERATE_APPCAST" \
             --ed-key-file - \
-            --download-url-prefix "https://github.com/${GITHUB_REPOSITORY}/releases/download/${GITHUB_REF_NAME}/" \
+            --download-url-prefix "https://github.com/${GITHUB_REPOSITORY}/releases/download/${RELEASE_TAG}/" \
             --link "https://github.com/${GITHUB_REPOSITORY}" \
             --maximum-versions 1 \
             --maximum-deltas 0 \
@@ -105,16 +115,25 @@ jobs:
           grep -Fq 'sparkle-signatures:' "$APPCAST_PATH"
           grep -Fq "<sparkle:shortVersionString>${VERSION}</sparkle:shortVersionString>" "$APPCAST_PATH"
           grep -Fq "<sparkle:version>${GITHUB_RUN_NUMBER}</sparkle:version>" "$APPCAST_PATH"
-          grep -Fq "https://github.com/${GITHUB_REPOSITORY}/releases/download/${GITHUB_REF_NAME}/$(basename "$DMG_PATH")" "$APPCAST_PATH"
+          grep -Fq "https://github.com/${GITHUB_REPOSITORY}/releases/download/${RELEASE_TAG}/$(basename "$DMG_PATH")" "$APPCAST_PATH"
 
           echo "APPCAST_PATH=$APPCAST_PATH" >> "$GITHUB_ENV"
 
-      - name: Create GitHub Release
+      - name: Upload assets and publish release
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
-          gh release create "$GITHUB_REF_NAME" \
-            "$DMG_PATH#$APP_NAME-${GITHUB_REF_NAME}.dmg" \
+          gh release upload "$RELEASE_TAG" \
+            "$DMG_PATH#$APP_NAME-${RELEASE_TAG}.dmg" \
             "$APPCAST_PATH#appcast.xml" \
-            --title "$APP_NAME $GITHUB_REF_NAME" \
-            --notes "Ad-hoc signed macOS build. First-time installation may require manual Gatekeeper approval. Existing Sparkle-enabled installations should update from Invoker's in-app Check for Updates command instead of downloading the DMG again."
+            --clobber
+
+          RELEASE_NOTES_PATH="$RUNNER_TEMP/release-notes.md"
+          RELEASE_NOTICE="Ad-hoc signed macOS build. First-time installation may require manual Gatekeeper approval. Existing Sparkle-enabled installations should update from Invoker's in-app Check for Updates command instead of downloading the DMG again."
+          gh release view "$RELEASE_TAG" --json body --jq '.body' > "$RELEASE_NOTES_PATH"
+          grep -Fq "$RELEASE_NOTICE" "$RELEASE_NOTES_PATH" || printf '\n\n%s\n' "$RELEASE_NOTICE" >> "$RELEASE_NOTES_PATH"
+
+          gh release edit "$RELEASE_TAG" \
+            --notes-file "$RELEASE_NOTES_PATH" \
+            --prerelease=false \
+            --latest
