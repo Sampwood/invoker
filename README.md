@@ -19,7 +19,7 @@ Sources/
     InputSource/       Global input source lock
     Screenshot/        Interactive selection capture to the clipboard
     Translation/       Translation providers, secure settings, selection reading, and UI
-    Updates/           GitHub Releases update checker
+    Updates/           Sparkle in-app updater
   Shell/
     Popover/           Popover panel positioning
     StatusBar/         Status bar item and context menu
@@ -72,18 +72,22 @@ git tag v1.0.0
 git push origin v1.0.0
 ```
 
-The release workflow builds the `Invoker` scheme in Release configuration, sets `MARKETING_VERSION` from the tag name, applies ad-hoc code signing, packages `Invoker.app` into a DMG with an `Applications` shortcut, and uploads it to a GitHub Release.
+The release workflow builds the `Invoker` scheme in Release configuration, sets `MARKETING_VERSION` from the tag name, applies ad-hoc code signing, packages `Invoker.app` into a DMG with an `Applications` shortcut, signs the update archive and feed with Sparkle EdDSA, and uploads both the DMG and `appcast.xml` to a GitHub Release.
 
-Current release DMGs contain an ad-hoc signed app and are not Apple notarized. After downloading, macOS may warn that the developer cannot be verified or may require manual approval in System Settings. For a fully trusted distribution flow, add Developer ID signing, hardened runtime, notarization with `notarytool`, and stapling before publishing.
+Current release DMGs contain an ad-hoc signed app and are not Apple notarized. The first Sparkle-enabled release is `v0.1.4`; existing users must download and install that bridge release manually and may need to approve it once in System Settings. Starting with `v0.1.5`, users who already have a Sparkle-enabled build should update in-app instead of downloading each DMG again. For a fully trusted first-install flow, add Developer ID signing, hardened runtime, notarization with `notarytool`, and stapling before publishing.
 
-## Update Checks
+Before publishing the bridge release, generate a project-specific Sparkle Ed25519 key using the account name `com.sampwood.invoker`, keep the private key in the login Keychain and an encrypted backup, and configure the exported private key as the `SPARKLE_PRIVATE_KEY` GitHub Actions secret. Only the corresponding public key belongs in `Info.plist`; never commit or log the private key. The release workflow intentionally fails before publishing when the secret is missing.
 
-Invoker includes a manual update check in the right-click menu. It requests the latest release from:
+## In-App Updates
+
+Invoker uses Sparkle 2.9.4 and reads its signed update feed from:
 
 ```text
-https://api.github.com/repos/Sampwood/invoker/releases/latest
+https://github.com/Sampwood/invoker/releases/latest/download/appcast.xml
 ```
 
-The app compares the latest release tag, such as `v1.0.1`, with `CFBundleShortVersionString` from the app bundle. When a newer version is available, it prompts the user and opens the GitHub Release page. Invoker does not automatically download, install, or replace the local app.
+Sparkle checks for updates in the background at an hourly interval, and the right-click menu keeps its manual `检查更新...` action. Updates require user confirmation. Sparkle verifies both the signed feed and the DMG before extraction, then replaces and relaunches the installed app. It does not fall back to opening a browser when verification or installation fails.
+
+Copy Invoker to `/Applications` before running it; do not run it directly from the read-only DMG. Sparkle may request administrator authorization when `/Applications` is not writable. That authorization is distinct from Gatekeeper's `仍要打开` approval.
 
 For local builds, update `MARKETING_VERSION` in the Xcode project when you want the app's local version to match a release tag.

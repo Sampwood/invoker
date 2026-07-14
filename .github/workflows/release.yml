@@ -24,9 +24,16 @@ jobs:
       - name: Show Xcode version
         run: xcodebuild -version
 
+      - name: Resolve version
+        run: echo "VERSION=${GITHUB_REF_NAME#v}" >> "$GITHUB_ENV"
+
+      - name: Verify Sparkle signing key
+        env:
+          SPARKLE_PRIVATE_KEY: ${{ secrets.SPARKLE_PRIVATE_KEY }}
+        run: test -n "$SPARKLE_PRIVATE_KEY"
+
       - name: Build Release app
         run: |
-          VERSION="${GITHUB_REF_NAME#v}"
           xcodebuild build \
             -project Invoker.xcodeproj \
             -scheme "$APP_NAME" \
@@ -62,11 +69,52 @@ jobs:
 
           echo "DMG_PATH=$DMG_PATH" >> "$GITHUB_ENV"
 
+      - name: Generate signed Sparkle appcast
+        env:
+          SPARKLE_PRIVATE_KEY: ${{ secrets.SPARKLE_PRIVATE_KEY }}
+        run: |
+          set -euo pipefail
+
+          SPARKLE_ARTIFACTS_DIR="$DERIVED_DATA_PATH/SourcePackages/artifacts"
+          test -d "$SPARKLE_ARTIFACTS_DIR"
+
+          GENERATE_APPCAST="$(find "$SPARKLE_ARTIFACTS_DIR" \
+            -path '*/Sparkle/bin/generate_appcast' \
+            -type f \
+            -print \
+            -quit)"
+          test -x "$GENERATE_APPCAST"
+
+          UPDATES_DIR="$RUNNER_TEMP/sparkle-updates"
+          APPCAST_PATH="$RUNNER_TEMP/appcast.xml"
+          mkdir -p "$UPDATES_DIR"
+          cp "$DMG_PATH" "$UPDATES_DIR/"
+
+          printf '%s' "$SPARKLE_PRIVATE_KEY" | "$GENERATE_APPCAST" \
+            --ed-key-file - \
+            --download-url-prefix "https://github.com/${GITHUB_REPOSITORY}/releases/download/${GITHUB_REF_NAME}/" \
+            --link "https://github.com/${GITHUB_REPOSITORY}" \
+            --maximum-versions 1 \
+            --maximum-deltas 0 \
+            -o "$APPCAST_PATH" \
+            "$UPDATES_DIR"
+
+          test -s "$APPCAST_PATH"
+          xmllint --noout "$APPCAST_PATH"
+          grep -Fq 'sparkle:edSignature=' "$APPCAST_PATH"
+          grep -Fq 'sparkle-signatures:' "$APPCAST_PATH"
+          grep -Fq "<sparkle:shortVersionString>${VERSION}</sparkle:shortVersionString>" "$APPCAST_PATH"
+          grep -Fq "<sparkle:version>${GITHUB_RUN_NUMBER}</sparkle:version>" "$APPCAST_PATH"
+          grep -Fq "https://github.com/${GITHUB_REPOSITORY}/releases/download/${GITHUB_REF_NAME}/$(basename "$DMG_PATH")" "$APPCAST_PATH"
+
+          echo "APPCAST_PATH=$APPCAST_PATH" >> "$GITHUB_ENV"
+
       - name: Create GitHub Release
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
           gh release create "$GITHUB_REF_NAME" \
             "$DMG_PATH#$APP_NAME-${GITHUB_REF_NAME}.dmg" \
+            "$APPCAST_PATH#appcast.xml" \
             --title "$APP_NAME $GITHUB_REF_NAME" \
-            --notes "Ad-hoc signed macOS build. This build is not Apple notarized, so macOS may require manual approval on first launch."
+            --notes "Ad-hoc signed macOS build. First-time installation may require manual Gatekeeper approval. Existing Sparkle-enabled installations should update from Invoker's in-app Check for Updates command instead of downloading the DMG again."

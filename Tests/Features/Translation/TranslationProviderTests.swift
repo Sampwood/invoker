@@ -92,8 +92,8 @@ final class TranslationProviderTests: XCTestCase {
             return URLProtocolStub.Response(
                 response: response,
                 chunks: [
-                    Data("event: response.output_text.delta\ndata: {\"type\":\"response.output_text.delta\",\"delta\":\"\u4f60\"}\n\n".utf8),
-                    Data("event: response.output_text.delta\ndata: {\"type\":\"response.output_text.delta\",\"delta\":\"\u597d\"}\n\n".utf8),
+                    Data("event: response.output_text.delta\ndata: {\"type\":\"response.output_text.delta\",\"delta\":\"\\u4f60\"}\n\n".utf8),
+                    Data("event: response.output_text.delta\ndata: {\"type\":\"response.output_text.delta\",\"delta\":\"\\u597d\"}\n\n".utf8),
                     Data("event: response.completed\ndata: {\"type\":\"response.completed\",\"response\":{\"id\":\"resp_1\"}}\n\n".utf8),
                 ]
             )
@@ -112,7 +112,7 @@ final class TranslationProviderTests: XCTestCase {
 
         XCTAssertEqual(
             events,
-            [.textDelta("\u4f60"), .textDelta("\u597d"), .completed(detectedSourceLanguage: nil)]
+            [.textDelta("你"), .textDelta("好"), .completed(detectedSourceLanguage: nil)]
         )
     }
 
@@ -129,7 +129,7 @@ final class TranslationProviderTests: XCTestCase {
                 )
             )
             let data = Data(
-                "{\"output\":[{\"type\":\"message\",\"role\":\"assistant\",\"content\":[{\"type\":\"output_text\",\"text\":\"\u4f60\u597d\"}]}]}".utf8
+                "{\"output\":[{\"type\":\"message\",\"role\":\"assistant\",\"content\":[{\"type\":\"output_text\",\"text\":\"\\u4f60\\u597d\"}]}]}".utf8
             )
             return URLProtocolStub.Response(response: response, chunks: [data])
         }
@@ -146,7 +146,7 @@ final class TranslationProviderTests: XCTestCase {
         )
 
         XCTAssertEqual(requestCount, 1)
-        XCTAssertEqual(events, [.textDelta("\u4f60\u597d"), .completed(detectedSourceLanguage: nil)])
+        XCTAssertEqual(events, [.textDelta("你好"), .completed(detectedSourceLanguage: nil)])
     }
 
     func testOpenAIRejectedEndpointSuggestsCorrectingSettings() async throws {
@@ -211,7 +211,7 @@ final class TranslationProviderTests: XCTestCase {
                 )
             )
             let data = Data(
-                "{\"translations\":[{\"detected_source_language\":\"EN\",\"text\":\"\u4f60\u597d\"}]}".utf8
+                "{\"translations\":[{\"detected_source_language\":\"EN\",\"text\":\"\\u4f60\\u597d\"}]}".utf8
             )
             return URLProtocolStub.Response(response: response, chunks: [data])
         }
@@ -232,7 +232,7 @@ final class TranslationProviderTests: XCTestCase {
 
         XCTAssertEqual(
             events,
-            [.textDelta("\u4f60\u597d"), .completed(detectedSourceLanguage: .english)]
+            [.textDelta("你好"), .completed(detectedSourceLanguage: .english)]
         )
     }
 
