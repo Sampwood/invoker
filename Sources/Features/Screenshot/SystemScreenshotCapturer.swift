@@ -1,13 +1,8 @@
 import Foundation
 
-enum ScreenshotCaptureOutcome: Equatable, Sendable {
-    case captured
-    case cancelled
-}
-
 @MainActor
 protocol ScreenshotCapturing: AnyObject {
-    func captureInteractiveSelectionToClipboard() async throws -> ScreenshotCaptureOutcome
+    func captureInteractiveSelectionToClipboard() async throws
 }
 
 struct ScreenshotCommandConfiguration: Equatable, Sendable {
@@ -28,7 +23,7 @@ final class SystemScreenshotCapturer: ScreenshotCapturing {
         self.configuration = configuration
     }
 
-    func captureInteractiveSelectionToClipboard() async throws -> ScreenshotCaptureOutcome {
+    func captureInteractiveSelectionToClipboard() async throws {
         try await withCheckedThrowingContinuation { continuation in
             let retention = ProcessRetention()
             let process = Process()
@@ -42,10 +37,8 @@ final class SystemScreenshotCapturer: ScreenshotCapturing {
                 }
 
                 switch process.terminationStatus {
-                case 0:
-                    continuation.resume(returning: .captured)
-                case 1:
-                    continuation.resume(returning: .cancelled)
+                case 0, 1:
+                    continuation.resume(returning: ())
                 default:
                     continuation.resume(throwing: ScreenshotCaptureError.unexpectedExit(process.terminationStatus))
                 }

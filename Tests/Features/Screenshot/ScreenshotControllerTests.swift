@@ -11,13 +11,12 @@ final class ScreenshotControllerTests: XCTestCase {
         XCTAssertEqual(ScreenshotCommandConfiguration.interactiveSelectionToClipboard.arguments, ["-i", "-c"])
     }
 
-    func testCapturedOutcomeClearsCaptureStateAndPresentsSuccess() async {
-        let capturer = FakeScreenshotCapturer(result: .success(.captured))
+    func testCompletedCaptureClearsCaptureStateWithoutFailure() async {
+        let capturer = FakeScreenshotCapturer(result: .success(()))
         let recorder = ScreenshotPresentationRecorder()
         let controller = ScreenshotController(
             capturer: capturer,
             startDelayNanoseconds: 0,
-            presentSuccess: recorder.presentSuccess,
             presentFailure: recorder.presentFailure
         )
 
@@ -25,25 +24,6 @@ final class ScreenshotControllerTests: XCTestCase {
 
         XCTAssertFalse(controller.isCaptureInProgress)
         XCTAssertEqual(capturer.captureCount, 1)
-        XCTAssertEqual(recorder.successCount, 1)
-        XCTAssertTrue(recorder.failures.isEmpty)
-    }
-
-    func testCancelledOutcomeClearsCaptureStateWithoutPresentation() async {
-        let capturer = FakeScreenshotCapturer(result: .success(.cancelled))
-        let recorder = ScreenshotPresentationRecorder()
-        let controller = ScreenshotController(
-            capturer: capturer,
-            startDelayNanoseconds: 0,
-            presentSuccess: recorder.presentSuccess,
-            presentFailure: recorder.presentFailure
-        )
-
-        await controller.captureSelectionToClipboard()
-
-        XCTAssertFalse(controller.isCaptureInProgress)
-        XCTAssertEqual(capturer.captureCount, 1)
-        XCTAssertEqual(recorder.successCount, 0)
         XCTAssertTrue(recorder.failures.isEmpty)
     }
 
@@ -53,7 +33,6 @@ final class ScreenshotControllerTests: XCTestCase {
         let controller = ScreenshotController(
             capturer: capturer,
             startDelayNanoseconds: 0,
-            presentSuccess: recorder.presentSuccess,
             presentFailure: recorder.presentFailure
         )
 
@@ -61,7 +40,6 @@ final class ScreenshotControllerTests: XCTestCase {
 
         XCTAssertFalse(controller.isCaptureInProgress)
         XCTAssertEqual(capturer.captureCount, 1)
-        XCTAssertEqual(recorder.successCount, 0)
         XCTAssertEqual(recorder.failures.count, 1)
     }
 
@@ -71,7 +49,6 @@ final class ScreenshotControllerTests: XCTestCase {
         let controller = ScreenshotController(
             capturer: capturer,
             startDelayNanoseconds: 0,
-            presentSuccess: recorder.presentSuccess,
             presentFailure: recorder.presentFailure
         )
 
@@ -87,55 +64,50 @@ final class ScreenshotControllerTests: XCTestCase {
 
         XCTAssertEqual(capturer.captureCount, 1)
 
-        capturer.finish(with: .captured)
+        capturer.finish()
         await firstCapture.value
 
         XCTAssertFalse(controller.isCaptureInProgress)
-        XCTAssertEqual(recorder.successCount, 1)
+        XCTAssertTrue(recorder.failures.isEmpty)
     }
 }
 
 @MainActor
 private final class FakeScreenshotCapturer: ScreenshotCapturing {
-    private let result: Result<ScreenshotCaptureOutcome, Error>
+    private let result: Result<Void, Error>
     private(set) var captureCount = 0
 
-    init(result: Result<ScreenshotCaptureOutcome, Error>) {
+    init(result: Result<Void, Error>) {
         self.result = result
     }
 
-    func captureInteractiveSelectionToClipboard() async throws -> ScreenshotCaptureOutcome {
+    func captureInteractiveSelectionToClipboard() async throws {
         captureCount += 1
-        return try result.get()
+        try result.get()
     }
 }
 
 @MainActor
 private final class PendingScreenshotCapturer: ScreenshotCapturing {
-    private var continuation: CheckedContinuation<ScreenshotCaptureOutcome, Error>?
+    private var continuation: CheckedContinuation<Void, Error>?
     private(set) var captureCount = 0
 
-    func captureInteractiveSelectionToClipboard() async throws -> ScreenshotCaptureOutcome {
+    func captureInteractiveSelectionToClipboard() async throws {
         captureCount += 1
-        return try await withCheckedThrowingContinuation { continuation in
+        try await withCheckedThrowingContinuation { continuation in
             self.continuation = continuation
         }
     }
 
-    func finish(with outcome: ScreenshotCaptureOutcome) {
-        continuation?.resume(returning: outcome)
+    func finish() {
+        continuation?.resume(returning: ())
         continuation = nil
     }
 }
 
 @MainActor
 private final class ScreenshotPresentationRecorder {
-    private(set) var successCount = 0
     private(set) var failures: [Error] = []
-
-    func presentSuccess() {
-        successCount += 1
-    }
 
     func presentFailure(_ error: Error) {
         failures.append(error)

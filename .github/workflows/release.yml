@@ -128,12 +128,6 @@ jobs:
             "$APPCAST_PATH#appcast.xml" \
             --clobber
 
-          RELEASE_NOTES_PATH="$RUNNER_TEMP/release-notes.md"
-          RELEASE_NOTICE="Ad-hoc signed macOS build. First-time installation may require manual Gatekeeper approval. Existing Sparkle-enabled installations should update from Invoker's in-app Check for Updates command instead of downloading the DMG again."
-          gh release view "$RELEASE_TAG" --json body --jq '.body' > "$RELEASE_NOTES_PATH"
-          grep -Fq "$RELEASE_NOTICE" "$RELEASE_NOTES_PATH" || printf '\n\n%s\n' "$RELEASE_NOTICE" >> "$RELEASE_NOTES_PATH"
-
           gh release edit "$RELEASE_TAG" \
-            --notes-file "$RELEASE_NOTES_PATH" \
             --prerelease=false \
             --latest

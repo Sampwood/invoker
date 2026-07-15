@@ -5,19 +5,16 @@ import Foundation
 final class ScreenshotController {
     private let capturer: ScreenshotCapturing
     private let startDelayNanoseconds: UInt64
-    private let presentSuccess: @MainActor () -> Void
     private let presentFailure: @MainActor (Error) -> Void
     private(set) var isCaptureInProgress = false
 
     init(
         capturer: ScreenshotCapturing = SystemScreenshotCapturer(),
         startDelayNanoseconds: UInt64 = 120_000_000,
-        presentSuccess: @escaping @MainActor () -> Void = ScreenshotController.presentDefaultSuccess,
         presentFailure: @escaping @MainActor (Error) -> Void = ScreenshotController.presentDefaultFailure
     ) {
         self.capturer = capturer
         self.startDelayNanoseconds = startDelayNanoseconds
-        self.presentSuccess = presentSuccess
         self.presentFailure = presentFailure
     }
 
@@ -36,25 +33,10 @@ final class ScreenshotController {
         }
 
         do {
-            switch try await capturer.captureInteractiveSelectionToClipboard() {
-            case .captured:
-                presentSuccess()
-            case .cancelled:
-                break
-            }
+            try await capturer.captureInteractiveSelectionToClipboard()
         } catch {
             presentFailure(error)
         }
-    }
-
-    private static func presentDefaultSuccess() {
-        let alert = NSAlert()
-        alert.messageText = "截图已复制到剪贴板"
-        alert.alertStyle = .informational
-        alert.addButton(withTitle: "好")
-
-        NSApp.activate(ignoringOtherApps: true)
-        alert.runModal()
     }
 
     private static func presentDefaultFailure(_ error: Error) {
