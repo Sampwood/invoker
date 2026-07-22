@@ -9,9 +9,16 @@ protocol ClipboardPasteboardAccessing: AnyObject {
     func write(_ item: ClipboardHistoryItem) -> Bool
 }
 
+enum ClipboardPinToggleResult: Equatable {
+    case pinned
+    case unpinned
+    case limitReached
+}
+
 @MainActor
 final class ClipboardHistoryStore: ObservableObject {
     static let defaultMaxItems = 50
+    static let defaultMaxPinnedItems = 50
     static let defaultsKey = "clipboardHistory.items"
 
     @Published private(set) var items: [ClipboardHistoryItem]
@@ -19,6 +26,7 @@ final class ClipboardHistoryStore: ObservableObject {
     private let userDefaults: UserDefaults
     private let pasteboard: ClipboardPasteboardAccessing
     private let maxItems: Int
+    private let maxPinnedItems: Int
     private let pollInterval: TimeInterval
     private var lastObservedChangeCount: Int?
     private var pollTimer: Timer?
@@ -27,13 +35,31 @@ final class ClipboardHistoryStore: ObservableObject {
         userDefaults: UserDefaults = .standard,
         pasteboard: ClipboardPasteboardAccessing = SystemClipboardPasteboardAccessor(),
         maxItems: Int = ClipboardHistoryStore.defaultMaxItems,
+        maxPinnedItems: Int = ClipboardHistoryStore.defaultMaxPinnedItems,
         pollInterval: TimeInterval = 0.7
     ) {
+        let normalizedMaxItems = max(1, maxItems)
         self.userDefaults = userDefaults
         self.pasteboard = pasteboard
-        self.maxItems = max(1, maxItems)
+        self.maxItems = normalizedMaxItems
+        self.maxPinnedItems = max(1, maxPinnedItems)
         self.pollInterval = pollInterval
-        items = Self.loadItems(from: userDefaults)
+        items = Self.normalizedItems(
+            Self.loadItems(from: userDefaults),
+            maxUnpinnedItems: normalizedMaxItems
+        )
+    }
+
+    var pinnedItemCount: Int {
+        items.lazy.filter(\.isPinned).count
+    }
+
+    var unpinnedItemCount: Int {
+        items.count - pinnedItemCount
+    }
+
+    var hasUnpinnedItems: Bool {
+        unpinnedItemCount > 0
     }
 
     func startMonitoring() {
@@ -85,18 +111,64 @@ final class ClipboardHistoryStore: ObservableObject {
         return true
     }
 
-    func clear() {
-        items = []
+    func clearUnpinned() {
+        items.removeAll { !$0.isPinned }
         persist()
     }
 
-    func record(_ item: ClipboardHistoryItem) {
-        items.removeAll { $0.hasSamePayload(as: item) }
-        items.insert(item, at: 0)
-        if items.count > maxItems {
-            items = Array(items.prefix(maxItems))
+    @discardableResult
+    func togglePin(for id: ClipboardHistoryItem.ID) -> ClipboardPinToggleResult {
+        guard let index = items.firstIndex(where: { $0.id == id }) else {
+            preconditionFailure("Cannot toggle a clipboard item that is not in the store")
         }
+
+        let item = items[index]
+        if item.isPinned {
+            items.remove(at: index)
+            items.insert(item.settingPinned(false), at: pinnedItemCount)
+            trimUnpinnedItems()
+            persist()
+            return .unpinned
+        }
+
+        guard pinnedItemCount < maxPinnedItems else {
+            return .limitReached
+        }
+
+        items.remove(at: index)
+        items.insert(item.settingPinned(true), at: 0)
         persist()
+        return .pinned
+    }
+
+    func record(_ item: ClipboardHistoryItem) {
+        if let existingIndex = items.firstIndex(where: { $0.hasSamePayload(as: item) }) {
+            let existingItem = items[existingIndex]
+            let updatedItem = ClipboardHistoryItem(
+                id: existingItem.id,
+                kind: item.kind,
+                createdAt: item.createdAt,
+                isPinned: existingItem.isPinned,
+                text: item.text,
+                imagePNGData: item.imagePNGData
+            )
+
+            if existingItem.isPinned {
+                items[existingIndex] = updatedItem
+            } else {
+                items.remove(at: existingIndex)
+                items.insert(updatedItem, at: pinnedItemCount)
+            }
+        } else {
+            items.insert(item.settingPinned(false), at: pinnedItemCount)
+        }
+
+        trimUnpinnedItems()
+        persist()
+    }
+
+    private func trimUnpinnedItems() {
+        items = Self.normalizedItems(items, maxUnpinnedItems: maxItems)
     }
 
     private func persist() {
@@ -115,6 +187,15 @@ final class ClipboardHistoryStore: ObservableObject {
         }
 
         return items
+    }
+
+    private static func normalizedItems(
+        _ items: [ClipboardHistoryItem],
+        maxUnpinnedItems: Int
+    ) -> [ClipboardHistoryItem] {
+        let pinnedItems = items.filter(\.isPinned)
+        let unpinnedItems = items.lazy.filter { !$0.isPinned }.prefix(maxUnpinnedItems)
+        return pinnedItems + Array(unpinnedItems)
     }
 }
 

@@ -79,7 +79,7 @@ final class ClipboardHistoryPanelController {
                     self?.applyAction(item)
                 },
                 clearAction: { [weak self] in
-                    self?.store.clear()
+                    self?.store.clearUnpinned()
                 }
             )
         )

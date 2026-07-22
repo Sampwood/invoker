@@ -86,6 +86,7 @@ final class ClipboardHistoryPresentationState: ObservableObject {
 struct ClipboardHistoryView: View {
     @ObservedObject var store: ClipboardHistoryStore
     @ObservedObject var presentationState: ClipboardHistoryPresentationState
+    @Environment(\.accessibilityReduceMotion) private var accessibilityReduceMotion
     @FocusState private var isSearchFocused: Bool
 
     let applyAction: (ClipboardHistoryItem) -> Void
@@ -93,6 +94,13 @@ struct ClipboardHistoryView: View {
 
     private var filteredItems: [ClipboardHistoryItem] {
         presentationState.filteredItems(from: store.items)
+    }
+
+    private var lastFilteredPinnedItemID: ClipboardHistoryItem.ID? {
+        guard filteredItems.contains(where: { !$0.isPinned }) else {
+            return nil
+        }
+        return filteredItems.last(where: { $0.isPinned })?.id
     }
 
     var body: some View {
@@ -180,20 +188,20 @@ struct ClipboardHistoryView: View {
                 Image(systemName: "trash")
                     .font(.system(size: 12, weight: .medium))
                     .foregroundStyle(
-                        store.items.isEmpty
-                            ? Color(nsColor: .tertiaryLabelColor)
-                            : Color(nsColor: .secondaryLabelColor)
+                        store.hasUnpinnedItems
+                            ? Color(nsColor: .secondaryLabelColor)
+                            : Color(nsColor: .tertiaryLabelColor)
                     )
                     .frame(width: 26, height: 26)
                     .background(
                         RoundedRectangle(cornerRadius: 6, style: .continuous)
-                            .fill(Color.black.opacity(store.items.isEmpty ? 0 : 0.06))
+                            .fill(Color.black.opacity(store.hasUnpinnedItems ? 0.06 : 0))
                     )
             }
             .buttonStyle(.plain)
-            .disabled(store.items.isEmpty)
-            .help("清空历史")
-            .accessibilityLabel("清空剪贴板历史")
+            .disabled(!store.hasUnpinnedItems)
+            .help("清空未置顶历史")
+            .accessibilityLabel("清空未置顶的剪贴板历史")
         }
         .frame(height: ClipboardHistoryMetrics.headerHeight, alignment: .center)
         .padding(.horizontal, ClipboardHistoryMetrics.horizontalPadding)
@@ -248,7 +256,16 @@ struct ClipboardHistoryView: View {
         if !presentationState.query.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
             return "找到 " + String(filteredItems.count) + " 条"
         }
-        return "最近 " + String(store.items.count) + " 条"
+        if store.pinnedItemCount == 0 {
+            return "最近 " + String(store.unpinnedItemCount) + " 条"
+        }
+        if store.unpinnedItemCount == 0 {
+            return String(store.pinnedItemCount) + " 条置顶"
+        }
+        return String(store.pinnedItemCount)
+            + " 条置顶 · "
+            + String(store.unpinnedItemCount)
+            + " 条最近记录"
     }
 
     private var content: some View {
@@ -287,11 +304,15 @@ struct ClipboardHistoryView: View {
                             ClipboardHistoryRow(
                                 item: item,
                                 isSelected: presentationState.selectedItemID == item.id,
+                                showsPinnedBoundary: lastFilteredPinnedItemID == item.id,
                                 selectAction: {
                                     presentationState.select(item)
                                 },
                                 applyAction: {
                                     applyAction(item)
+                                },
+                                pinAction: {
+                                    store.togglePin(for: item.id)
                                 }
                             )
                             .id(item.id)
@@ -303,6 +324,10 @@ struct ClipboardHistoryView: View {
                 .scrollIndicators(.automatic)
                 .onChange(of: presentationState.selectedItemID) { selectedItemID in
                     guard let selectedItemID else {
+                        return
+                    }
+                    guard !accessibilityReduceMotion else {
+                        proxy.scrollTo(selectedItemID, anchor: .center)
                         return
                     }
                     withAnimation(.easeOut(duration: 0.12)) {
@@ -416,61 +441,157 @@ private struct ClipboardHistoryDetailView: View {
 }
 
 private struct ClipboardHistoryRow: View {
+    @Environment(\.accessibilityReduceMotion) private var accessibilityReduceMotion
     @State private var isHovered = false
+    @State private var isPinHovered = false
+    @State private var isPinLimitPresented = false
+    @FocusState private var isPinFocused: Bool
 
     let item: ClipboardHistoryItem
     let isSelected: Bool
+    let showsPinnedBoundary: Bool
     let selectAction: () -> Void
     let applyAction: () -> Void
+    let pinAction: () -> ClipboardPinToggleResult
 
     var body: some View {
-        Button(action: selectAction) {
-            HStack(spacing: 10) {
-                if item.kind == .image {
-                    thumbnail
-                }
+        HStack(spacing: ClipboardHistoryMetrics.pinSpacing) {
+            Button(action: selectAction) {
+                HStack(spacing: 10) {
+                    if item.kind == .image {
+                        thumbnail
+                    }
 
-                VStack(alignment: .leading, spacing: 0) {
                     Text(ClipboardHistoryFormatting.title(for: item))
                         .font(.system(size: 12.5, weight: .regular))
                         .foregroundStyle(Color(nsColor: .labelColor))
                         .lineLimit(item.kind == .text ? 2 : 1)
                         .multilineTextAlignment(.leading)
-                }
 
-                Spacer(minLength: 0)
+                    Spacer(minLength: 0)
+                }
+                .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .leading)
+                .contentShape(Rectangle())
             }
-            .frame(
-                width: ClipboardHistoryMetrics.listWidth
-                    - ClipboardHistoryMetrics.rowOuterInset * 2
-                    - ClipboardHistoryMetrics.rowHorizontalPadding * 2,
-                height: ClipboardHistoryMetrics.rowHeight,
-                alignment: .leading
+            .buttonStyle(.plain)
+            .simultaneousGesture(
+                TapGesture(count: 2)
+                    .onEnded {
+                        applyAction()
+                    }
             )
-            .padding(.horizontal, ClipboardHistoryMetrics.rowHorizontalPadding)
-            .background(rowBackground)
-            .padding(.horizontal, ClipboardHistoryMetrics.rowOuterInset)
-            .overlay(alignment: .bottom) {
-                Rectangle()
-                    .fill(Color(nsColor: .separatorColor).opacity(0.45))
-                    .frame(height: 1)
-                    .padding(
-                        .horizontal,
-                        ClipboardHistoryMetrics.rowOuterInset + ClipboardHistoryMetrics.rowHorizontalPadding
-                    )
-            }
-            .contentShape(Rectangle())
+            .accessibilityLabel(ClipboardHistoryFormatting.accessibilityTitle(for: item))
+            .accessibilityHint("单击预览，双击粘贴")
+
+            pinButton
+        }
+        .frame(
+            width: ClipboardHistoryMetrics.listWidth
+                - ClipboardHistoryMetrics.rowOuterInset * 2
+                - ClipboardHistoryMetrics.rowHorizontalPadding * 2,
+            height: ClipboardHistoryMetrics.rowHeight,
+            alignment: .leading
+        )
+        .padding(.horizontal, ClipboardHistoryMetrics.rowHorizontalPadding)
+        .background(rowBackground)
+        .padding(.horizontal, ClipboardHistoryMetrics.rowOuterInset)
+        .overlay(alignment: .bottom) {
+            Rectangle()
+                .fill(
+                    Color(nsColor: .separatorColor)
+                        .opacity(showsPinnedBoundary ? 0.9 : 0.45)
+                )
+                .frame(height: 1)
+                .padding(
+                    .horizontal,
+                    ClipboardHistoryMetrics.rowOuterInset + ClipboardHistoryMetrics.rowHorizontalPadding
+                )
+        }
+        .onHover { isHovered = $0 }
+    }
+
+    private var pinButton: some View {
+        Button(action: togglePin) {
+            Image(systemName: item.isPinned ? "pin.fill" : "pin")
+                .font(.system(size: 12, weight: .medium))
+                .foregroundStyle(
+                    item.isPinned
+                        ? Color(nsColor: .controlAccentColor)
+                        : Color(nsColor: .secondaryLabelColor)
+                )
+                .opacity(isPinVisible ? 1 : 0)
+                .frame(
+                    width: ClipboardHistoryMetrics.pinButtonSize,
+                    height: ClipboardHistoryMetrics.pinButtonSize
+                )
+                .background(
+                    RoundedRectangle(cornerRadius: 6, style: .continuous)
+                        .fill(Color.black.opacity(isPinHovered && isPinVisible ? 0.06 : 0))
+                )
+                .overlay(
+                    RoundedRectangle(cornerRadius: 6, style: .continuous)
+                        .stroke(
+                            Color(nsColor: .controlAccentColor).opacity(isPinFocused ? 0.85 : 0),
+                            lineWidth: 1.5
+                        )
+                )
+                .contentShape(Rectangle())
         }
         .buttonStyle(.plain)
-        .simultaneousGesture(
-            TapGesture(count: 2)
-                .onEnded {
-                    applyAction()
-                }
+        .focused($isPinFocused)
+        .onHover { isPinHovered = $0 }
+        .help(item.isPinned ? "取消置顶" : "置顶")
+        .accessibilityLabel(pinAccessibilityLabel)
+        .accessibilityValue(item.isPinned ? "已置顶" : "未置顶")
+        .popover(isPresented: $isPinLimitPresented, arrowEdge: .trailing) {
+            VStack(alignment: .leading, spacing: 4) {
+                Text("置顶已满")
+                    .font(.system(size: 12, weight: .semibold))
+                    .foregroundStyle(Color(nsColor: .labelColor))
+
+                Text("最多可置顶 50 条，请先取消一项。")
+                    .font(.system(size: 11))
+                    .foregroundStyle(Color(nsColor: .secondaryLabelColor))
+            }
+            .padding(12)
+            .frame(width: 210, alignment: .leading)
+        }
+    }
+
+    private var isPinVisible: Bool {
+        item.isPinned || isHovered || isSelected || isPinFocused
+    }
+
+    private var pinAccessibilityLabel: String {
+        let action = item.isPinned ? "取消置顶" : "置顶"
+        return action + "“" + ClipboardHistoryFormatting.accessibilityTitle(for: item) + "”"
+    }
+
+    private func togglePin() {
+        let result: ClipboardPinToggleResult
+        if accessibilityReduceMotion {
+            result = pinAction()
+        } else {
+            var animatedResult = ClipboardPinToggleResult.limitReached
+            withAnimation(.easeOut(duration: 0.14)) {
+                animatedResult = pinAction()
+            }
+            result = animatedResult
+        }
+
+        guard result == .limitReached else {
+            return
+        }
+
+        isPinLimitPresented = true
+        NSAccessibility.post(
+            element: NSApp as Any,
+            notification: .announcementRequested,
+            userInfo: [
+                .announcement: "置顶已满，最多可置顶 50 条。",
+                .priority: NSAccessibilityPriorityLevel.high.rawValue
+            ]
         )
-        .onHover { isHovered = $0 }
-        .accessibilityLabel(ClipboardHistoryFormatting.accessibilityTitle(for: item))
-        .accessibilityHint("单击预览，双击粘贴")
     }
 
     private var rowBackground: some View {
@@ -618,6 +739,8 @@ enum ClipboardHistoryMetrics {
     static let rowOuterInset: CGFloat = 5
     static let rowHorizontalPadding: CGFloat = 10
     static let rowCornerRadius: CGFloat = 6
+    static let pinButtonSize: CGFloat = 26
+    static let pinSpacing: CGFloat = 6
     static let thumbnailWidth: CGFloat = 40
     static let thumbnailHeight: CGFloat = 30
     static let shadowPadding: CGFloat = 20
