@@ -14,7 +14,7 @@ final class StatusBarInteractionRouterTests: XCTestCase {
     func testContextMenuContainsTranslationScreenshotSettingsUpdateAndQuitItems() {
         XCTAssertEqual(
             StatusBarMenuContent.items.map(\.title),
-            ["翻译...", "截图", "设置...", "检查更新...", "退出 Invoker"]
+            ["翻译...", "截图", "剪贴板历史", "设置...", "检查更新...", "退出 Invoker"]
         )
     }
 

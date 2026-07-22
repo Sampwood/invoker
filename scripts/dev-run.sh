@@ -35,7 +35,7 @@ build_and_launch() {
         build; then
         echo "Relaunching $APP_PATH"
         pkill -x "$SCHEME" >/dev/null 2>&1 || true
-        open "$APP_PATH"
+        open -n "$APP_PATH"
     else
         echo "Build failed. Fix the error, save a file, and the watcher will try again."
     fi

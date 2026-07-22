@@ -5,6 +5,8 @@ final class StatusBarController: NSObject {
     private let statusItem: NSStatusItem
     private let popoverController: CalendarPopoverPanelController
     private let screenshotController: ScreenshotController
+    private let clipboardHistoryStore: ClipboardHistoryStore
+    private let clipboardPasteExecutor: ClipboardPasteExecutor
     private let translationSettings: TranslationSettingsStore
     private let translationViewModel: TranslationViewModel
     private let selectedTextReader: SelectedTextReading
@@ -31,12 +33,25 @@ final class StatusBarController: NSObject {
     ) { [weak self] in
         self?.translateSelectedText()
     }
+    private lazy var clipboardHistoryHotKeyController = GlobalHotKeyController(
+        configuration: .clipboardHistory
+    ) { [weak self] in
+        self?.showClipboardHistory()
+    }
+    private lazy var clipboardHistoryPanelController = ClipboardHistoryPanelController(
+        store: clipboardHistoryStore
+    ) { [weak self] item in
+        self?.pasteClipboardHistoryItem(item)
+    }
     private lazy var menuController = StatusBarMenuPanelController(
         translationAction: { [weak self] in
             self?.showManualTranslation()
         },
         screenshotAction: { [weak self] in
             self?.captureSelectionToClipboard()
+        },
+        clipboardHistoryAction: { [weak self] in
+            self?.showClipboardHistory()
         },
         settingsAction: { [weak self] in
             self?.showTranslationSettings()
@@ -63,6 +78,8 @@ final class StatusBarController: NSObject {
         statusItem = NSStatusBar.system.statusItem(withLength: CalendarStatusIconMetrics.statusItemLength)
         popoverController = CalendarPopoverPanelController()
         screenshotController = ScreenshotController()
+        clipboardHistoryStore = ClipboardHistoryStore()
+        clipboardPasteExecutor = ClipboardPasteExecutor()
         self.translationSettings = translationSettings
         translationViewModel = TranslationViewModel(
             settings: translationSettings,
@@ -74,6 +91,12 @@ final class StatusBarController: NSObject {
         configureStatusItem()
         registerHotKey(screenshotHotKeyController, configuration: .screenshot)
         registerHotKey(translationHotKeyController, configuration: .selectionTranslation)
+        registerHotKey(clipboardHistoryHotKeyController, configuration: .clipboardHistory)
+        clipboardHistoryStore.startMonitoring()
+    }
+
+    func stopClipboardHistoryMonitoring() {
+        clipboardHistoryStore.stopMonitoring()
     }
 
     private func configureStatusItem() {
@@ -106,17 +129,20 @@ final class StatusBarController: NSObject {
 
     private func toggleCalendar(from button: NSStatusBarButton) {
         menuController.close()
+        clipboardHistoryPanelController.close()
         popoverController.toggle(relativeTo: button)
     }
 
     private func showContextMenu(from button: NSStatusBarButton) {
         popoverController.close()
+        clipboardHistoryPanelController.close()
         menuController.toggle(relativeTo: button)
     }
 
     private func captureSelectionToClipboard() {
         popoverController.close()
         menuController.close()
+        clipboardHistoryPanelController.close()
 
         Task { @MainActor in
             await screenshotController.captureSelectionToClipboard()
@@ -126,6 +152,7 @@ final class StatusBarController: NSObject {
     private func showManualTranslation() {
         popoverController.close()
         menuController.close()
+        clipboardHistoryPanelController.close()
         translationViewModel.prepareManualInput()
         translationPanelController.show()
     }
@@ -133,6 +160,7 @@ final class StatusBarController: NSObject {
     private func translateSelectedText() {
         popoverController.close()
         menuController.close()
+        clipboardHistoryPanelController.close()
 
         do {
             let text = try selectedTextReader.selectedText(promptForPermission: true)
@@ -151,7 +179,63 @@ final class StatusBarController: NSObject {
     private func showTranslationSettings() {
         popoverController.close()
         menuController.close()
+        clipboardHistoryPanelController.close()
         translationSettingsWindowController.show()
+    }
+
+    private func showClipboardHistory() {
+        clipboardPasteExecutor.rememberFrontmostApplication()
+        popoverController.close()
+        menuController.close()
+        translationPanelController.close()
+        clipboardHistoryPanelController.toggle()
+    }
+
+    private func pasteClipboardHistoryItem(_ item: ClipboardHistoryItem) {
+        guard clipboardHistoryStore.copyToPasteboard(item) else {
+            presentClipboardHistoryFailure(
+                message: "无法写回剪贴板",
+                informativeText: "请稍后重试，或重新复制这项内容。"
+            )
+            return
+        }
+
+        switch clipboardPasteExecutor.pasteToRememberedApplication() {
+        case .pasted:
+            break
+        case .accessibilityPermissionRequired:
+            presentClipboardPastePermissionRequired()
+        case .failed:
+            presentClipboardHistoryFailure(
+                message: "无法自动粘贴",
+                informativeText: "内容已复制到剪贴板，你可以手动粘贴。"
+            )
+        }
+    }
+
+    private func presentClipboardPastePermissionRequired() {
+        let alert = NSAlert()
+        alert.messageText = "需要辅助功能权限"
+        alert.informativeText = "内容已复制到剪贴板。授予 Invoker 辅助功能权限后，剪贴板历史可以自动粘贴到前台应用。"
+        alert.alertStyle = .informational
+        alert.addButton(withTitle: "打开系统设置")
+        alert.addButton(withTitle: "好")
+
+        NSApp.activate(ignoringOtherApps: true)
+        if alert.runModal() == .alertFirstButtonReturn {
+            selectedTextReader.openAccessibilitySettings()
+        }
+    }
+
+    private func presentClipboardHistoryFailure(message: String, informativeText: String) {
+        let alert = NSAlert()
+        alert.messageText = message
+        alert.informativeText = informativeText
+        alert.alertStyle = .warning
+        alert.addButton(withTitle: "好")
+
+        NSApp.activate(ignoringOtherApps: true)
+        alert.runModal()
     }
 
     private func registerHotKey(

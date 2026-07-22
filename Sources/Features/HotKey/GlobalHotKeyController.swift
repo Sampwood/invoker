@@ -24,6 +24,14 @@ struct GlobalHotKeyConfiguration: Equatable {
         shortcutDescription: "Option + F"
     )
 
+    static let clipboardHistory = GlobalHotKeyConfiguration(
+        keyCode: UInt32(kVK_ANSI_V),
+        modifiers: UInt32(cmdKey | shiftKey),
+        identifier: EventHotKeyID(signature: OSType(0x494E_564B), id: UInt32(3)),
+        displayName: "剪贴板历史",
+        shortcutDescription: "Shift + Command + V"
+    )
+
     static func == (lhs: GlobalHotKeyConfiguration, rhs: GlobalHotKeyConfiguration) -> Bool {
         lhs.keyCode == rhs.keyCode
             && lhs.modifiers == rhs.modifiers

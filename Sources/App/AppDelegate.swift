@@ -14,6 +14,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
 
     func applicationWillTerminate(_ notification: Notification) {
         inputSourceLock.stop()
+        statusBarController?.stopClipboardHistoryMonitoring()
     }
 
     private func configureMainMenu() {

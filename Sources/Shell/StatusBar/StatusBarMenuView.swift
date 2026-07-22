@@ -3,6 +3,7 @@ import SwiftUI
 struct StatusBarMenuView: View {
     let translationAction: () -> Void
     let screenshotAction: () -> Void
+    let clipboardHistoryAction: () -> Void
     let settingsAction: () -> Void
     let checkForUpdatesAction: () -> Void
     let quitAction: () -> Void
@@ -37,9 +38,10 @@ struct StatusBarMenuView: View {
         VStack(spacing: 0) {
             StatusBarMenuRow(title: StatusBarMenuContent.items[0].title, action: translationAction)
             StatusBarMenuRow(title: StatusBarMenuContent.items[1].title, action: screenshotAction)
-            StatusBarMenuRow(title: StatusBarMenuContent.items[2].title, action: settingsAction)
-            StatusBarMenuRow(title: StatusBarMenuContent.items[3].title, action: checkForUpdatesAction)
-            StatusBarMenuRow(title: StatusBarMenuContent.items[4].title, action: quitAction)
+            StatusBarMenuRow(title: StatusBarMenuContent.items[2].title, action: clipboardHistoryAction)
+            StatusBarMenuRow(title: StatusBarMenuContent.items[3].title, action: settingsAction)
+            StatusBarMenuRow(title: StatusBarMenuContent.items[4].title, action: checkForUpdatesAction)
+            StatusBarMenuRow(title: StatusBarMenuContent.items[5].title, action: quitAction)
         }
         .padding(.vertical, StatusBarMenuMetrics.bodyVerticalPadding)
         .frame(width: StatusBarMenuMetrics.bodyWidth, height: StatusBarMenuMetrics.bodyHeight)
