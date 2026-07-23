@@ -4,7 +4,6 @@ import AppKit
 final class StatusBarController: NSObject {
     private let statusItem: NSStatusItem
     private let popoverController: CalendarPopoverPanelController
-    private let screenshotController: ScreenshotController
     private let clipboardHistoryStore: ClipboardHistoryStore
     private let clipboardPasteExecutor: ClipboardPasteExecutor
     private let translationSettings: TranslationSettingsStore
@@ -23,11 +22,6 @@ final class StatusBarController: NSObject {
             self?.selectedTextReader.openAccessibilitySettings()
         }
     )
-    private lazy var screenshotHotKeyController = GlobalHotKeyController(
-        configuration: .screenshot
-    ) { [weak self] in
-        self?.captureSelectionToClipboard()
-    }
     private lazy var translationHotKeyController = GlobalHotKeyController(
         configuration: .selectionTranslation
     ) { [weak self] in
@@ -46,9 +40,6 @@ final class StatusBarController: NSObject {
     private lazy var menuController = StatusBarMenuPanelController(
         translationAction: { [weak self] in
             self?.showManualTranslation()
-        },
-        screenshotAction: { [weak self] in
-            self?.captureSelectionToClipboard()
         },
         clipboardHistoryAction: { [weak self] in
             self?.showClipboardHistory()
@@ -77,7 +68,6 @@ final class StatusBarController: NSObject {
     ) {
         statusItem = NSStatusBar.system.statusItem(withLength: CalendarStatusIconMetrics.statusItemLength)
         popoverController = CalendarPopoverPanelController()
-        screenshotController = ScreenshotController()
         clipboardHistoryStore = ClipboardHistoryStore()
         clipboardPasteExecutor = ClipboardPasteExecutor()
         self.translationSettings = translationSettings
@@ -89,7 +79,6 @@ final class StatusBarController: NSObject {
         super.init()
 
         configureStatusItem()
-        registerHotKey(screenshotHotKeyController, configuration: .screenshot)
         registerHotKey(translationHotKeyController, configuration: .selectionTranslation)
         registerHotKey(clipboardHistoryHotKeyController, configuration: .clipboardHistory)
         clipboardHistoryStore.startMonitoring()
@@ -137,16 +126,6 @@ final class StatusBarController: NSObject {
         popoverController.close()
         clipboardHistoryPanelController.close()
         menuController.toggle(relativeTo: button)
-    }
-
-    private func captureSelectionToClipboard() {
-        popoverController.close()
-        menuController.close()
-        clipboardHistoryPanelController.close()
-
-        Task { @MainActor in
-            await screenshotController.captureSelectionToClipboard()
-        }
     }
 
     private func showManualTranslation() {

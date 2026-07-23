@@ -244,12 +244,20 @@ struct TranslationView: View {
                 Divider()
                     .frame(height: 12)
 
-                Text(viewModel.settings.aiModel)
+                Text(viewModel.activeAIModel)
                     .font(.system(size: 10))
                     .foregroundStyle(.secondary)
                     .lineLimit(1)
                     .truncationMode(.middle)
                     .layoutPriority(-1)
+
+                if let warning = viewModel.configurationWarning {
+                    Image(systemName: "exclamationmark.triangle.fill")
+                        .font(.system(size: 10, weight: .medium))
+                        .foregroundStyle(.orange)
+                        .accessibilityLabel(warning)
+                        .help(warning)
+                }
             }
 
             if let detectedLanguage = viewModel.detectedSourceLanguage {

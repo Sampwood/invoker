@@ -11,10 +11,10 @@ final class StatusBarInteractionRouterTests: XCTestCase {
         XCTAssertEqual(StatusBarInteractionRouter.action(for: .rightMouseUp), .showMenu)
     }
 
-    func testContextMenuContainsTranslationScreenshotSettingsUpdateAndQuitItems() {
+    func testContextMenuContainsTranslationClipboardSettingsUpdateAndQuitItems() {
         XCTAssertEqual(
             StatusBarMenuContent.items.map(\.title),
-            ["翻译...", "截图", "剪贴板历史", "设置...", "检查更新...", "退出 Invoker"]
+            ["翻译...", "剪贴板历史", "设置...", "检查更新...", "退出 Invoker"]
         )
     }
 

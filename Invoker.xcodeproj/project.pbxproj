@@ -36,14 +36,14 @@
 		1A2B3C4D5E6F700000000094 /* UpdateChecker.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1A2B3C4D5E6F700000000095 /* UpdateChecker.swift */; };
 		1A2B3C4D5E6F700000000147 /* Sparkle in Frameworks */ = {isa = PBXBuildFile; productRef = 1A2B3C4D5E6F700000000149 /* Sparkle */; };
 		1A2B3C4D5E6F700000000097 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 1A2B3C4D5E6F700000000098 /* Assets.xcassets */; };
-		1A2B3C4D5E6F700000000099 /* SystemScreenshotCapturer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1A2B3C4D5E6F700000000102 /* SystemScreenshotCapturer.swift */; };
-		1A2B3C4D5E6F700000000100 /* ScreenshotController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1A2B3C4D5E6F700000000103 /* ScreenshotController.swift */; };
-		1A2B3C4D5E6F700000000101 /* ScreenshotControllerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1A2B3C4D5E6F700000000104 /* ScreenshotControllerTests.swift */; };
+		1A2B3C4D5E6F700000000099 /* AIConfiguration.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1A2B3C4D5E6F700000000102 /* AIConfiguration.swift */; };
+		1A2B3C4D5E6F700000000100 /* TranslationSecretFileStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1A2B3C4D5E6F700000000103 /* TranslationSecretFileStore.swift */; };
+		1A2B3C4D5E6F700000000101 /* AIConfigurationTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1A2B3C4D5E6F700000000104 /* AIConfigurationTests.swift */; };
 		1A2B3C4D5E6F700000000107 /* GlobalHotKeyController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1A2B3C4D5E6F700000000109 /* GlobalHotKeyController.swift */; };
 		1A2B3C4D5E6F700000000108 /* GlobalHotKeyControllerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1A2B3C4D5E6F700000000110 /* GlobalHotKeyControllerTests.swift */; };
 		1A2B3C4D5E6F700000000131 /* TranslationModels.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1A2B3C4D5E6F700000000113 /* TranslationModels.swift */; };
 		1A2B3C4D5E6F700000000132 /* TranslationSettingsStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1A2B3C4D5E6F700000000114 /* TranslationSettingsStore.swift */; };
-		1A2B3C4D5E6F700000000133 /* KeychainStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1A2B3C4D5E6F700000000115 /* KeychainStore.swift */; };
+		1A2B3C4D5E6F700000000133 /* LegacyKeychainStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1A2B3C4D5E6F700000000115 /* LegacyKeychainStore.swift */; };
 		1A2B3C4D5E6F700000000134 /* TranslationNetworkSupport.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1A2B3C4D5E6F700000000116 /* TranslationNetworkSupport.swift */; };
 		1A2B3C4D5E6F700000000135 /* OpenAICompatibleTranslationProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1A2B3C4D5E6F700000000117 /* OpenAICompatibleTranslationProvider.swift */; };
 		1A2B3C4D5E6F700000000136 /* DeepLTranslationProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1A2B3C4D5E6F700000000118 /* DeepLTranslationProvider.swift */; };
@@ -63,6 +63,8 @@
 		1A2B3C4D5E6F700000000153 /* ClipboardHistoryView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1A2B3C4D5E6F700000000159 /* ClipboardHistoryView.swift */; };
 		1A2B3C4D5E6F700000000154 /* ClipboardHistoryPanelController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1A2B3C4D5E6F700000000160 /* ClipboardHistoryPanelController.swift */; };
 		1A2B3C4D5E6F700000000155 /* ClipboardHistoryStoreTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1A2B3C4D5E6F700000000161 /* ClipboardHistoryStoreTests.swift */; };
+		1A2B3C4D5E6F700000000164 /* libsqlite3.tbd in Frameworks */ = {isa = PBXBuildFile; fileRef = 1A2B3C4D5E6F700000000166 /* libsqlite3.tbd */; };
+		1A2B3C4D5E6F700000000165 /* libsqlite3.tbd in Frameworks */ = {isa = PBXBuildFile; fileRef = 1A2B3C4D5E6F700000000166 /* libsqlite3.tbd */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -107,14 +109,14 @@
 		1A2B3C4D5E6F700000000092 /* GlobalInputSourceLock.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GlobalInputSourceLock.swift; sourceTree = "<group>"; };
 		1A2B3C4D5E6F700000000095 /* UpdateChecker.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UpdateChecker.swift; sourceTree = "<group>"; };
 		1A2B3C4D5E6F700000000098 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
-		1A2B3C4D5E6F700000000102 /* SystemScreenshotCapturer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SystemScreenshotCapturer.swift; sourceTree = "<group>"; };
-		1A2B3C4D5E6F700000000103 /* ScreenshotController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ScreenshotController.swift; sourceTree = "<group>"; };
-		1A2B3C4D5E6F700000000104 /* ScreenshotControllerTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ScreenshotControllerTests.swift; sourceTree = "<group>"; };
+		1A2B3C4D5E6F700000000102 /* AIConfiguration.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AIConfiguration.swift; sourceTree = "<group>"; };
+		1A2B3C4D5E6F700000000103 /* TranslationSecretFileStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TranslationSecretFileStore.swift; sourceTree = "<group>"; };
+		1A2B3C4D5E6F700000000104 /* AIConfigurationTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AIConfigurationTests.swift; sourceTree = "<group>"; };
 		1A2B3C4D5E6F700000000109 /* GlobalHotKeyController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GlobalHotKeyController.swift; sourceTree = "<group>"; };
 		1A2B3C4D5E6F700000000110 /* GlobalHotKeyControllerTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GlobalHotKeyControllerTests.swift; sourceTree = "<group>"; };
 		1A2B3C4D5E6F700000000113 /* TranslationModels.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TranslationModels.swift; sourceTree = "<group>"; };
 		1A2B3C4D5E6F700000000114 /* TranslationSettingsStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TranslationSettingsStore.swift; sourceTree = "<group>"; };
-		1A2B3C4D5E6F700000000115 /* KeychainStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KeychainStore.swift; sourceTree = "<group>"; };
+		1A2B3C4D5E6F700000000115 /* LegacyKeychainStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LegacyKeychainStore.swift; sourceTree = "<group>"; };
 		1A2B3C4D5E6F700000000116 /* TranslationNetworkSupport.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TranslationNetworkSupport.swift; sourceTree = "<group>"; };
 		1A2B3C4D5E6F700000000117 /* OpenAICompatibleTranslationProvider.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OpenAICompatibleTranslationProvider.swift; sourceTree = "<group>"; };
 		1A2B3C4D5E6F700000000118 /* DeepLTranslationProvider.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DeepLTranslationProvider.swift; sourceTree = "<group>"; };
@@ -134,6 +136,7 @@
 		1A2B3C4D5E6F700000000159 /* ClipboardHistoryView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ClipboardHistoryView.swift; sourceTree = "<group>"; };
 		1A2B3C4D5E6F700000000160 /* ClipboardHistoryPanelController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ClipboardHistoryPanelController.swift; sourceTree = "<group>"; };
 		1A2B3C4D5E6F700000000161 /* ClipboardHistoryStoreTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ClipboardHistoryStoreTests.swift; sourceTree = "<group>"; };
+		1A2B3C4D5E6F700000000166 /* libsqlite3.tbd */ = {isa = PBXFileReference; lastKnownFileType = "sourcecode.text-based-dylib-definition"; name = libsqlite3.tbd; path = usr/lib/libsqlite3.tbd; sourceTree = SDKROOT; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
@@ -145,6 +148,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				1A2B3C4D5E6F700000000147 /* Sparkle in Frameworks */,
+				1A2B3C4D5E6F700000000164 /* libsqlite3.tbd in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -152,6 +156,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				1A2B3C4D5E6F700000000165 /* libsqlite3.tbd in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -163,6 +168,7 @@
 			children = (
 				1A2B3C4D5E6F700000000016 /* Sources */,
 				1A2B3C4D5E6F700000000017 /* Tests */,
+				1A2B3C4D5E6F700000000167 /* Frameworks */,
 				1A2B3C4D5E6F700000000018 /* Products */,
 			);
 			sourceTree = "<group>";
@@ -224,7 +230,6 @@
 				1A2B3C4D5E6F700000000042 /* Calendar */,
 				1A2B3C4D5E6F700000000162 /* ClipboardHistory */,
 				1A2B3C4D5E6F700000000111 /* HotKey */,
-				1A2B3C4D5E6F700000000105 /* Screenshot */,
 				1A2B3C4D5E6F700000000129 /* Translation */,
 				1A2B3C4D5E6F700000000093 /* InputSource */,
 				1A2B3C4D5E6F700000000096 /* Updates */,
@@ -295,21 +300,14 @@
 			path = HotKey;
 			sourceTree = "<group>";
 		};
-		1A2B3C4D5E6F700000000105 /* Screenshot */ = {
-			isa = PBXGroup;
-			children = (
-				1A2B3C4D5E6F700000000102 /* SystemScreenshotCapturer.swift */,
-				1A2B3C4D5E6F700000000103 /* ScreenshotController.swift */,
-			);
-			path = Screenshot;
-			sourceTree = "<group>";
-		};
 		1A2B3C4D5E6F700000000129 /* Translation */ = {
 			isa = PBXGroup;
 			children = (
 				1A2B3C4D5E6F700000000113 /* TranslationModels.swift */,
+				1A2B3C4D5E6F700000000102 /* AIConfiguration.swift */,
 				1A2B3C4D5E6F700000000114 /* TranslationSettingsStore.swift */,
-				1A2B3C4D5E6F700000000115 /* KeychainStore.swift */,
+				1A2B3C4D5E6F700000000103 /* TranslationSecretFileStore.swift */,
+				1A2B3C4D5E6F700000000115 /* LegacyKeychainStore.swift */,
 				1A2B3C4D5E6F700000000116 /* TranslationNetworkSupport.swift */,
 				1A2B3C4D5E6F700000000117 /* OpenAICompatibleTranslationProvider.swift */,
 				1A2B3C4D5E6F700000000118 /* DeepLTranslationProvider.swift */,
@@ -338,7 +336,6 @@
 				1A2B3C4D5E6F700000000067 /* Calendar */,
 				1A2B3C4D5E6F700000000163 /* ClipboardHistory */,
 				1A2B3C4D5E6F700000000112 /* HotKey */,
-				1A2B3C4D5E6F700000000106 /* Screenshot */,
 				1A2B3C4D5E6F700000000130 /* Translation */,
 			);
 			path = Features;
@@ -370,14 +367,6 @@
 			path = HotKey;
 			sourceTree = "<group>";
 		};
-		1A2B3C4D5E6F700000000106 /* Screenshot */ = {
-			isa = PBXGroup;
-			children = (
-				1A2B3C4D5E6F700000000104 /* ScreenshotControllerTests.swift */,
-			);
-			path = Screenshot;
-			sourceTree = "<group>";
-		};
 		1A2B3C4D5E6F700000000130 /* Translation */ = {
 			isa = PBXGroup;
 			children = (
@@ -385,8 +374,17 @@
 				1A2B3C4D5E6F700000000126 /* TranslationProviderTests.swift */,
 				1A2B3C4D5E6F700000000127 /* TranslationSettingsStoreTests.swift */,
 				1A2B3C4D5E6F700000000128 /* TranslationViewModelTests.swift */,
+				1A2B3C4D5E6F700000000104 /* AIConfigurationTests.swift */,
 			);
 			path = Translation;
+			sourceTree = "<group>";
+		};
+		1A2B3C4D5E6F700000000167 /* Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+				1A2B3C4D5E6F700000000166 /* libsqlite3.tbd */,
+			);
+			name = Frameworks;
 			sourceTree = "<group>";
 		};
 		1A2B3C4D5E6F700000000068 /* Shell */ = {
@@ -544,8 +542,8 @@
 				1A2B3C4D5E6F700000000091 /* GlobalInputSourceLock.swift in Sources */,
 				1A2B3C4D5E6F700000000094 /* UpdateChecker.swift in Sources */,
 				1A2B3C4D5E6F700000000107 /* GlobalHotKeyController.swift in Sources */,
-				1A2B3C4D5E6F700000000099 /* SystemScreenshotCapturer.swift in Sources */,
-				1A2B3C4D5E6F700000000100 /* ScreenshotController.swift in Sources */,
+				1A2B3C4D5E6F700000000099 /* AIConfiguration.swift in Sources */,
+				1A2B3C4D5E6F700000000100 /* TranslationSecretFileStore.swift in Sources */,
 				1A2B3C4D5E6F700000000150 /* ClipboardHistoryItem.swift in Sources */,
 				1A2B3C4D5E6F700000000151 /* ClipboardHistoryStore.swift in Sources */,
 				1A2B3C4D5E6F700000000152 /* ClipboardPasteExecutor.swift in Sources */,
@@ -553,7 +551,7 @@
 				1A2B3C4D5E6F700000000154 /* ClipboardHistoryPanelController.swift in Sources */,
 				1A2B3C4D5E6F700000000131 /* TranslationModels.swift in Sources */,
 				1A2B3C4D5E6F700000000132 /* TranslationSettingsStore.swift in Sources */,
-				1A2B3C4D5E6F700000000133 /* KeychainStore.swift in Sources */,
+				1A2B3C4D5E6F700000000133 /* LegacyKeychainStore.swift in Sources */,
 				1A2B3C4D5E6F700000000134 /* TranslationNetworkSupport.swift in Sources */,
 				1A2B3C4D5E6F700000000135 /* OpenAICompatibleTranslationProvider.swift in Sources */,
 				1A2B3C4D5E6F700000000136 /* DeepLTranslationProvider.swift in Sources */,
@@ -574,7 +572,7 @@
 				1A2B3C4D5E6F700000000043 /* CalendarDisplayFormatterTests.swift in Sources */,
 				1A2B3C4D5E6F700000000057 /* CalendarMonthOutlineBuilderTests.swift in Sources */,
 				1A2B3C4D5E6F700000000055 /* StatusBarInteractionRouterTests.swift in Sources */,
-				1A2B3C4D5E6F700000000101 /* ScreenshotControllerTests.swift in Sources */,
+				1A2B3C4D5E6F700000000101 /* AIConfigurationTests.swift in Sources */,
 				1A2B3C4D5E6F700000000155 /* ClipboardHistoryStoreTests.swift in Sources */,
 				1A2B3C4D5E6F700000000108 /* GlobalHotKeyControllerTests.swift in Sources */,
 				1A2B3C4D5E6F700000000143 /* TranslationLanguageResolverTests.swift in Sources */,

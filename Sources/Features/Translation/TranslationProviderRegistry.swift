@@ -1,8 +1,14 @@
 import Foundation
 
+struct TranslationProviderResolution {
+    let provider: any TranslationProvider
+    let displayModel: String?
+    let configurationWarning: String?
+}
+
 @MainActor
 protocol TranslationProviderResolving: AnyObject {
-    func provider(for id: TranslationProviderID) -> any TranslationProvider
+    func resolveProvider(for id: TranslationProviderID) throws -> TranslationProviderResolution
 }
 
 @MainActor
@@ -18,21 +24,33 @@ final class TranslationProviderRegistry: TranslationProviderResolving {
         self.session = session
     }
 
-    func provider(for id: TranslationProviderID) -> any TranslationProvider {
+    func resolveProvider(for id: TranslationProviderID) throws -> TranslationProviderResolution {
         switch id {
         case .openAICompatible:
-            return OpenAICompatibleTranslationProvider(
-                configuration: OpenAICompatibleConfiguration(
-                    baseURL: settings.aiBaseURL,
-                    model: settings.aiModel,
-                    apiKey: settings.aiAPIKey
+            let configuration = try settings.resolveAIConfiguration()
+            return TranslationProviderResolution(
+                provider: OpenAICompatibleTranslationProvider(
+                    configuration: OpenAICompatibleConfiguration(
+                        baseURL: configuration.baseURL,
+                        model: configuration.model,
+                        apiKey: configuration.apiKey
+                    ),
+                    session: session
                 ),
-                session: session
+                displayModel: configuration.model,
+                configurationWarning: configuration.warning
             )
         case .deepL:
-            return DeepLTranslationProvider(
-                configuration: DeepLConfiguration(authKey: settings.deepLAuthKey),
-                session: session
+            guard !settings.deepLAuthKey.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty else {
+                throw TranslationError.missingConfiguration("请先在设置中填写 DeepL Auth Key。")
+            }
+            return TranslationProviderResolution(
+                provider: DeepLTranslationProvider(
+                    configuration: DeepLConfiguration(authKey: settings.deepLAuthKey),
+                    session: session
+                ),
+                displayModel: nil,
+                configurationWarning: nil
             )
         }
     }

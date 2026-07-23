@@ -8,14 +8,6 @@ struct GlobalHotKeyConfiguration: Equatable {
     let displayName: String
     let shortcutDescription: String
 
-    static let screenshot = GlobalHotKeyConfiguration(
-        keyCode: UInt32(kVK_ANSI_X),
-        modifiers: UInt32(cmdKey | shiftKey),
-        identifier: EventHotKeyID(signature: OSType(0x494E_564B), id: UInt32(1)),
-        displayName: "截图",
-        shortcutDescription: "Shift + Command + X"
-    )
-
     static let selectionTranslation = GlobalHotKeyConfiguration(
         keyCode: UInt32(kVK_ANSI_F),
         modifiers: UInt32(optionKey),
@@ -64,7 +56,7 @@ final class GlobalHotKeyController {
     private var eventHandlerRef: EventHandlerRef?
 
     init(
-        configuration: GlobalHotKeyConfiguration = .screenshot,
+        configuration: GlobalHotKeyConfiguration,
         action: @escaping () -> Void
     ) {
         self.configuration = configuration

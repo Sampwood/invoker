@@ -9,7 +9,9 @@ final class TranslationViewModelTests: XCTestCase {
         defer { defaults.removePersistentDomain(forName: suiteName) }
         let settings = TranslationSettingsStore(
             userDefaults: defaults,
-            keychain: ViewModelInMemoryKeychainStore()
+            secretStore: ViewModelInMemorySecretStore(),
+            legacyKeychain: nil,
+            ccSwitchReader: ViewModelUnavailableCCSwitchReader()
         )
         let provider = TextEchoTranslationProvider()
         let viewModel = TranslationViewModel(
@@ -35,7 +37,9 @@ final class TranslationViewModelTests: XCTestCase {
         defer { defaults.removePersistentDomain(forName: suiteName) }
         let settings = TranslationSettingsStore(
             userDefaults: defaults,
-            keychain: ViewModelInMemoryKeychainStore()
+            secretStore: ViewModelInMemorySecretStore(),
+            legacyKeychain: nil,
+            ccSwitchReader: ViewModelUnavailableCCSwitchReader()
         )
         let viewModel = TranslationViewModel(
             settings: settings,
@@ -59,7 +63,9 @@ final class TranslationViewModelTests: XCTestCase {
         defer { defaults.removePersistentDomain(forName: suiteName) }
         let settings = TranslationSettingsStore(
             userDefaults: defaults,
-            keychain: ViewModelInMemoryKeychainStore()
+            secretStore: ViewModelInMemorySecretStore(),
+            legacyKeychain: nil,
+            ccSwitchReader: ViewModelUnavailableCCSwitchReader()
         )
         let provider = LateEventTranslationProvider()
         let viewModel = TranslationViewModel(
@@ -103,7 +109,9 @@ final class TranslationViewModelTests: XCTestCase {
         defer { defaults.removePersistentDomain(forName: suiteName) }
         let settings = TranslationSettingsStore(
             userDefaults: defaults,
-            keychain: ViewModelInMemoryKeychainStore()
+            secretStore: ViewModelInMemorySecretStore(),
+            legacyKeychain: nil,
+            ccSwitchReader: ViewModelUnavailableCCSwitchReader()
         )
         let viewModel = TranslationViewModel(
             settings: settings,
@@ -250,19 +258,34 @@ private final class FixedTranslationProviderRegistry: TranslationProviderResolvi
         self.provider = provider
     }
 
-    func provider(for id: TranslationProviderID) -> any TranslationProvider {
-        provider
+    func resolveProvider(for id: TranslationProviderID) throws -> TranslationProviderResolution {
+        TranslationProviderResolution(
+            provider: provider,
+            displayModel: id == .openAICompatible ? "test-model" : nil,
+            configurationWarning: nil
+        )
     }
 }
 
-private final class ViewModelInMemoryKeychainStore: KeychainStoring {
-    private var values: [String: String] = [:]
+private final class ViewModelInMemorySecretStore: TranslationSecretStoring {
+    let fileURL = URL(fileURLWithPath: "/tmp/invoker-view-model-test-config.json")
+    private var secrets = TranslationSecrets.empty
 
-    func string(for account: String) throws -> String? {
-        values[account]
+    func fileExists() -> Bool {
+        false
     }
 
-    func set(_ value: String, for account: String) throws {
-        values[account] = value
+    func load() throws -> TranslationSecrets {
+        secrets
+    }
+
+    func save(_ secrets: TranslationSecrets) throws {
+        self.secrets = secrets
+    }
+}
+
+private struct ViewModelUnavailableCCSwitchReader: CCSwitchAIConfigurationReading {
+    func currentConfiguration() throws -> CCSwitchAIConfiguration {
+        throw AIConfigurationError.ccSwitchDatabaseUnavailable
     }
 }

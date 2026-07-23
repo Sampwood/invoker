@@ -272,6 +272,10 @@ struct ClipboardHistoryView: View {
         HStack(spacing: 0) {
             historyList
                 .frame(width: ClipboardHistoryMetrics.listWidth)
+                .background(
+                    Color(nsColor: .controlBackgroundColor)
+                        .opacity(ClipboardHistoryMetrics.listBackgroundOpacity)
+                )
 
             Rectangle()
                 .fill(Color(nsColor: .separatorColor).opacity(0.7))
@@ -299,7 +303,7 @@ struct ClipboardHistoryView: View {
         } else {
             ScrollViewReader { proxy in
                 ScrollView {
-                    LazyVStack(spacing: 0) {
+                    LazyVStack(spacing: ClipboardHistoryMetrics.rowSpacing) {
                         ForEach(filteredItems) { item in
                             ClipboardHistoryRow(
                                 item: item,
@@ -319,6 +323,7 @@ struct ClipboardHistoryView: View {
                         }
                     }
                     .padding(.vertical, ClipboardHistoryMetrics.listVerticalPadding)
+                    .frame(maxWidth: .infinity)
                     .background(ClipboardHistoryScrollViewConfiguration())
                 }
                 .scrollIndicators(.automatic)
@@ -496,16 +501,18 @@ private struct ClipboardHistoryRow: View {
         .background(rowBackground)
         .padding(.horizontal, ClipboardHistoryMetrics.rowOuterInset)
         .overlay(alignment: .bottom) {
-            Rectangle()
-                .fill(
-                    Color(nsColor: .separatorColor)
-                        .opacity(showsPinnedBoundary ? 0.9 : 0.45)
-                )
-                .frame(height: 1)
-                .padding(
-                    .horizontal,
-                    ClipboardHistoryMetrics.rowOuterInset + ClipboardHistoryMetrics.rowHorizontalPadding
-                )
+            if !isSelected {
+                Rectangle()
+                    .fill(
+                        Color(nsColor: .separatorColor)
+                            .opacity(showsPinnedBoundary ? 0.9 : 0.38)
+                    )
+                    .frame(height: 1)
+                    .padding(
+                        .horizontal,
+                        ClipboardHistoryMetrics.rowOuterInset + ClipboardHistoryMetrics.rowHorizontalPadding
+                    )
+            }
         }
         .onHover { isHovered = $0 }
     }
@@ -598,15 +605,22 @@ private struct ClipboardHistoryRow: View {
         RoundedRectangle(cornerRadius: ClipboardHistoryMetrics.rowCornerRadius, style: .continuous)
             .fill(
                 isSelected
-                    ? Color(nsColor: .controlAccentColor).opacity(0.14)
-                    : Color.black.opacity(isHovered ? 0.04 : 0)
+                    ? Color(nsColor: .controlAccentColor).opacity(0.12)
+                    : Color(nsColor: .textBackgroundColor).opacity(isHovered ? 0.72 : 0)
             )
+            .overlay {
+                RoundedRectangle(cornerRadius: ClipboardHistoryMetrics.rowCornerRadius, style: .continuous)
+                    .stroke(
+                        Color(nsColor: .controlAccentColor).opacity(isSelected ? 0.18 : 0),
+                        lineWidth: 1
+                    )
+            }
             .overlay(alignment: .leading) {
                 if isSelected {
                     RoundedRectangle(cornerRadius: 1.5, style: .continuous)
                         .fill(Color(nsColor: .controlAccentColor))
-                        .frame(width: 3, height: 22)
-                        .padding(.leading, 2)
+                        .frame(width: 3, height: 24)
+                        .padding(.leading, 3)
                 }
             }
     }
@@ -734,11 +748,13 @@ enum ClipboardHistoryMetrics {
     static let listWidth: CGFloat = 330
     static let searchWidth: CGFloat = 280
     static let horizontalPadding: CGFloat = 16
-    static let listVerticalPadding: CGFloat = 3
-    static let rowHeight: CGFloat = 48
-    static let rowOuterInset: CGFloat = 5
-    static let rowHorizontalPadding: CGFloat = 10
-    static let rowCornerRadius: CGFloat = 6
+    static let listVerticalPadding: CGFloat = 8
+    static let listBackgroundOpacity: Double = 0.2
+    static let rowHeight: CGFloat = 50
+    static let rowSpacing: CGFloat = 2
+    static let rowOuterInset: CGFloat = 10
+    static let rowHorizontalPadding: CGFloat = 12
+    static let rowCornerRadius: CGFloat = 7
     static let pinButtonSize: CGFloat = 26
     static let pinSpacing: CGFloat = 6
     static let thumbnailWidth: CGFloat = 40

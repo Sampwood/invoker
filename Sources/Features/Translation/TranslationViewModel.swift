@@ -16,6 +16,8 @@ final class TranslationViewModel: ObservableObject {
     @Published private(set) var needsSettings = false
     @Published private(set) var didCopyResult = false
     @Published private(set) var focusRequestID = UUID()
+    @Published private(set) var activeAIModel: String
+    @Published private(set) var configurationWarning: String?
 
     let settings: TranslationSettingsStore
 
@@ -34,6 +36,8 @@ final class TranslationViewModel: ObservableObject {
         self.providerRegistry = providerRegistry
         self.languageResolver = languageResolver
         selectedProvider = settings.activeProvider
+        activeAIModel = settings.effectiveAIModel
+        configurationWarning = nil
     }
 
     var canTranslate: Bool {
@@ -124,14 +128,6 @@ final class TranslationViewModel: ObservableObject {
             present(error: .emptyInput)
             return
         }
-        guard settings.isConfigured(selectedProvider) else {
-            let message = selectedProvider == .deepL
-                ? "请先在设置中填写 DeepL Auth Key。"
-                : "请先在设置中检查 AI Base URL 和模型。"
-            present(error: .missingConfiguration(message), needsSettings: true)
-            return
-        }
-
         let languages = resolvedLanguages()
         guard languages.source == .automatic || languages.source != languages.target else {
             present(error: .identicalLanguages)
@@ -142,7 +138,21 @@ final class TranslationViewModel: ObservableObject {
             sourceLanguage: languages.source,
             targetLanguage: languages.target
         )
-        let provider = providerRegistry.provider(for: selectedProvider)
+        let providerResolution: TranslationProviderResolution
+        do {
+            providerResolution = try providerRegistry.resolveProvider(for: selectedProvider)
+        } catch {
+            configurationWarning = nil
+            let translationError = error as? TranslationError
+                ?? .missingConfiguration(error.localizedDescription)
+            present(error: translationError, needsSettings: true)
+            return
+        }
+        let provider = providerResolution.provider
+        if let displayModel = providerResolution.displayModel {
+            activeAIModel = displayModel
+        }
+        configurationWarning = providerResolution.configurationWarning
 
         cancelTranslation()
         resultText = ""
@@ -275,6 +285,7 @@ final class TranslationViewModel: ObservableObject {
         errorMessage = nil
         needsSettings = false
         didCopyResult = false
+        configurationWarning = nil
         state = .idle
     }
 }

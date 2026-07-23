@@ -1,6 +1,6 @@
 # Invoker
 
-Invoker is a macOS menu bar app. It combines a compact calendar, selection screenshots, and a lightweight translation panel with OpenAI-compatible AI and DeepL providers.
+Invoker is a macOS menu bar app. It combines a compact calendar, clipboard history, and a lightweight translation panel with OpenAI-compatible AI and DeepL providers.
 
 ## Requirements
 
@@ -15,10 +15,9 @@ Sources/
   App/                 App entry point and delegate
   Features/
     Calendar/          Calendar model, formatting, status icon, and popover UI
-    HotKey/            Global screenshot and selection-translation shortcuts
+    HotKey/            Global selection-translation and clipboard-history shortcuts
     InputSource/       Global input source lock
-    Screenshot/        Interactive selection capture to the clipboard
-    Translation/       Translation providers, secure settings, selection reading, and UI
+    Translation/       Translation providers, settings, selection reading, and UI
     Updates/           Sparkle in-app updater
   Shell/
     Popover/           Popover panel positioning
@@ -34,17 +33,31 @@ Open `Invoker.xcodeproj` in Xcode and run the `Invoker` scheme.
 
 The app is configured as a menu bar utility through `LSUIElement = YES`, so it does not show a Dock icon or main window. Left-click the menu bar icon to open the calendar popover. Right-click it to open the app menu.
 
+Invoker does not provide an in-app screenshot action. Use the native macOS shortcuts `Shift + Command + 4` for a selection or `Shift + Command + 5` for the system screenshot toolbar.
+
 ## Translation
 
 Choose `翻译...` from the right-click menu to open the translation panel for manual input. Select text in another application and press `Option + F` to read the current Accessibility selection, open the panel, and translate immediately. Invoker does not simulate `Command + C` or alter the clipboard while reading a selection.
 
 Translation settings are available from `设置...` in the right-click menu:
 
-- `AI` uses the OpenAI-compatible Responses API. Configure the provider's `base_url`, model, and optional API key; Invoker appends `/responses` while preserving a versioned custom base path. For example, the cc-switch configuration `base_url = "https://api.krill-ai.com/codex/v1"` maps to `https://api.krill-ai.com/codex/v1/responses`. A non-empty API key sends `Authorization: Bearer ...`, equivalent to `requires_openai_auth = true`; an empty key omits that header for local services. The default base URL is `https://api.openai.com/v1`.
+- `AI` uses the OpenAI-compatible Responses API. By default, every request reads the current Codex provider from `~/.cc-switch/cc-switch.db`, so switching providers in cc-switch takes effect on the next translation without restarting Invoker. Invoker reads only the current provider's `model`, `base_url`, `wire_api`, `requires_openai_auth`, and `OPENAI_API_KEY`; it never reads OAuth access or refresh tokens and does not copy the cc-switch API key into Invoker's config. Invoker appends `/responses` while preserving a versioned custom base path.
+- The AI settings source can be switched between `CC Switch` and `Manual`. When `CC Switch` is selected but cannot provide a valid Responses API configuration, Invoker uses the manual Base URL, model, and API key as a per-request fallback and shows a warning.
 - `DeepL` uses only the official DeepL API. Keys ending in `:fx` use the Free API host; other keys use the Pro API host.
 - The default smart language pair is Simplified Chinese and English. When the detected source matches the preferred language, Invoker targets the secondary language; otherwise it targets the preferred language.
 
-The selection shortcut requires macOS Accessibility permission. If permission or selected text is unavailable, Invoker opens the input panel without using a clipboard fallback. API keys are stored in macOS Keychain. Source text is sent only to the provider selected for the current request; Invoker does not keep translation history or cache network responses.
+Invoker's manual AI fallback key and DeepL key are stored as plaintext in `~/.invoker/config.json`:
+
+```json
+{
+  "ai_api_key": "",
+  "deepl_auth_key": ""
+}
+```
+
+Invoker creates `~/.invoker` with mode `0700` and `config.json` with mode `0600`. These permissions restrict other local accounts, but they do not encrypt the secrets or protect them from software running as your account. On the first launch after upgrading, Invoker copies its legacy translation keys from macOS Keychain into this file and removes the old Keychain entries only after the file is valid.
+
+The selection shortcut requires macOS Accessibility permission. If permission or selected text is unavailable, Invoker opens the input panel without using a clipboard fallback. Source text is sent only to the provider selected for the current request; Invoker does not keep translation history or cache network responses.
 
 The product flow and provider boundaries are informed by [Easydict](https://github.com/tisfeng/Easydict). Invoker does not copy Easydict source code, prompts, artwork, or icons.
 

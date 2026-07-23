@@ -4,7 +4,6 @@ import SwiftUI
 @MainActor
 final class StatusBarMenuPanelController {
     private let translationAction: () -> Void
-    private let screenshotAction: () -> Void
     private let clipboardHistoryAction: () -> Void
     private let settingsAction: () -> Void
     private let checkForUpdatesAction: () -> Void
@@ -15,13 +14,11 @@ final class StatusBarMenuPanelController {
 
     init(
         translationAction: @escaping () -> Void,
-        screenshotAction: @escaping () -> Void,
         clipboardHistoryAction: @escaping () -> Void,
         settingsAction: @escaping () -> Void,
         checkForUpdatesAction: @escaping () -> Void
     ) {
         self.translationAction = translationAction
-        self.screenshotAction = screenshotAction
         self.clipboardHistoryAction = clipboardHistoryAction
         self.settingsAction = settingsAction
         self.checkForUpdatesAction = checkForUpdatesAction
@@ -76,10 +73,6 @@ final class StatusBarMenuPanelController {
                 translationAction: { [weak self] in
                     self?.close()
                     self?.translationAction()
-                },
-                screenshotAction: { [weak self] in
-                    self?.close()
-                    self?.screenshotAction()
                 },
                 clipboardHistoryAction: { [weak self] in
                     self?.close()

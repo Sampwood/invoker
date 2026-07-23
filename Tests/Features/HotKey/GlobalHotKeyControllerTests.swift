@@ -4,15 +4,6 @@ import XCTest
 
 @MainActor
 final class GlobalHotKeyControllerTests: XCTestCase {
-    func testScreenshotHotKeyUsesShiftCommandX() {
-        let configuration = GlobalHotKeyConfiguration.screenshot
-
-        XCTAssertEqual(configuration.keyCode, UInt32(kVK_ANSI_X))
-        XCTAssertEqual(configuration.modifiers, UInt32(cmdKey | shiftKey))
-        XCTAssertEqual(configuration.identifier.signature, 0x494E_564B)
-        XCTAssertEqual(configuration.identifier.id, 1)
-    }
-
     func testSelectionTranslationHotKeyUsesOptionFAndUniqueIdentifier() {
         let configuration = GlobalHotKeyConfiguration.selectionTranslation
 
@@ -20,7 +11,6 @@ final class GlobalHotKeyControllerTests: XCTestCase {
         XCTAssertEqual(configuration.modifiers, UInt32(optionKey))
         XCTAssertEqual(configuration.identifier.signature, 0x494E_564B)
         XCTAssertEqual(configuration.identifier.id, 2)
-        XCTAssertNotEqual(configuration.identifier.id, GlobalHotKeyConfiguration.screenshot.identifier.id)
     }
 
     func testClipboardHistoryHotKeyUsesShiftCommandVAndUniqueIdentifier() {
@@ -30,17 +20,16 @@ final class GlobalHotKeyControllerTests: XCTestCase {
         XCTAssertEqual(configuration.modifiers, UInt32(cmdKey | shiftKey))
         XCTAssertEqual(configuration.identifier.signature, 0x494E_564B)
         XCTAssertEqual(configuration.identifier.id, 3)
-        XCTAssertNotEqual(configuration.identifier.id, GlobalHotKeyConfiguration.screenshot.identifier.id)
         XCTAssertNotEqual(configuration.identifier.id, GlobalHotKeyConfiguration.selectionTranslation.identifier.id)
     }
 
     func testMatchingHotKeyIdentifierInvokesAction() {
         var invocationCount = 0
-        let controller = GlobalHotKeyController(configuration: .screenshot) {
+        let controller = GlobalHotKeyController(configuration: .selectionTranslation) {
             invocationCount += 1
         }
 
-        let status = controller.handleHotKeyIdentifier(GlobalHotKeyConfiguration.screenshot.identifier)
+        let status = controller.handleHotKeyIdentifier(GlobalHotKeyConfiguration.selectionTranslation.identifier)
 
         XCTAssertEqual(status, noErr)
         XCTAssertEqual(invocationCount, 1)
@@ -48,7 +37,7 @@ final class GlobalHotKeyControllerTests: XCTestCase {
 
     func testNonMatchingHotKeyIdentifierIsIgnored() {
         var invocationCount = 0
-        let controller = GlobalHotKeyController(configuration: .screenshot) {
+        let controller = GlobalHotKeyController(configuration: .selectionTranslation) {
             invocationCount += 1
         }
         let otherIdentifier = EventHotKeyID(signature: OSType(0x4F54_4852), id: UInt32(99))
