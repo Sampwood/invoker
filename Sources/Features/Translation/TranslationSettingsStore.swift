@@ -8,12 +8,6 @@ enum TranslationDefaultsKey {
     static let aiConfigurationSource = "translation.ai.configurationSource"
     static let preferredLanguage = "translation.preferredLanguage"
     static let secondaryLanguage = "translation.secondaryLanguage"
-    static let secretFileMigrationVersion = "translation.secretFileMigrationVersion"
-}
-
-enum TranslationSecretAccount {
-    static let aiAPIKey = "openai-compatible-api-key"
-    static let deepLAuthKey = "deepl-auth-key"
 }
 
 @MainActor
@@ -102,7 +96,6 @@ final class TranslationSettingsStore: ObservableObject {
     init(
         userDefaults: UserDefaults = .standard,
         secretStore: any TranslationSecretStoring = TranslationSecretFileStore(),
-        legacyKeychain: (any LegacyKeychainStoring)? = LegacyKeychainStore(),
         ccSwitchReader: any CCSwitchAIConfigurationReading = CCSwitchAIConfigurationReader()
     ) {
         self.userDefaults = userDefaults
@@ -134,10 +127,8 @@ final class TranslationSettingsStore: ObservableObject {
             secondaryLanguage = secondary
         }
 
-        let secretLoad = Self.loadAndMigrateSecrets(
-            userDefaults: userDefaults,
-            secretStore: secretStore,
-            legacyKeychain: legacyKeychain
+        let secretLoad = Self.loadSecrets(
+            secretStore: secretStore
         )
         aiAPIKey = secretLoad.secrets.aiAPIKey
         deepLAuthKey = secretLoad.secrets.deepLAuthKey
@@ -293,51 +284,20 @@ final class TranslationSettingsStore: ObservableObject {
         userDefaults.set(secondaryLanguage.rawValue, forKey: TranslationDefaultsKey.secondaryLanguage)
     }
 
-    private static func loadAndMigrateSecrets(
-        userDefaults: UserDefaults,
-        secretStore: any TranslationSecretStoring,
-        legacyKeychain: (any LegacyKeychainStoring)?
+    private static func loadSecrets(
+        secretStore: any TranslationSecretStoring
     ) -> SecretLoadResult {
-        let fileExists = secretStore.fileExists()
-        let loadedSecrets: TranslationSecrets
         do {
-            loadedSecrets = try secretStore.load()
+            return SecretLoadResult(
+                secrets: try secretStore.load(),
+                errorMessage: nil,
+                canPersist: true
+            )
         } catch {
             return SecretLoadResult(
                 secrets: .empty,
                 errorMessage: "无法读取密钥配置 \(secretStore.fileURL.path)：\(error.localizedDescription)",
                 canPersist: false
-            )
-        }
-
-        let currentMigrationVersion = userDefaults.integer(
-            forKey: TranslationDefaultsKey.secretFileMigrationVersion
-        )
-        guard currentMigrationVersion < 1, let legacyKeychain else {
-            return SecretLoadResult(secrets: loadedSecrets, errorMessage: nil, canPersist: true)
-        }
-
-        var migratedSecrets = loadedSecrets
-        do {
-            if !fileExists {
-                migratedSecrets = TranslationSecrets(
-                    aiAPIKey: try legacyKeychain.string(for: TranslationSecretAccount.aiAPIKey) ?? "",
-                    deepLAuthKey: try legacyKeychain.string(for: TranslationSecretAccount.deepLAuthKey) ?? ""
-                )
-                if migratedSecrets != .empty {
-                    try secretStore.save(migratedSecrets)
-                }
-            }
-
-            try legacyKeychain.deleteValue(for: TranslationSecretAccount.aiAPIKey)
-            try legacyKeychain.deleteValue(for: TranslationSecretAccount.deepLAuthKey)
-            userDefaults.set(1, forKey: TranslationDefaultsKey.secretFileMigrationVersion)
-            return SecretLoadResult(secrets: migratedSecrets, errorMessage: nil, canPersist: true)
-        } catch {
-            return SecretLoadResult(
-                secrets: migratedSecrets,
-                errorMessage: "无法完成旧 Keychain 密钥迁移：\(error.localizedDescription)",
-                canPersist: true
             )
         }
     }

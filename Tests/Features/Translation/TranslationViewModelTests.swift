@@ -10,7 +10,6 @@ final class TranslationViewModelTests: XCTestCase {
         let settings = TranslationSettingsStore(
             userDefaults: defaults,
             secretStore: ViewModelInMemorySecretStore(),
-            legacyKeychain: nil,
             ccSwitchReader: ViewModelUnavailableCCSwitchReader()
         )
         let provider = TextEchoTranslationProvider()
@@ -38,7 +37,6 @@ final class TranslationViewModelTests: XCTestCase {
         let settings = TranslationSettingsStore(
             userDefaults: defaults,
             secretStore: ViewModelInMemorySecretStore(),
-            legacyKeychain: nil,
             ccSwitchReader: ViewModelUnavailableCCSwitchReader()
         )
         let viewModel = TranslationViewModel(
@@ -64,7 +62,6 @@ final class TranslationViewModelTests: XCTestCase {
         let settings = TranslationSettingsStore(
             userDefaults: defaults,
             secretStore: ViewModelInMemorySecretStore(),
-            legacyKeychain: nil,
             ccSwitchReader: ViewModelUnavailableCCSwitchReader()
         )
         let provider = LateEventTranslationProvider()
@@ -110,7 +107,6 @@ final class TranslationViewModelTests: XCTestCase {
         let settings = TranslationSettingsStore(
             userDefaults: defaults,
             secretStore: ViewModelInMemorySecretStore(),
-            legacyKeychain: nil,
             ccSwitchReader: ViewModelUnavailableCCSwitchReader()
         )
         let viewModel = TranslationViewModel(

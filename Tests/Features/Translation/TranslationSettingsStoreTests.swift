@@ -50,7 +50,6 @@ final class TranslationSettingsStoreTests: XCTestCase {
         let store = TranslationSettingsStore(
             userDefaults: defaults,
             secretStore: secretStore,
-            legacyKeychain: nil,
             ccSwitchReader: UnavailableCCSwitchReader()
         )
 
@@ -66,56 +65,6 @@ final class TranslationSettingsStoreTests: XCTestCase {
         })
     }
 
-    func testLegacyKeychainSecretsAreMigratedAndDeleted() throws {
-        let suiteName = "TranslationSettingsStoreTests-\(UUID().uuidString)"
-        let defaults = try XCTUnwrap(UserDefaults(suiteName: suiteName))
-        defer { defaults.removePersistentDomain(forName: suiteName) }
-        let secretStore = InMemorySecretStore()
-        let legacy = InMemoryLegacyKeychainStore(values: [
-            TranslationSecretAccount.aiAPIKey: "legacy-ai-secret",
-            TranslationSecretAccount.deepLAuthKey: "legacy-deepl-secret",
-        ])
-
-        let store = TranslationSettingsStore(
-            userDefaults: defaults,
-            secretStore: secretStore,
-            legacyKeychain: legacy,
-            ccSwitchReader: UnavailableCCSwitchReader()
-        )
-
-        XCTAssertEqual(store.aiAPIKey, "legacy-ai-secret")
-        XCTAssertEqual(store.deepLAuthKey, "legacy-deepl-secret")
-        XCTAssertEqual(secretStore.secrets.aiAPIKey, "legacy-ai-secret")
-        XCTAssertEqual(secretStore.secrets.deepLAuthKey, "legacy-deepl-secret")
-        XCTAssertEqual(legacy.values, [:])
-        XCTAssertEqual(defaults.integer(forKey: TranslationDefaultsKey.secretFileMigrationVersion), 1)
-    }
-
-    func testExistingConfigFileWinsOverLegacyKeychain() throws {
-        let suiteName = "TranslationSettingsStoreTests-\(UUID().uuidString)"
-        let defaults = try XCTUnwrap(UserDefaults(suiteName: suiteName))
-        defer { defaults.removePersistentDomain(forName: suiteName) }
-        let secretStore = InMemorySecretStore(
-            secrets: TranslationSecrets(aiAPIKey: "file-ai-secret", deepLAuthKey: "file-deepl-secret"),
-            hasFile: true
-        )
-        let legacy = InMemoryLegacyKeychainStore(values: [
-            TranslationSecretAccount.aiAPIKey: "legacy-ai-secret",
-            TranslationSecretAccount.deepLAuthKey: "legacy-deepl-secret",
-        ])
-
-        let store = TranslationSettingsStore(
-            userDefaults: defaults,
-            secretStore: secretStore,
-            legacyKeychain: legacy,
-            ccSwitchReader: UnavailableCCSwitchReader()
-        )
-
-        XCTAssertEqual(store.aiAPIKey, "file-ai-secret")
-        XCTAssertEqual(store.deepLAuthKey, "file-deepl-secret")
-        XCTAssertEqual(legacy.values, [:])
-    }
-
     func testMatchingPreferredLanguagesAreRepairedToDistinctDefaults() throws {
         let suiteName = "TranslationSettingsStoreTests-\(UUID().uuidString)"
         let defaults = try XCTUnwrap(UserDefaults(suiteName: suiteName))
@@ -126,7 +75,6 @@ final class TranslationSettingsStoreTests: XCTestCase {
         let store = TranslationSettingsStore(
             userDefaults: defaults,
             secretStore: InMemorySecretStore(),
-            legacyKeychain: nil,
             ccSwitchReader: UnavailableCCSwitchReader()
         )
 
@@ -143,7 +91,6 @@ final class TranslationSettingsStoreTests: XCTestCase {
         let store = TranslationSettingsStore(
             userDefaults: defaults,
             secretStore: InMemorySecretStore(),
-            legacyKeychain: nil,
             ccSwitchReader: ValidCCSwitchReader()
         )
 
@@ -177,22 +124,6 @@ private final class InMemorySecretStore: TranslationSecretStoring {
     func save(_ secrets: TranslationSecrets) throws {
         self.secrets = secrets
         hasFile = true
-    }
-}
-
-private final class InMemoryLegacyKeychainStore: LegacyKeychainStoring {
-    private(set) var values: [String: String]
-
-    init(values: [String: String]) {
-        self.values = values
-    }
-
-    func string(for account: String) throws -> String? {
-        values[account]
-    }
-
-    func deleteValue(for account: String) throws {
-        values.removeValue(forKey: account)
     }
 }
 

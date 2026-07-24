@@ -55,7 +55,7 @@ Invoker's manual AI fallback key and DeepL key are stored as plaintext in `~/.in
 }
 ```
 
-Invoker creates `~/.invoker` with mode `0700` and `config.json` with mode `0600`. These permissions restrict other local accounts, but they do not encrypt the secrets or protect them from software running as your account. On the first launch after upgrading, Invoker copies its legacy translation keys from macOS Keychain into this file and removes the old Keychain entries only after the file is valid.
+Invoker creates `~/.invoker` with mode `0700` and `config.json` with mode `0600`. These permissions restrict other local accounts, but they do not encrypt the secrets or protect them from software running as your account. Invoker does not read from or write to macOS Keychain at runtime.
 
 The selection shortcut requires macOS Accessibility permission. If permission or selected text is unavailable, Invoker opens the input panel without using a clipboard fallback. Source text is sent only to the provider selected for the current request; Invoker does not keep translation history or cache network responses.
 
