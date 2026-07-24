@@ -303,7 +303,7 @@ struct ClipboardHistoryView: View {
         } else {
             ScrollViewReader { proxy in
                 ScrollView {
-                    LazyVStack(spacing: ClipboardHistoryMetrics.rowSpacing) {
+                    LazyVStack(alignment: .leading, spacing: ClipboardHistoryMetrics.rowSpacing) {
                         ForEach(filteredItems) { item in
                             ClipboardHistoryRow(
                                 item: item,
@@ -322,8 +322,9 @@ struct ClipboardHistoryView: View {
                             .id(item.id)
                         }
                     }
+                    .frame(width: ClipboardHistoryMetrics.rowBackgroundWidth, alignment: .topLeading)
+                    .padding(.horizontal, ClipboardHistoryMetrics.rowOuterInset)
                     .padding(.vertical, ClipboardHistoryMetrics.listVerticalPadding)
-                    .frame(maxWidth: .infinity)
                     .background(ClipboardHistoryScrollViewConfiguration())
                 }
                 .scrollIndicators(.automatic)
@@ -491,15 +492,12 @@ private struct ClipboardHistoryRow: View {
             pinButton
         }
         .frame(
-            width: ClipboardHistoryMetrics.listWidth
-                - ClipboardHistoryMetrics.rowOuterInset * 2
-                - ClipboardHistoryMetrics.rowHorizontalPadding * 2,
+            width: ClipboardHistoryMetrics.rowContentWidth,
             height: ClipboardHistoryMetrics.rowHeight,
             alignment: .leading
         )
         .padding(.horizontal, ClipboardHistoryMetrics.rowHorizontalPadding)
         .background(rowBackground)
-        .padding(.horizontal, ClipboardHistoryMetrics.rowOuterInset)
         .overlay(alignment: .bottom) {
             if !isSelected {
                 Rectangle()
@@ -510,7 +508,7 @@ private struct ClipboardHistoryRow: View {
                     .frame(height: 1)
                     .padding(
                         .horizontal,
-                        ClipboardHistoryMetrics.rowOuterInset + ClipboardHistoryMetrics.rowHorizontalPadding
+                        ClipboardHistoryMetrics.rowHorizontalPadding
                     )
             }
         }
@@ -754,6 +752,12 @@ enum ClipboardHistoryMetrics {
     static let rowSpacing: CGFloat = 2
     static let rowOuterInset: CGFloat = 10
     static let rowHorizontalPadding: CGFloat = 12
+    static var rowBackgroundWidth: CGFloat {
+        listWidth - rowOuterInset * 2
+    }
+    static var rowContentWidth: CGFloat {
+        rowBackgroundWidth - rowHorizontalPadding * 2
+    }
     static let rowCornerRadius: CGFloat = 7
     static let pinButtonSize: CGFloat = 26
     static let pinSpacing: CGFloat = 6
