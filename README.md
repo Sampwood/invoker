@@ -15,6 +15,7 @@ Sources/
   App/                 App entry point and delegate
   Features/
     Calendar/          Calendar model, formatting, status icon, and popover UI
+    ClipboardHistory/  Clipboard capture, privacy policy, persistence, OCR, and UI
     HotKey/            Global selection-translation and clipboard-history shortcuts
     InputSource/       Global input source lock
     Translation/       Translation providers, settings, selection reading, and UI
@@ -34,6 +35,14 @@ Open `Invoker.xcodeproj` in Xcode and run the `Invoker` scheme.
 The app is configured as a menu bar utility through `LSUIElement = YES`, so it does not show a Dock icon or main window. Left-click the menu bar icon to open the calendar popover. Right-click it to open the app menu.
 
 Invoker does not provide an in-app screenshot action. Use the native macOS shortcuts `Shift + Command + 4` for a selection or `Shift + Command + 5` for the system screenshot toolbar.
+
+## Clipboard History
+
+Press `Shift + Command + V` to open clipboard history. Invoker preserves supported plain text, RTF, HTML, file URL, URL, PNG, and TIFF representations, and stores history in `~/Library/Application Support/Invoker/ClipboardHistory.sqlite3`. The default limits are 200 regular items, 50 pinned items, 100 MB in total, and 10 MB per item.
+
+Clipboard contents marked transient, concealed, or auto-generated are discarded before their payload is read. Universal Clipboard entries are ignored by default. Common password managers are ignored by bundle identifier, and additional applications can be selected from the Clipboard settings tab. Source-application detection uses the frontmost application at capture time; browser extensions normally appear as their host browser, so sensitive pasteboard markers remain the primary protection for extension-provided secrets.
+
+Image text recognition uses the local Vision framework and does not upload images. Reading and storing clipboard history does not request a macOS TCC permission; automatic paste still requires Accessibility permission.
 
 ## Translation
 

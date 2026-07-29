@@ -64,6 +64,9 @@
 		1A2B3C4D5E6F700000000155 /* ClipboardHistoryStoreTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1A2B3C4D5E6F700000000161 /* ClipboardHistoryStoreTests.swift */; };
 		1A2B3C4D5E6F700000000164 /* libsqlite3.tbd in Frameworks */ = {isa = PBXBuildFile; fileRef = 1A2B3C4D5E6F700000000166 /* libsqlite3.tbd */; };
 		1A2B3C4D5E6F700000000165 /* libsqlite3.tbd in Frameworks */ = {isa = PBXBuildFile; fileRef = 1A2B3C4D5E6F700000000166 /* libsqlite3.tbd */; };
+		1A2B3C4D5E6F700000000168 /* ClipboardHistoryRepository.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1A2B3C4D5E6F700000000171 /* ClipboardHistoryRepository.swift */; };
+		1A2B3C4D5E6F700000000169 /* ClipboardHistorySettings.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1A2B3C4D5E6F700000000172 /* ClipboardHistorySettings.swift */; };
+		1A2B3C4D5E6F700000000170 /* ClipboardOCRService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1A2B3C4D5E6F700000000173 /* ClipboardOCRService.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -135,6 +138,9 @@
 		1A2B3C4D5E6F700000000160 /* ClipboardHistoryPanelController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ClipboardHistoryPanelController.swift; sourceTree = "<group>"; };
 		1A2B3C4D5E6F700000000161 /* ClipboardHistoryStoreTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ClipboardHistoryStoreTests.swift; sourceTree = "<group>"; };
 		1A2B3C4D5E6F700000000166 /* libsqlite3.tbd */ = {isa = PBXFileReference; lastKnownFileType = "sourcecode.text-based-dylib-definition"; name = libsqlite3.tbd; path = usr/lib/libsqlite3.tbd; sourceTree = SDKROOT; };
+		1A2B3C4D5E6F700000000171 /* ClipboardHistoryRepository.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ClipboardHistoryRepository.swift; sourceTree = "<group>"; };
+		1A2B3C4D5E6F700000000172 /* ClipboardHistorySettings.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ClipboardHistorySettings.swift; sourceTree = "<group>"; };
+		1A2B3C4D5E6F700000000173 /* ClipboardOCRService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ClipboardOCRService.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
@@ -240,6 +246,9 @@
 			children = (
 				1A2B3C4D5E6F700000000156 /* ClipboardHistoryItem.swift */,
 				1A2B3C4D5E6F700000000157 /* ClipboardHistoryStore.swift */,
+				1A2B3C4D5E6F700000000171 /* ClipboardHistoryRepository.swift */,
+				1A2B3C4D5E6F700000000172 /* ClipboardHistorySettings.swift */,
+				1A2B3C4D5E6F700000000173 /* ClipboardOCRService.swift */,
 				1A2B3C4D5E6F700000000158 /* ClipboardPasteExecutor.swift */,
 				1A2B3C4D5E6F700000000159 /* ClipboardHistoryView.swift */,
 				1A2B3C4D5E6F700000000160 /* ClipboardHistoryPanelController.swift */,
@@ -543,6 +552,9 @@
 				1A2B3C4D5E6F700000000100 /* TranslationSecretFileStore.swift in Sources */,
 				1A2B3C4D5E6F700000000150 /* ClipboardHistoryItem.swift in Sources */,
 				1A2B3C4D5E6F700000000151 /* ClipboardHistoryStore.swift in Sources */,
+				1A2B3C4D5E6F700000000168 /* ClipboardHistoryRepository.swift in Sources */,
+				1A2B3C4D5E6F700000000169 /* ClipboardHistorySettings.swift in Sources */,
+				1A2B3C4D5E6F700000000170 /* ClipboardOCRService.swift in Sources */,
 				1A2B3C4D5E6F700000000152 /* ClipboardPasteExecutor.swift in Sources */,
 				1A2B3C4D5E6F700000000153 /* ClipboardHistoryView.swift in Sources */,
 				1A2B3C4D5E6F700000000154 /* ClipboardHistoryPanelController.swift in Sources */,

@@ -9,37 +9,101 @@ final class ClipboardHistoryStoreTests: XCTestCase {
         defer { suite.removePersistentDomain() }
         let item = ClipboardHistoryItem.text("hello", createdAt: Date(timeIntervalSince1970: 1))
         suite.pasteboard.nextItem = item
+        suite.pasteboard.typeIdentifiers = Set(item.snapshot.typeIdentifiers)
         suite.pasteboard.changeCount = 1
 
         suite.store.captureCurrentItemIfChanged()
 
         XCTAssertEqual(suite.store.items, [item])
+        XCTAssertEqual(suite.pasteboard.readCount, 1)
     }
 
-    func testRecordsImageClipboardItem() throws {
+    func testSensitiveMarkerIsRejectedBeforePayloadRead() throws {
         let suite = try ClipboardHistoryTestSuite()
         defer { suite.removePersistentDomain() }
-        let item = ClipboardHistoryItem.image(
-            pngData: try Self.samplePNGData(),
-            createdAt: Date(timeIntervalSince1970: 1)
-        )
-        suite.pasteboard.nextItem = item
-        suite.pasteboard.changeCount = 1
-
-        suite.store.captureCurrentItemIfChanged()
-
-        XCTAssertEqual(suite.store.items, [item])
-    }
-
-    func testIgnoresEmptyOrUnsupportedClipboardItem() throws {
-        let suite = try ClipboardHistoryTestSuite()
-        defer { suite.removePersistentDomain() }
-        suite.pasteboard.nextItem = nil
+        suite.pasteboard.nextItem = .text("secret")
+        suite.pasteboard.typeIdentifiers = ["org.nspasteboard.ConcealedType"]
         suite.pasteboard.changeCount = 1
 
         suite.store.captureCurrentItemIfChanged()
 
         XCTAssertTrue(suite.store.items.isEmpty)
+        XCTAssertEqual(suite.pasteboard.readCount, 0)
+    }
+
+    func testRemoteClipboardIsIgnoredByDefaultAndCanBeEnabled() throws {
+        let suite = try ClipboardHistoryTestSuite()
+        defer { suite.removePersistentDomain() }
+        suite.pasteboard.nextItem = .text("remote")
+        suite.pasteboard.typeIdentifiers = [ClipboardCapturePolicy.remoteClipboardTypeIdentifier]
+        suite.pasteboard.changeCount = 1
+
+        suite.store.captureCurrentItemIfChanged()
+        XCTAssertTrue(suite.store.items.isEmpty)
+
+        suite.settings.capturesUniversalClipboard = true
+        suite.pasteboard.changeCount = 2
+        suite.store.captureCurrentItemIfChanged()
+
+        XCTAssertEqual(suite.store.items.map(\.text), ["remote"])
+    }
+
+    func testBuiltInPasswordManagerAndCustomApplicationAreIgnored() throws {
+        let suite = try ClipboardHistoryTestSuite()
+        defer { suite.removePersistentDomain() }
+        suite.pasteboard.nextItem = .text("secret")
+        suite.pasteboard.typeIdentifiers = [NSPasteboard.PasteboardType.string.rawValue]
+
+        suite.sourceProvider.application = ClipboardSourceApplication(
+            bundleIdentifier: "com.bitwarden.desktop",
+            name: "Bitwarden",
+            bundlePath: nil
+        )
+        suite.pasteboard.changeCount = 1
+        suite.store.captureCurrentItemIfChanged()
+        XCTAssertEqual(suite.pasteboard.readCount, 0)
+
+        suite.settings.addIgnoredApplication(
+            IgnoredClipboardApplication(
+                bundleIdentifier: "com.example.private",
+                name: "Private",
+                bundlePath: nil
+            )
+        )
+        suite.sourceProvider.application = ClipboardSourceApplication(
+            bundleIdentifier: "com.example.private",
+            name: "Private",
+            bundlePath: nil
+        )
+        suite.pasteboard.changeCount = 2
+        suite.store.captureCurrentItemIfChanged()
+
+        XCTAssertTrue(suite.store.items.isEmpty)
+        XCTAssertEqual(suite.pasteboard.readCount, 0)
+    }
+
+    func testBuiltInPasswordManagerCanBeDisabled() throws {
+        let suite = try ClipboardHistoryTestSuite()
+        defer { suite.removePersistentDomain() }
+        let bitwarden = try XCTUnwrap(
+            PasswordManagerCatalog.entries.first { $0.id == "bitwarden" }
+        )
+        suite.settings.setPasswordManager(bitwarden, enabled: false)
+        suite.sourceProvider.application = ClipboardSourceApplication(
+            bundleIdentifier: "com.bitwarden.desktop",
+            name: "Bitwarden",
+            bundlePath: nil
+        )
+        suite.pasteboard.nextItem = .text(
+            "allowed",
+            sourceApplication: suite.sourceProvider.application
+        )
+        suite.pasteboard.typeIdentifiers = [NSPasteboard.PasteboardType.string.rawValue]
+        suite.pasteboard.changeCount = 1
+
+        suite.store.captureCurrentItemIfChanged()
+
+        XCTAssertEqual(suite.store.items.map(\.text), ["allowed"])
     }
 
     func testDuplicatePayloadMovesNewestItemToTopAndPreservesIdentity() throws {
@@ -58,59 +122,76 @@ final class ClipboardHistoryStoreTests: XCTestCase {
         XCTAssertEqual(suite.store.items.first?.createdAt, duplicate.createdAt)
     }
 
-    func testTrimsItemsToMaxLimit() throws {
-        let suite = try ClipboardHistoryTestSuite(maxItems: 2)
-        defer { suite.removePersistentDomain() }
-
-        suite.store.record(.text("one", createdAt: Date(timeIntervalSince1970: 1)))
-        suite.store.record(.text("two", createdAt: Date(timeIntervalSince1970: 2)))
-        suite.store.record(.text("three", createdAt: Date(timeIntervalSince1970: 3)))
-
-        XCTAssertEqual(suite.store.items.map(\.text), ["three", "two"])
-    }
-
-    func testPersistsTextAndImageItems() throws {
-        let suite = try ClipboardHistoryTestSuite()
-        defer { suite.removePersistentDomain() }
-        let textItem = ClipboardHistoryItem.text("persisted", createdAt: Date(timeIntervalSince1970: 1))
-        let imageItem = ClipboardHistoryItem.image(
-            pngData: try Self.samplePNGData(),
-            createdAt: Date(timeIntervalSince1970: 2)
+    func testSnapshotHashIncludesRepresentationOrderAndType() {
+        let text = ClipboardRepresentation(
+            typeIdentifier: NSPasteboard.PasteboardType.string.rawValue,
+            data: Data("hello".utf8)
+        )
+        let html = ClipboardRepresentation(
+            typeIdentifier: NSPasteboard.PasteboardType.html.rawValue,
+            data: Data("<b>hello</b>".utf8)
+        )
+        let first = ClipboardSnapshot(
+            items: [ClipboardSnapshotItem(representations: [text, html])]
+        )
+        let second = ClipboardSnapshot(
+            items: [ClipboardSnapshotItem(representations: [html, text])]
         )
 
+        XCTAssertNotEqual(first.payloadHash, second.payloadHash)
+    }
+
+    func testTrimsOnlyUnpinnedItemsToCountLimit() throws {
+        let suite = try ClipboardHistoryTestSuite(maxItems: 2)
+        defer { suite.removePersistentDomain() }
+        let pinned = ClipboardHistoryItem.text("pinned")
+        suite.store.record(pinned)
+        XCTAssertEqual(suite.store.togglePin(for: pinned.id), .pinned)
+
+        suite.store.record(.text("one"))
+        suite.store.record(.text("two"))
+        suite.store.record(.text("three"))
+
+        XCTAssertEqual(suite.store.items.map(\.text), ["pinned", "three", "two"])
+    }
+
+    func testCopyToPasteboardWritesAllRepresentationsAndAvoidsRecapture() throws {
+        let suite = try ClipboardHistoryTestSuite()
+        defer { suite.removePersistentDomain() }
+        let item = richTextItem()
+        suite.store.record(item)
+
+        XCTAssertTrue(suite.store.copyToPasteboard(item))
+        suite.store.captureCurrentItemIfChanged()
+
+        XCTAssertEqual(suite.pasteboard.writtenItems, [item])
+        XCTAssertEqual(suite.store.items.count, 1)
+    }
+
+    func testPersistsAndReloadsItems() async throws {
+        let suite = try ClipboardHistoryTestSuite()
+        defer { suite.removePersistentDomain() }
+        let textItem = ClipboardHistoryItem.text("persisted")
+        let richItem = richTextItem()
         suite.store.record(textItem)
-        suite.store.record(imageItem)
+        suite.store.record(richItem)
+        await suite.store.waitForPendingPersistence()
 
         let reloadedStore = ClipboardHistoryStore(
             userDefaults: suite.defaults,
+            settings: suite.settings,
             pasteboard: suite.pasteboard,
-            maxItems: ClipboardHistoryStore.defaultMaxItems,
+            sourceApplicationProvider: suite.sourceProvider,
+            repository: suite.repository,
+            ocrRecognizer: EmptyClipboardOCRRecognizer(),
             pollInterval: 100
         )
+        await reloadedStore.loadPersistedHistory()
 
-        XCTAssertEqual(reloadedStore.items, [imageItem, textItem])
+        XCTAssertEqual(reloadedStore.items, suite.store.items)
     }
 
-    func testCopyToPasteboardWritesItemAndMovesItToTop() throws {
-        let suite = try ClipboardHistoryTestSuite()
-        defer { suite.removePersistentDomain() }
-        let oldItem = ClipboardHistoryItem.text("old", createdAt: Date(timeIntervalSince1970: 1))
-        let selectedItem = ClipboardHistoryItem.text("selected", createdAt: Date(timeIntervalSince1970: 2))
-        suite.store.record(selectedItem)
-        suite.store.record(oldItem)
-
-        let didCopy = suite.store.copyToPasteboard(
-            selectedItem,
-            createdAt: Date(timeIntervalSince1970: 3)
-        )
-
-        XCTAssertTrue(didCopy)
-        XCTAssertEqual(suite.pasteboard.writtenItems, [selectedItem])
-        XCTAssertEqual(suite.store.items.map(\.text), ["selected", "old"])
-        XCTAssertEqual(suite.store.items.first?.createdAt, Date(timeIntervalSince1970: 3))
-    }
-
-    func testDecodesLegacyItemsAsUnpinned() throws {
+    func testMigratesLegacyUserDefaultsIntoRepository() async throws {
         let suite = try ClipboardHistoryTestSuite()
         defer { suite.removePersistentDomain() }
         let legacyItem = LegacyClipboardHistoryItem(
@@ -125,142 +206,97 @@ final class ClipboardHistoryStoreTests: XCTestCase {
             forKey: ClipboardHistoryStore.defaultsKey
         )
 
-        let reloadedStore = ClipboardHistoryStore(
-            userDefaults: suite.defaults,
-            pasteboard: suite.pasteboard,
-            pollInterval: 100
-        )
+        await suite.store.loadPersistedHistory()
 
-        XCTAssertEqual(reloadedStore.items.map(\.text), ["legacy"])
-        XCTAssertFalse(try XCTUnwrap(reloadedStore.items.first).isPinned)
+        XCTAssertEqual(suite.store.items.map(\.text), ["legacy"])
+        XCTAssertNil(suite.defaults.data(forKey: ClipboardHistoryStore.defaultsKey))
+        let migratedItems = try await suite.repository.loadItems()
+        XCTAssertEqual(migratedItems, suite.store.items)
     }
 
-    func testPinningMovesItemsToTopAndReuseKeepsPinnedOrderStable() throws {
-        let suite = try ClipboardHistoryTestSuite()
-        defer { suite.removePersistentDomain() }
-        let first = ClipboardHistoryItem.text("first", createdAt: Date(timeIntervalSince1970: 1))
-        let second = ClipboardHistoryItem.text("second", createdAt: Date(timeIntervalSince1970: 2))
-        let third = ClipboardHistoryItem.text("third", createdAt: Date(timeIntervalSince1970: 3))
-        suite.store.record(first)
-        suite.store.record(second)
-        suite.store.record(third)
-
-        XCTAssertEqual(suite.store.togglePin(for: first.id), .pinned)
-        XCTAssertEqual(suite.store.togglePin(for: second.id), .pinned)
-        XCTAssertEqual(suite.store.items.map(\.text), ["second", "first", "third"])
-
-        let pinnedFirst = try XCTUnwrap(suite.store.items.first { $0.id == first.id })
-        XCTAssertTrue(
-            suite.store.copyToPasteboard(
-                pinnedFirst,
-                createdAt: Date(timeIntervalSince1970: 4)
+    func testSQLiteRepositoryRoundTripsMultiplePasteboardItems() async throws {
+        let directory = FileManager.default.temporaryDirectory
+            .appendingPathComponent(UUID().uuidString, isDirectory: true)
+        try FileManager.default.createDirectory(
+            at: directory,
+            withIntermediateDirectories: true
+        )
+        defer { try? FileManager.default.removeItem(at: directory) }
+        let repository = try SQLiteClipboardHistoryRepository(
+            databaseURL: directory.appendingPathComponent("history.sqlite3")
+        )
+        let item = ClipboardHistoryItem(
+            snapshot: ClipboardSnapshot(
+                items: [
+                    ClipboardSnapshotItem(
+                        representations: [
+                            ClipboardRepresentation(
+                                typeIdentifier: NSPasteboard.PasteboardType.string.rawValue,
+                                data: Data("first".utf8)
+                            )
+                        ]
+                    ),
+                    ClipboardSnapshotItem(
+                        representations: [
+                            ClipboardRepresentation(
+                                typeIdentifier: NSPasteboard.PasteboardType.URL.rawValue,
+                                data: Data("https://example.com".utf8)
+                            )
+                        ]
+                    )
+                ]
+            ),
+            sourceApplication: ClipboardSourceApplication(
+                bundleIdentifier: "com.example.source",
+                name: "Source",
+                bundlePath: "/Applications/Source.app"
             )
         )
 
-        XCTAssertEqual(suite.store.items.map(\.text), ["second", "first", "third"])
-        XCTAssertEqual(suite.store.items[1].id, first.id)
-        XCTAssertEqual(suite.store.items[1].createdAt, Date(timeIntervalSince1970: 4))
-        XCTAssertTrue(suite.store.items[1].isPinned)
+        try await repository.synchronize([item])
+
+        let reloadedItems = try await repository.loadItems()
+        XCTAssertEqual(reloadedItems, [item])
     }
 
-    func testPinnedItemsDoNotUseUnpinnedCapacity() throws {
-        let suite = try ClipboardHistoryTestSuite(maxItems: 2)
-        defer { suite.removePersistentDomain() }
-        let pinnedItem = ClipboardHistoryItem.text("pinned")
-        suite.store.record(pinnedItem)
-        XCTAssertEqual(suite.store.togglePin(for: pinnedItem.id), .pinned)
+    func testSystemPasteboardAccessorPreservesSupportedRepresentations() throws {
+        let pasteboard = NSPasteboard(name: NSPasteboard.Name(UUID().uuidString))
+        pasteboard.clearContents()
+        let pasteboardItem = NSPasteboardItem()
+        pasteboardItem.setString("hello", forType: .string)
+        pasteboardItem.setData(Data("<b>hello</b>".utf8), forType: .html)
+        XCTAssertTrue(pasteboard.writeObjects([pasteboardItem]))
+        let accessor = SystemClipboardPasteboardAccessor(pasteboard: pasteboard)
 
-        suite.store.record(.text("one"))
-        suite.store.record(.text("two"))
-        suite.store.record(.text("three"))
-
-        XCTAssertEqual(suite.store.items.map(\.text), ["pinned", "three", "two"])
-        XCTAssertEqual(suite.store.pinnedItemCount, 1)
-        XCTAssertEqual(suite.store.unpinnedItemCount, 2)
-    }
-
-    func testRejectsPinBeyondPinnedLimitWithoutChangingItems() throws {
-        let suite = try ClipboardHistoryTestSuite(maxPinnedItems: 2)
-        defer { suite.removePersistentDomain() }
-        let first = ClipboardHistoryItem.text("first")
-        let second = ClipboardHistoryItem.text("second")
-        let third = ClipboardHistoryItem.text("third")
-        suite.store.record(first)
-        suite.store.record(second)
-        suite.store.record(third)
-        XCTAssertEqual(suite.store.togglePin(for: first.id), .pinned)
-        XCTAssertEqual(suite.store.togglePin(for: second.id), .pinned)
-        let itemsBeforeRejectedPin = suite.store.items
-
-        XCTAssertEqual(suite.store.togglePin(for: third.id), .limitReached)
-
-        XCTAssertEqual(suite.store.items, itemsBeforeRejectedPin)
-        XCTAssertEqual(suite.store.pinnedItemCount, 2)
-        XCTAssertFalse(try XCTUnwrap(suite.store.items.first { $0.id == third.id }).isPinned)
-    }
-
-    func testUnpinningMovesItemToTopOfUnpinnedHistoryAndTrimsOldest() throws {
-        let suite = try ClipboardHistoryTestSuite(maxItems: 2)
-        defer { suite.removePersistentDomain() }
-        let pinnedItem = ClipboardHistoryItem.text("pinned")
-        suite.store.record(pinnedItem)
-        suite.store.record(.text("old"))
-        XCTAssertEqual(suite.store.togglePin(for: pinnedItem.id), .pinned)
-        suite.store.record(.text("newer"))
-        suite.store.record(.text("newest"))
-
-        XCTAssertEqual(suite.store.togglePin(for: pinnedItem.id), .unpinned)
-
-        XCTAssertEqual(suite.store.items.map(\.text), ["pinned", "newest"])
-        XCTAssertEqual(suite.store.pinnedItemCount, 0)
-        XCTAssertEqual(suite.store.unpinnedItemCount, 2)
-    }
-
-    func testClearUnpinnedPreservesPinnedItems() throws {
-        let suite = try ClipboardHistoryTestSuite()
-        defer { suite.removePersistentDomain() }
-        let pinnedItem = ClipboardHistoryItem.text("keep")
-        suite.store.record(pinnedItem)
-        suite.store.record(.text("remove"))
-        XCTAssertEqual(suite.store.togglePin(for: pinnedItem.id), .pinned)
-
-        suite.store.clearUnpinned()
-
-        XCTAssertEqual(suite.store.items.map(\.text), ["keep"])
-        XCTAssertTrue(try XCTUnwrap(suite.store.items.first).isPinned)
-        XCTAssertFalse(suite.store.hasUnpinnedItems)
-    }
-
-    func testPersistsPinnedStateAndStableOrder() throws {
-        let suite = try ClipboardHistoryTestSuite()
-        defer { suite.removePersistentDomain() }
-        let first = ClipboardHistoryItem.text("first")
-        let second = ClipboardHistoryItem.text("second")
-        suite.store.record(first)
-        suite.store.record(second)
-        XCTAssertEqual(suite.store.togglePin(for: first.id), .pinned)
-        XCTAssertEqual(suite.store.togglePin(for: second.id), .pinned)
-
-        let reloadedStore = ClipboardHistoryStore(
-            userDefaults: suite.defaults,
-            pasteboard: suite.pasteboard,
-            pollInterval: 100
+        let item = try XCTUnwrap(
+            accessor.currentHistoryItem(createdAt: Date(), sourceApplication: nil)
         )
 
-        XCTAssertEqual(reloadedStore.items, suite.store.items)
-        XCTAssertEqual(reloadedStore.items.map(\.text), ["second", "first"])
-        XCTAssertTrue(reloadedStore.items.allSatisfy(\.isPinned))
+        XCTAssertEqual(
+            Set(item.snapshot.typeIdentifiers),
+            Set([
+                NSPasteboard.PasteboardType.string.rawValue,
+                NSPasteboard.PasteboardType.html.rawValue
+            ])
+        )
+        XCTAssertTrue(accessor.write(item))
     }
 
-    func testPresentationStateFiltersTextAndImages() {
+    func testPresentationSearchIncludesSourceTypeAndOCRText() {
         let state = ClipboardHistoryPresentationState()
-        let textItem = ClipboardHistoryItem.text("Project README")
-        let imageItem = ClipboardHistoryItem.image(pngData: Data([0]))
+        let source = ClipboardSourceApplication(
+            bundleIdentifier: "com.example.notes",
+            name: "Notes",
+            bundlePath: nil
+        )
+        let textItem = ClipboardHistoryItem.text("Project README", sourceApplication: source)
+        let imageItem = ClipboardHistoryItem.image(pngData: Data([0])).settingOCRText("invoice 2026")
         let items = [textItem, imageItem]
 
-        state.query = "readme"
+        state.query = "notes"
         XCTAssertEqual(state.filteredItems(from: items), [textItem])
-
+        state.query = "invoice"
+        XCTAssertEqual(state.filteredItems(from: items), [imageItem])
         state.query = "图片"
         XCTAssertEqual(state.filteredItems(from: items), [imageItem])
     }
@@ -274,50 +310,59 @@ final class ClipboardHistoryStoreTests: XCTestCase {
         ]
 
         state.prepare(for: items)
-        XCTAssertEqual(state.selectedItemID, items[0].id)
-
-        state.moveSelection(by: 1, in: items)
-        XCTAssertEqual(state.selectedItemID, items[1].id)
-
         state.moveSelection(by: 10, in: items)
         XCTAssertEqual(state.selectedItemID, items[2].id)
-
         state.moveSelection(by: -10, in: items)
         XCTAssertEqual(state.selectedItemID, items[0].id)
     }
 
-    private static func samplePNGData() throws -> Data {
-        let image = NSImage(size: NSSize(width: 2, height: 2))
-        image.lockFocus()
-        NSColor.red.setFill()
-        NSRect(x: 0, y: 0, width: 2, height: 2).fill()
-        image.unlockFocus()
-
-        let tiffData = try XCTUnwrap(image.tiffRepresentation)
-        let bitmap = try XCTUnwrap(NSBitmapImageRep(data: tiffData))
-        return try XCTUnwrap(bitmap.representation(using: .png, properties: [:]))
+    private func richTextItem() -> ClipboardHistoryItem {
+        ClipboardHistoryItem(
+            snapshot: ClipboardSnapshot(
+                items: [
+                    ClipboardSnapshotItem(
+                        representations: [
+                            ClipboardRepresentation(
+                                typeIdentifier: NSPasteboard.PasteboardType.string.rawValue,
+                                data: Data("hello".utf8)
+                            ),
+                            ClipboardRepresentation(
+                                typeIdentifier: NSPasteboard.PasteboardType.html.rawValue,
+                                data: Data("<b>hello</b>".utf8)
+                            )
+                        ]
+                    )
+                ]
+            )
+        )
     }
 }
 
 @MainActor
 private final class ClipboardHistoryTestSuite {
     let defaults: UserDefaults
+    let settings: ClipboardHistorySettingsStore
     let pasteboard: FakeClipboardPasteboard
+    let sourceProvider: FakeClipboardSourceApplicationProvider
+    let repository: InMemoryClipboardHistoryRepository
     let store: ClipboardHistoryStore
     private let suiteName: String
 
-    init(
-        maxItems: Int = ClipboardHistoryStore.defaultMaxItems,
-        maxPinnedItems: Int = ClipboardHistoryStore.defaultMaxPinnedItems
-    ) throws {
+    init(maxItems: Int = ClipboardHistoryStore.defaultMaxItems) throws {
         suiteName = "ClipboardHistoryStoreTests-\(UUID().uuidString)"
         defaults = try XCTUnwrap(UserDefaults(suiteName: suiteName))
+        settings = ClipboardHistorySettingsStore(userDefaults: defaults)
+        settings.maxHistoryItems = maxItems
         pasteboard = FakeClipboardPasteboard()
+        sourceProvider = FakeClipboardSourceApplicationProvider()
+        repository = InMemoryClipboardHistoryRepository()
         store = ClipboardHistoryStore(
             userDefaults: defaults,
+            settings: settings,
             pasteboard: pasteboard,
-            maxItems: maxItems,
-            maxPinnedItems: maxPinnedItems,
+            sourceApplicationProvider: sourceProvider,
+            repository: repository,
+            ocrRecognizer: EmptyClipboardOCRRecognizer(),
             pollInterval: 100
         )
     }
@@ -335,14 +380,39 @@ private struct LegacyClipboardHistoryItem: Encodable {
     let imagePNGData: Data?
 }
 
+private struct EmptyClipboardOCRRecognizer: ClipboardOCRRecognizing {
+    func recognizeText(in pngData: Data) async throws -> String? {
+        nil
+    }
+}
+
+@MainActor
+private final class FakeClipboardSourceApplicationProvider: ClipboardSourceApplicationProviding {
+    var application: ClipboardSourceApplication?
+
+    func frontmostApplication() -> ClipboardSourceApplication? {
+        application
+    }
+}
+
 @MainActor
 private final class FakeClipboardPasteboard: ClipboardPasteboardAccessing {
     var changeCount = 0
+    var typeIdentifiers: Set<String> = []
     var nextItem: ClipboardHistoryItem?
+    private(set) var readCount = 0
     private(set) var writtenItems: [ClipboardHistoryItem] = []
 
-    func currentHistoryItem(createdAt: Date) -> ClipboardHistoryItem? {
-        nextItem
+    var availableTypeIdentifiers: Set<String> {
+        typeIdentifiers
+    }
+
+    func currentHistoryItem(
+        createdAt: Date,
+        sourceApplication: ClipboardSourceApplication?
+    ) -> ClipboardHistoryItem? {
+        readCount += 1
+        return nextItem
     }
 
     func write(_ item: ClipboardHistoryItem) -> Bool {

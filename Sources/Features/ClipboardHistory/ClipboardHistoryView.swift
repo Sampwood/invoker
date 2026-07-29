@@ -22,15 +22,8 @@ final class ClipboardHistoryPresentationState: ObservableObject {
             return items
         }
 
-        return items.filter { item in
-            let searchableText: String
-            switch item.kind {
-            case .text:
-                searchableText = (item.text ?? "") + " 文本"
-            case .image:
-                searchableText = "图片"
-            }
-            return searchableText.localizedCaseInsensitiveContains(trimmedQuery)
+        return items.filter {
+            $0.searchableText.localizedCaseInsensitiveContains(trimmedQuery)
         }
     }
 
@@ -323,7 +316,8 @@ struct ClipboardHistoryView: View {
                         }
                     }
                     .frame(width: ClipboardHistoryMetrics.rowBackgroundWidth, alignment: .topLeading)
-                    .padding(.horizontal, ClipboardHistoryMetrics.rowOuterInset)
+                    .padding(.leading, ClipboardHistoryMetrics.listLeadingInset)
+                    .padding(.trailing, ClipboardHistoryMetrics.listTrailingInset)
                     .padding(.vertical, ClipboardHistoryMetrics.listVerticalPadding)
                     .background(ClipboardHistoryScrollViewConfiguration())
                 }
@@ -373,10 +367,16 @@ private struct ClipboardHistoryDetailView: View {
     var body: some View {
         VStack(spacing: 0) {
             HStack(spacing: 0) {
-                Text(ClipboardHistoryFormatting.formattedDate(item.createdAt))
-                    .font(.system(size: 11))
-                    .foregroundStyle(Color(nsColor: .secondaryLabelColor))
-                    .monospacedDigit()
+                VStack(alignment: .leading, spacing: 3) {
+                    Text(ClipboardHistoryFormatting.formattedDate(item.createdAt))
+                        .font(.system(size: 11))
+                        .foregroundStyle(Color(nsColor: .secondaryLabelColor))
+                        .monospacedDigit()
+
+                    if let sourceApplication = item.sourceApplication {
+                        ClipboardSourceApplicationLabel(application: sourceApplication)
+                    }
+                }
 
                 Spacer(minLength: 0)
 
@@ -404,9 +404,9 @@ private struct ClipboardHistoryDetailView: View {
     @ViewBuilder
     private var detailContent: some View {
         switch item.kind {
-        case .text:
+        case .text, .richText, .file, .url:
             ScrollView {
-                Text(item.text ?? "")
+                Text(ClipboardHistoryFormatting.detailText(for: item))
                     .font(.system(size: 13))
                     .foregroundStyle(Color(nsColor: .labelColor))
                     .lineSpacing(3)
@@ -468,11 +468,20 @@ private struct ClipboardHistoryRow: View {
                         thumbnail
                     }
 
-                    Text(ClipboardHistoryFormatting.title(for: item))
-                        .font(.system(size: 12.5, weight: .regular))
-                        .foregroundStyle(Color(nsColor: .labelColor))
-                        .lineLimit(item.kind == .text ? 2 : 1)
-                        .multilineTextAlignment(.leading)
+                    VStack(alignment: .leading, spacing: 3) {
+                        Text(ClipboardHistoryFormatting.title(for: item))
+                            .font(.system(size: 12.5, weight: .regular))
+                            .foregroundStyle(Color(nsColor: .labelColor))
+                            .lineLimit(1)
+                            .multilineTextAlignment(.leading)
+
+                        if let sourceApplication = item.sourceApplication {
+                            Text(sourceApplication.name)
+                                .font(.system(size: 10.5))
+                                .foregroundStyle(Color(nsColor: .secondaryLabelColor))
+                                .lineLimit(1)
+                        }
+                    }
 
                     Spacer(minLength: 0)
                 }
@@ -496,7 +505,8 @@ private struct ClipboardHistoryRow: View {
             height: ClipboardHistoryMetrics.rowHeight,
             alignment: .leading
         )
-        .padding(.horizontal, ClipboardHistoryMetrics.rowHorizontalPadding)
+        .padding(.leading, ClipboardHistoryMetrics.rowLeadingPadding)
+        .padding(.trailing, ClipboardHistoryMetrics.rowTrailingPadding)
         .background(rowBackground)
         .overlay(alignment: .bottom) {
             if !isSelected {
@@ -506,10 +516,8 @@ private struct ClipboardHistoryRow: View {
                             .opacity(showsPinnedBoundary ? 0.9 : 0.38)
                     )
                     .frame(height: 1)
-                    .padding(
-                        .horizontal,
-                        ClipboardHistoryMetrics.rowHorizontalPadding
-                    )
+                    .padding(.leading, ClipboardHistoryMetrics.rowLeadingPadding)
+                    .padding(.trailing, ClipboardHistoryMetrics.rowTrailingPadding)
             }
         }
         .onHover { isHovered = $0 }
@@ -658,10 +666,24 @@ private struct ClipboardHistoryRow: View {
 private enum ClipboardHistoryFormatting {
     static func title(for item: ClipboardHistoryItem) -> String {
         switch item.kind {
-        case .text:
-            return item.text?.trimmingCharacters(in: .whitespacesAndNewlines) ?? ""
+        case .text, .richText, .file, .url:
+            return item.displayTitle
         case .image:
             return imageDimensions(from: item.imagePNGData) ?? "尺寸未知"
+        }
+    }
+
+    static func detailText(for item: ClipboardHistoryItem) -> String {
+        switch item.kind {
+        case .file:
+            let files = item.snapshot.urls
+            return files.isEmpty ? item.displayTitle : files.joined(separator: "\n")
+        case .url:
+            return item.snapshot.urls.joined(separator: "\n")
+        case .richText, .text:
+            return item.text ?? ""
+        case .image:
+            return item.ocrText ?? ""
         }
     }
 
@@ -678,7 +700,7 @@ private enum ClipboardHistoryFormatting {
 
     static func accessibilityTitle(for item: ClipboardHistoryItem) -> String {
         switch item.kind {
-        case .text:
+        case .text, .richText, .file, .url:
             return title(for: item)
         case .image:
             return "图片，" + title(for: item)
@@ -707,6 +729,33 @@ private enum ClipboardHistoryFormatting {
     }()
 }
 
+private struct ClipboardSourceApplicationLabel: View {
+    let application: ClipboardSourceApplication
+
+    var body: some View {
+        HStack(spacing: 4) {
+            if let icon {
+                Image(nsImage: icon)
+                    .resizable()
+                    .scaledToFit()
+                    .frame(width: 13, height: 13)
+            }
+
+            Text(application.name)
+                .font(.system(size: 10.5))
+                .foregroundStyle(Color(nsColor: .secondaryLabelColor))
+                .lineLimit(1)
+        }
+    }
+
+    private var icon: NSImage? {
+        guard let bundlePath = application.bundlePath else {
+            return nil
+        }
+        return NSWorkspace.shared.icon(forFile: bundlePath)
+    }
+}
+
 private struct ClipboardHistoryScrollViewConfiguration: NSViewRepresentable {
     func makeNSView(context: Context) -> ClipboardHistoryScrollConfigurationView {
         ClipboardHistoryScrollConfigurationView()
@@ -730,6 +779,12 @@ private final class ClipboardHistoryScrollConfigurationView: NSView {
                 scrollView.scrollerStyle = .overlay
                 scrollView.autohidesScrollers = true
                 scrollView.verticalScroller?.controlSize = .small
+                scrollView.scrollerInsets = NSEdgeInsets(
+                    top: 0,
+                    left: 0,
+                    bottom: 0,
+                    right: ClipboardHistoryMetrics.scrollerTrailingInset
+                )
                 scrollView.tile()
                 return
             }
@@ -750,13 +805,16 @@ enum ClipboardHistoryMetrics {
     static let listBackgroundOpacity: Double = 0.2
     static let rowHeight: CGFloat = 50
     static let rowSpacing: CGFloat = 2
-    static let rowOuterInset: CGFloat = 10
-    static let rowHorizontalPadding: CGFloat = 12
+    static let listLeadingInset: CGFloat = 12
+    static let listTrailingInset: CGFloat = 14
+    static let scrollerTrailingInset: CGFloat = 2
+    static let rowLeadingPadding: CGFloat = 12
+    static let rowTrailingPadding: CGFloat = 4
     static var rowBackgroundWidth: CGFloat {
-        listWidth - rowOuterInset * 2
+        listWidth - listLeadingInset - listTrailingInset
     }
     static var rowContentWidth: CGFloat {
-        rowBackgroundWidth - rowHorizontalPadding * 2
+        rowBackgroundWidth - rowLeadingPadding - rowTrailingPadding
     }
     static let rowCornerRadius: CGFloat = 7
     static let pinButtonSize: CGFloat = 26

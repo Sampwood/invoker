@@ -5,13 +5,16 @@ final class StatusBarController: NSObject {
     private let statusItem: NSStatusItem
     private let popoverController: CalendarPopoverPanelController
     private let clipboardHistoryStore: ClipboardHistoryStore
+    private let clipboardHistorySettings: ClipboardHistorySettingsStore
     private let clipboardPasteExecutor: ClipboardPasteExecutor
     private let translationSettings: TranslationSettingsStore
     private let translationViewModel: TranslationViewModel
     private let selectedTextReader: SelectedTextReading
     private let updateChecker = UpdateChecker()
-    private lazy var translationSettingsWindowController = TranslationSettingsWindowController(
-        settings: translationSettings
+    private lazy var settingsWindowController = SettingsWindowController(
+        translationSettings: translationSettings,
+        clipboardSettings: clipboardHistorySettings,
+        clipboardHistoryStore: clipboardHistoryStore
     )
     private lazy var translationPanelController = TranslationPanelController(
         viewModel: translationViewModel,
@@ -68,7 +71,9 @@ final class StatusBarController: NSObject {
     ) {
         statusItem = NSStatusBar.system.statusItem(withLength: CalendarStatusIconMetrics.statusItemLength)
         popoverController = CalendarPopoverPanelController()
-        clipboardHistoryStore = ClipboardHistoryStore()
+        let clipboardHistorySettings = ClipboardHistorySettingsStore()
+        self.clipboardHistorySettings = clipboardHistorySettings
+        clipboardHistoryStore = ClipboardHistoryStore(settings: clipboardHistorySettings)
         clipboardPasteExecutor = ClipboardPasteExecutor()
         self.translationSettings = translationSettings
         translationViewModel = TranslationViewModel(
@@ -159,7 +164,7 @@ final class StatusBarController: NSObject {
         popoverController.close()
         menuController.close()
         clipboardHistoryPanelController.close()
-        translationSettingsWindowController.show()
+        settingsWindowController.show()
     }
 
     private func showClipboardHistory() {
