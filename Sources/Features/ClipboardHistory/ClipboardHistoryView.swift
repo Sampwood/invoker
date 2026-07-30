@@ -9,7 +9,7 @@ final class ClipboardHistoryPresentationState: ObservableObject {
 
     func prepare(for items: [ClipboardHistoryItem]) {
         query = ""
-        selectedItemID = items.first?.id
+        updateSelection(items.first?.id)
     }
 
     func requestSearchFocus() {
@@ -35,17 +35,17 @@ final class ClipboardHistoryPresentationState: ObservableObject {
     }
 
     func select(_ item: ClipboardHistoryItem) {
-        selectedItemID = item.id
+        updateSelection(item.id)
     }
 
     func selectFirstMatch(in items: [ClipboardHistoryItem]) {
-        selectedItemID = filteredItems(from: items).first?.id
+        updateSelection(filteredItems(from: items).first?.id)
     }
 
     func reconcileSelection(in items: [ClipboardHistoryItem]) {
         let filteredItems = filteredItems(from: items)
         guard !filteredItems.isEmpty else {
-            selectedItemID = nil
+            updateSelection(nil)
             return
         }
 
@@ -54,25 +54,32 @@ final class ClipboardHistoryPresentationState: ObservableObject {
             return
         }
 
-        selectedItemID = filteredItems.first?.id
+        updateSelection(filteredItems.first?.id)
     }
 
     func moveSelection(by offset: Int, in items: [ClipboardHistoryItem]) {
         let filteredItems = filteredItems(from: items)
         guard !filteredItems.isEmpty else {
-            selectedItemID = nil
+            updateSelection(nil)
             return
         }
 
         guard let selectedItemID,
               let currentIndex = filteredItems.firstIndex(where: { $0.id == selectedItemID })
         else {
-            self.selectedItemID = filteredItems.first?.id
+            updateSelection(filteredItems.first?.id)
             return
         }
 
         let nextIndex = min(max(currentIndex + offset, 0), filteredItems.count - 1)
-        self.selectedItemID = filteredItems[nextIndex].id
+        updateSelection(filteredItems[nextIndex].id)
+    }
+
+    private func updateSelection(_ itemID: ClipboardHistoryItem.ID?) {
+        guard selectedItemID != itemID else {
+            return
+        }
+        selectedItemID = itemID
     }
 }
 
@@ -85,21 +92,13 @@ struct ClipboardHistoryView: View {
     let applyAction: (ClipboardHistoryItem) -> Void
     let clearAction: () -> Void
 
-    private var filteredItems: [ClipboardHistoryItem] {
-        presentationState.filteredItems(from: store.items)
-    }
-
-    private var lastFilteredPinnedItemID: ClipboardHistoryItem.ID? {
-        guard filteredItems.contains(where: { !$0.isPinned }) else {
-            return nil
-        }
-        return filteredItems.last(where: { $0.isPinned })?.id
-    }
-
     var body: some View {
+        let filteredItems = presentationState.filteredItems(from: store.items)
+        let lastPinnedItemID = lastPinnedItemID(in: filteredItems)
+
         ZStack(alignment: .topLeading) {
             bodyShadow
-            panelBody
+            panelBody(filteredItems: filteredItems, lastPinnedItemID: lastPinnedItemID)
         }
         .offset(x: ClipboardHistoryMetrics.shadowPadding, y: ClipboardHistoryMetrics.shadowPadding)
         .frame(
@@ -135,10 +134,13 @@ struct ClipboardHistoryView: View {
             )
     }
 
-    private var panelBody: some View {
+    private func panelBody(
+        filteredItems: [ClipboardHistoryItem],
+        lastPinnedItemID: ClipboardHistoryItem.ID?
+    ) -> some View {
         VStack(spacing: 0) {
-            header
-            content
+            header(filteredItemCount: filteredItems.count)
+            content(filteredItems: filteredItems, lastPinnedItemID: lastPinnedItemID)
         }
         .frame(width: ClipboardHistoryMetrics.bodyWidth, height: ClipboardHistoryMetrics.bodyHeight)
         .background(Color(nsColor: .windowBackgroundColor))
@@ -152,7 +154,7 @@ struct ClipboardHistoryView: View {
         )
     }
 
-    private var header: some View {
+    private func header(filteredItemCount: Int) -> some View {
         HStack(spacing: 10) {
             Image(systemName: "clipboard")
                 .font(.system(size: 13, weight: .semibold))
@@ -168,7 +170,7 @@ struct ClipboardHistoryView: View {
                     .font(.system(size: 14, weight: .semibold))
                     .foregroundStyle(Color(nsColor: .labelColor))
 
-                Text(countText)
+                Text(countText(filteredItemCount: filteredItemCount))
                     .font(.system(size: 11, weight: .regular))
                     .foregroundStyle(Color(nsColor: .secondaryLabelColor))
             }
@@ -242,12 +244,12 @@ struct ClipboardHistoryView: View {
         )
     }
 
-    private var countText: String {
+    private func countText(filteredItemCount: Int) -> String {
         if store.items.isEmpty {
             return "暂无记录"
         }
         if !presentationState.query.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
-            return "找到 " + String(filteredItems.count) + " 条"
+            return "找到 " + String(filteredItemCount) + " 条"
         }
         if store.pinnedItemCount == 0 {
             return "最近 " + String(store.unpinnedItemCount) + " 条"
@@ -261,9 +263,12 @@ struct ClipboardHistoryView: View {
             + " 条最近记录"
     }
 
-    private var content: some View {
+    private func content(
+        filteredItems: [ClipboardHistoryItem],
+        lastPinnedItemID: ClipboardHistoryItem.ID?
+    ) -> some View {
         HStack(spacing: 0) {
-            historyList
+            historyList(filteredItems: filteredItems, lastPinnedItemID: lastPinnedItemID)
                 .frame(width: ClipboardHistoryMetrics.listWidth)
                 .background(
                     Color(nsColor: .controlBackgroundColor)
@@ -274,14 +279,17 @@ struct ClipboardHistoryView: View {
                 .fill(Color(nsColor: .separatorColor).opacity(0.7))
                 .frame(width: 1)
 
-            detailPane
+            detailPane(filteredItems: filteredItems)
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
     }
 
     @ViewBuilder
-    private var historyList: some View {
+    private func historyList(
+        filteredItems: [ClipboardHistoryItem],
+        lastPinnedItemID: ClipboardHistoryItem.ID?
+    ) -> some View {
         if filteredItems.isEmpty {
             VStack(spacing: 9) {
                 Image(systemName: store.items.isEmpty ? "rectangle.on.rectangle" : "magnifyingglass")
@@ -301,7 +309,7 @@ struct ClipboardHistoryView: View {
                             ClipboardHistoryRow(
                                 item: item,
                                 isSelected: presentationState.selectedItemID == item.id,
-                                showsPinnedBoundary: lastFilteredPinnedItemID == item.id,
+                                showsPinnedBoundary: lastPinnedItemID == item.id,
                                 selectAction: {
                                     presentationState.select(item)
                                 },
@@ -341,8 +349,9 @@ struct ClipboardHistoryView: View {
     }
 
     @ViewBuilder
-    private var detailPane: some View {
-        if let item = presentationState.selectedItem(from: store.items) {
+    private func detailPane(filteredItems: [ClipboardHistoryItem]) -> some View {
+        if let selectedItemID = presentationState.selectedItemID,
+           let item = filteredItems.first(where: { $0.id == selectedItemID }) {
             ClipboardHistoryDetailView(item: item) {
                 applyAction(item)
             }
@@ -359,6 +368,23 @@ struct ClipboardHistoryView: View {
             .frame(maxWidth: .infinity, maxHeight: .infinity)
             .background(Color(nsColor: .controlBackgroundColor).opacity(0.35))
         }
+    }
+
+    private func lastPinnedItemID(
+        in filteredItems: [ClipboardHistoryItem]
+    ) -> ClipboardHistoryItem.ID? {
+        var lastPinnedItemID: ClipboardHistoryItem.ID?
+        var containsUnpinnedItem = false
+
+        for item in filteredItems {
+            if item.isPinned {
+                lastPinnedItemID = item.id
+            } else {
+                containsUnpinnedItem = true
+            }
+        }
+
+        return containsUnpinnedItem ? lastPinnedItemID : nil
     }
 }
 

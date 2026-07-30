@@ -162,6 +162,7 @@ struct ClipboardHistoryItem: Codable, Equatable, Identifiable, Sendable {
     let payloadHash: String
     let previewPNGData: Data?
     let ocrText: String?
+    private let cachedSearchableText: String
 
     init(
         id: UUID = UUID(),
@@ -181,6 +182,11 @@ struct ClipboardHistoryItem: Codable, Equatable, Identifiable, Sendable {
         self.payloadHash = payloadHash ?? snapshot.payloadHash
         self.previewPNGData = previewPNGData
         self.ocrText = ocrText
+        cachedSearchableText = Self.makeSearchableText(
+            snapshot: snapshot,
+            sourceApplication: sourceApplication,
+            ocrText: ocrText
+        )
     }
 
     init(
@@ -251,24 +257,30 @@ struct ClipboardHistoryItem: Codable, Equatable, Identifiable, Sendable {
     }
 
     var searchableText: String {
-        let fileNames: String = snapshot.fileNames.joined(separator: " ")
-        let urls: String = snapshot.urls.joined(separator: " ")
-        var components: [String] = [
-            text,
-            fileNames,
-            urls,
-            sourceApplication?.name,
-            sourceApplication?.bundleIdentifier,
-            ocrText
-        ].compactMap { $0 }
-        components.append(contentsOf: snapshot.typeIdentifiers.map(Self.displayName(forType:)))
-        return components.joined(separator: "\n")
+        cachedSearchableText
     }
 
     var logicalByteCount: Int {
         snapshot.byteCount
             + (previewPNGData?.count ?? 0)
             + (ocrText?.utf8.count ?? 0)
+    }
+
+    private static func makeSearchableText(
+        snapshot: ClipboardSnapshot,
+        sourceApplication: ClipboardSourceApplication?,
+        ocrText: String?
+    ) -> String {
+        var components: [String] = [
+            snapshot.extractedText,
+            snapshot.fileNames.joined(separator: " "),
+            snapshot.urls.joined(separator: " "),
+            sourceApplication?.name,
+            sourceApplication?.bundleIdentifier,
+            ocrText
+        ].compactMap { $0 }
+        components.append(contentsOf: snapshot.typeIdentifiers.map(Self.displayName(forType:)))
+        return components.joined(separator: "\n")
     }
 
     static func text(
@@ -425,6 +437,11 @@ struct ClipboardHistoryItem: Codable, Equatable, Identifiable, Sendable {
                 ?? snapshot.payloadHash
             previewPNGData = try container.decodeIfPresent(Data.self, forKey: .previewPNGData)
             ocrText = try container.decodeIfPresent(String.self, forKey: .ocrText)
+            cachedSearchableText = Self.makeSearchableText(
+                snapshot: snapshot,
+                sourceApplication: sourceApplication,
+                ocrText: ocrText
+            )
             return
         }
 
@@ -452,6 +469,7 @@ struct ClipboardHistoryItem: Codable, Equatable, Identifiable, Sendable {
         payloadHash = legacyItem.payloadHash
         previewPNGData = legacyItem.previewPNGData
         ocrText = nil
+        cachedSearchableText = legacyItem.cachedSearchableText
     }
 
     func encode(to encoder: Encoder) throws {
