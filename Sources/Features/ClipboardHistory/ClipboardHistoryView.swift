@@ -315,13 +315,15 @@ struct ClipboardHistoryView: View {
                             .id(item.id)
                         }
                     }
-                    .frame(width: ClipboardHistoryMetrics.rowBackgroundWidth, alignment: .topLeading)
                     .padding(.leading, ClipboardHistoryMetrics.listLeadingInset)
                     .padding(.trailing, ClipboardHistoryMetrics.listTrailingInset)
                     .padding(.vertical, ClipboardHistoryMetrics.listVerticalPadding)
-                    .background(ClipboardHistoryScrollViewConfiguration())
+                    .frame(maxWidth: .infinity, alignment: .topLeading)
                 }
                 .scrollIndicators(.automatic)
+                .clipboardHistoryScrollIndicatorInset(
+                    ClipboardHistoryMetrics.scrollerTrailingInset
+                )
                 .onChange(of: presentationState.selectedItemID) { selectedItemID in
                     guard let selectedItemID else {
                         return
@@ -413,9 +415,11 @@ private struct ClipboardHistoryDetailView: View {
                     .textSelection(.enabled)
                     .frame(maxWidth: .infinity, alignment: .topLeading)
                     .padding(18)
-                    .background(ClipboardHistoryScrollViewConfiguration())
             }
             .scrollIndicators(.automatic)
+            .clipboardHistoryScrollIndicatorInset(
+                ClipboardHistoryMetrics.scrollerTrailingInset
+            )
         case .image:
             if let data = item.imagePNGData,
                let image = NSImage(data: data) {
@@ -500,13 +504,14 @@ private struct ClipboardHistoryRow: View {
 
             pinButton
         }
-        .frame(
-            width: ClipboardHistoryMetrics.rowContentWidth,
-            height: ClipboardHistoryMetrics.rowHeight,
-            alignment: .leading
-        )
         .padding(.leading, ClipboardHistoryMetrics.rowLeadingPadding)
         .padding(.trailing, ClipboardHistoryMetrics.rowTrailingPadding)
+        .frame(
+            maxWidth: .infinity,
+            minHeight: ClipboardHistoryMetrics.rowHeight,
+            maxHeight: ClipboardHistoryMetrics.rowHeight,
+            alignment: .leading
+        )
         .background(rowBackground)
         .overlay(alignment: .bottom) {
             if !isSelected {
@@ -756,39 +761,13 @@ private struct ClipboardSourceApplicationLabel: View {
     }
 }
 
-private struct ClipboardHistoryScrollViewConfiguration: NSViewRepresentable {
-    func makeNSView(context: Context) -> ClipboardHistoryScrollConfigurationView {
-        ClipboardHistoryScrollConfigurationView()
-    }
-
-    func updateNSView(_ nsView: ClipboardHistoryScrollConfigurationView, context: Context) {
-        nsView.configureEnclosingScrollView()
-    }
-}
-
-private final class ClipboardHistoryScrollConfigurationView: NSView {
-    override func viewDidMoveToWindow() {
-        super.viewDidMoveToWindow()
-        configureEnclosingScrollView()
-    }
-
-    func configureEnclosingScrollView() {
-        var candidate = superview
-        while let view = candidate {
-            if let scrollView = view as? NSScrollView {
-                scrollView.scrollerStyle = .overlay
-                scrollView.autohidesScrollers = true
-                scrollView.verticalScroller?.controlSize = .small
-                scrollView.scrollerInsets = NSEdgeInsets(
-                    top: 0,
-                    left: 0,
-                    bottom: 0,
-                    right: ClipboardHistoryMetrics.scrollerTrailingInset
-                )
-                scrollView.tile()
-                return
-            }
-            candidate = view.superview
+private extension View {
+    @ViewBuilder
+    func clipboardHistoryScrollIndicatorInset(_ inset: CGFloat) -> some View {
+        if #available(macOS 14.0, *) {
+            contentMargins(.trailing, inset, for: .scrollIndicators)
+        } else {
+            self
         }
     }
 }
@@ -810,12 +789,6 @@ enum ClipboardHistoryMetrics {
     static let scrollerTrailingInset: CGFloat = 2
     static let rowLeadingPadding: CGFloat = 12
     static let rowTrailingPadding: CGFloat = 4
-    static var rowBackgroundWidth: CGFloat {
-        listWidth - listLeadingInset - listTrailingInset
-    }
-    static var rowContentWidth: CGFloat {
-        rowBackgroundWidth - rowLeadingPadding - rowTrailingPadding
-    }
     static let rowCornerRadius: CGFloat = 7
     static let pinButtonSize: CGFloat = 26
     static let pinSpacing: CGFloat = 6
