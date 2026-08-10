@@ -161,7 +161,7 @@ final class TranslationPanelController: NSObject, NSWindowDelegate {
             inlineNotice: viewModel.inlineNotice,
             errorMessage: viewModel.errorMessage,
             inputText: viewModel.inputText,
-            resultText: viewModel.resultText,
+            providerOutputs: viewModel.providerOutputs,
             panelWidth: panelWidth
         )
     }

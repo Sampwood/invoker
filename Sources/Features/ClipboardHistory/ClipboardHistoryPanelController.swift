@@ -3,7 +3,7 @@ import Carbon
 import SwiftUI
 
 @MainActor
-final class ClipboardHistoryPanelController {
+final class ClipboardHistoryPanelController: NSObject, NSWindowDelegate {
     private let store: ClipboardHistoryStore
     private let applyAction: (ClipboardHistoryItem) -> Void
     private let presentationState = ClipboardHistoryPresentationState()
@@ -11,6 +11,7 @@ final class ClipboardHistoryPanelController {
     private var localEventMonitor: Any?
     private var globalEventMonitor: Any?
     private var resignActiveObserver: NSObjectProtocol?
+    private var isClosing = false
 
     init(
         store: ClipboardHistoryStore,
@@ -18,6 +19,7 @@ final class ClipboardHistoryPanelController {
     ) {
         self.store = store
         self.applyAction = applyAction
+        super.init()
     }
 
     var isShown: Bool {
@@ -45,8 +47,22 @@ final class ClipboardHistoryPanelController {
     }
 
     func close() {
-        panel?.orderOut(nil)
+        guard !isClosing else {
+            return
+        }
+
+        isClosing = true
+        defer { isClosing = false }
         removeDismissHandlers()
+        panel?.orderOut(nil)
+    }
+
+    func windowDidResignKey(_ notification: Notification) {
+        guard notification.object as? NSWindow === panel, panel?.isVisible == true else {
+            return
+        }
+
+        close()
     }
 
     private func makePanel() -> ClipboardHistoryPanel {
@@ -67,6 +83,7 @@ final class ClipboardHistoryPanelController {
         panel.isMovableByWindowBackground = true
         panel.level = .popUpMenu
         panel.collectionBehavior = [.canJoinAllSpaces, .fullScreenAuxiliary, .transient]
+        panel.delegate = self
         panel.keyDownHandler = { [weak self] event in
             self?.handleKeyDown(event) ?? false
         }

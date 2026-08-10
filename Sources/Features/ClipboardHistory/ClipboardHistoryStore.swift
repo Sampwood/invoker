@@ -496,6 +496,11 @@ final class SystemClipboardPasteboardAccessor: ClipboardPasteboardAccessing {
     }
 
     func write(_ item: ClipboardHistoryItem) -> Bool {
+        if item.kind == .richText, let text = item.text {
+            pasteboard.clearContents()
+            return pasteboard.setString(text, forType: .string)
+        }
+
         let pasteboardItems = item.snapshot.items.compactMap { snapshotItem -> NSPasteboardItem? in
             let pasteboardItem = NSPasteboardItem()
             var wroteRepresentation = false

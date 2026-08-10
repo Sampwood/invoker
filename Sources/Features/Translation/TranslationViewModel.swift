@@ -5,26 +5,23 @@ import Foundation
 @MainActor
 final class TranslationViewModel: ObservableObject {
     @Published private(set) var inputText = ""
-    @Published private(set) var resultText = ""
     @Published private(set) var sourceSelection = TranslationLanguage.automatic
     @Published private(set) var targetSelection = TranslationTargetSelection.preferred
-    @Published private(set) var selectedProvider: TranslationProviderID
+    @Published private(set) var providerOutputs: [TranslationProviderID: TranslationProviderOutput]
     @Published private(set) var state = TranslationViewState.idle
     @Published private(set) var detectedSourceLanguage: TranslationLanguage?
     @Published private(set) var errorMessage: String?
     @Published private(set) var inlineNotice: TranslationInlineNotice?
     @Published private(set) var needsSettings = false
-    @Published private(set) var didCopyResult = false
     @Published private(set) var focusRequestID = UUID()
     @Published private(set) var activeAIModel: String
-    @Published private(set) var configurationWarning: String?
 
     let settings: TranslationSettingsStore
 
     private let providerRegistry: TranslationProviderResolving
     private let languageResolver: TranslationLanguageResolver
-    private var translationTask: Task<Void, Never>?
-    private var copyFeedbackTask: Task<Void, Never>?
+    private var translationTasks: [TranslationProviderID: Task<Void, Never>] = [:]
+    private var copyFeedbackTasks: [TranslationProviderID: Task<Void, Never>] = [:]
     private var activeRequestID: UUID?
 
     init(
@@ -35,18 +32,24 @@ final class TranslationViewModel: ObservableObject {
         self.settings = settings
         self.providerRegistry = providerRegistry
         self.languageResolver = languageResolver
-        selectedProvider = settings.activeProvider
         activeAIModel = settings.effectiveAIModel
-        configurationWarning = nil
+        providerOutputs = Self.emptyProviderOutputs(aiModel: settings.effectiveAIModel)
     }
 
     var canTranslate: Bool {
         !inputText.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
     }
 
+    var resultText: String {
+        providerOutputs[settings.activeProvider]?.text ?? ""
+    }
+
+    func output(for provider: TranslationProviderID) -> TranslationProviderOutput {
+        providerOutputs[provider] ?? TranslationProviderOutput(provider: provider)
+    }
+
     func prepareManualInput(notice: TranslationInlineNotice? = nil) {
         cancelTranslation()
-        selectedProvider = settings.activeProvider
         inputText = ""
         sourceSelection = .automatic
         targetSelection = .preferred
@@ -57,7 +60,6 @@ final class TranslationViewModel: ObservableObject {
 
     func prepareSelectedText(_ text: String) {
         cancelTranslation()
-        selectedProvider = settings.activeProvider
         inputText = text
         sourceSelection = .automatic
         targetSelection = .preferred
@@ -76,16 +78,6 @@ final class TranslationViewModel: ObservableObject {
         if !text.isEmpty {
             inlineNotice = nil
         }
-    }
-
-    func selectProvider(_ provider: TranslationProviderID) {
-        guard provider != selectedProvider else {
-            return
-        }
-        cancelTranslation()
-        selectedProvider = provider
-        settings.activeProvider = provider
-        resetOutput()
     }
 
     func selectSourceLanguage(_ language: TranslationLanguage) {
@@ -138,114 +130,82 @@ final class TranslationViewModel: ObservableObject {
             sourceLanguage: languages.source,
             targetLanguage: languages.target
         )
-        let providerResolution: TranslationProviderResolution
-        do {
-            providerResolution = try providerRegistry.resolveProvider(for: selectedProvider)
-        } catch {
-            configurationWarning = nil
-            let translationError = error as? TranslationError
-                ?? .missingConfiguration(error.localizedDescription)
-            present(error: translationError, needsSettings: true)
-            return
-        }
-        let provider = providerResolution.provider
-        if let displayModel = providerResolution.displayModel {
-            activeAIModel = displayModel
-        }
-        configurationWarning = providerResolution.configurationWarning
-
         cancelTranslation()
-        resultText = ""
-        errorMessage = nil
+        resetOutput()
         inlineNotice = nil
-        needsSettings = false
         detectedSourceLanguage = languages.source == .automatic ? nil : languages.source
-        didCopyResult = false
-        state = .translating
 
         let requestID = UUID()
         activeRequestID = requestID
-        translationTask = Task { [weak self] in
-            guard let self else {
-                return
-            }
-
+        for providerID in TranslationProviderID.allCases {
             do {
-                for try await event in provider.translate(request) {
-                    try Task.checkCancellation()
-                    guard activeRequestID == requestID else {
+                let resolution = try providerRegistry.resolveProvider(for: providerID)
+                if let displayModel = resolution.displayModel {
+                    activeAIModel = displayModel
+                }
+                updateOutput(for: providerID) { output in
+                    output.state = .translating
+                    output.displayModel = resolution.displayModel
+                    output.configurationWarning = resolution.configurationWarning
+                }
+                let provider = resolution.provider
+                translationTasks[providerID] = Task { [weak self] in
+                    guard let self else {
                         return
                     }
-                    switch event {
-                    case let .textDelta(text):
-                        resultText += text
-                    case let .completed(detectedLanguage):
-                        if let detectedLanguage {
-                            detectedSourceLanguage = detectedLanguage
-                        }
-                        state = resultText.isEmpty ? .failed : .succeeded
-                        if resultText.isEmpty {
-                            errorMessage = TranslationError.emptyResponse.localizedDescription
-                        }
-                    }
+                    await self.translate(
+                        with: provider,
+                        providerID: providerID,
+                        request: request,
+                        requestID: requestID
+                    )
                 }
-
-                guard activeRequestID == requestID else {
-                    return
-                }
-                if state == .translating {
-                    if resultText.isEmpty {
-                        present(error: .emptyResponse)
-                    } else {
-                        state = .succeeded
-                    }
-                }
-                activeRequestID = nil
-                translationTask = nil
-            } catch is CancellationError {
-                finishCancellation(requestID: requestID)
-            } catch let urlError as URLError where urlError.code == .cancelled {
-                finishCancellation(requestID: requestID)
             } catch {
-                guard activeRequestID == requestID else {
-                    return
+                let translationError = error as? TranslationError
+                    ?? .missingConfiguration(error.localizedDescription)
+                updateOutput(for: providerID) { output in
+                    output.state = .failed
+                    output.errorMessage = translationError.localizedDescription
+                    output.needsSettings = translationError.suggestsOpeningSettings
                 }
-                let translationError = TranslationError.map(error)
-                present(
-                    error: translationError,
-                    needsSettings: translationError.suggestsOpeningSettings
-                )
-                activeRequestID = nil
-                translationTask = nil
             }
         }
+        refreshAggregateState()
     }
 
     func cancelTranslation() {
-        translationTask?.cancel()
-        translationTask = nil
+        translationTasks.values.forEach { $0.cancel() }
+        translationTasks.removeAll()
         activeRequestID = nil
-        if state == .translating {
-            state = resultText.isEmpty ? .idle : .succeeded
+
+        for providerID in TranslationProviderID.allCases {
+            updateOutput(for: providerID) { output in
+                guard output.state == .translating else {
+                    return
+                }
+                output.state = output.text.isEmpty ? .idle : .succeeded
+            }
         }
+        refreshAggregateState()
     }
 
-    func copyResult() {
-        guard !resultText.isEmpty else {
+    func copyResult(for provider: TranslationProviderID) {
+        let text = output(for: provider).text
+        guard !text.isEmpty else {
             return
         }
         let pasteboard = NSPasteboard.general
         pasteboard.clearContents()
-        pasteboard.setString(resultText, forType: .string)
+        pasteboard.setString(text, forType: .string)
 
-        didCopyResult = true
-        copyFeedbackTask?.cancel()
-        copyFeedbackTask = Task { [weak self] in
+        updateOutput(for: provider) { $0.didCopy = true }
+        copyFeedbackTasks[provider]?.cancel()
+        copyFeedbackTasks[provider] = Task { [weak self] in
             try? await Task.sleep(nanoseconds: 1_200_000_000)
             guard !Task.isCancelled else {
                 return
             }
-            self?.didCopyResult = false
+            self?.updateOutput(for: provider) { $0.didCopy = false }
         }
     }
 
@@ -270,22 +230,127 @@ final class TranslationViewModel: ObservableObject {
         self.needsSettings = needsSettings
     }
 
-    private func finishCancellation(requestID: UUID) {
+    private func translate(
+        with provider: any TranslationProvider,
+        providerID: TranslationProviderID,
+        request: TranslationRequest,
+        requestID: UUID
+    ) async {
+        do {
+            for try await event in provider.translate(request) {
+                try Task.checkCancellation()
+                guard activeRequestID == requestID else {
+                    return
+                }
+                switch event {
+                case let .textDelta(text):
+                    updateOutput(for: providerID) { $0.text += text }
+                case let .completed(detectedLanguage):
+                    if let detectedLanguage {
+                        detectedSourceLanguage = detectedLanguage
+                    }
+                    updateOutput(for: providerID) { output in
+                        output.state = output.text.isEmpty ? .failed : .succeeded
+                        if output.text.isEmpty {
+                            output.errorMessage = TranslationError.emptyResponse.localizedDescription
+                        }
+                    }
+                }
+            }
+
+            guard activeRequestID == requestID else {
+                return
+            }
+            updateOutput(for: providerID) { output in
+                guard output.state == .translating else {
+                    return
+                }
+                output.state = output.text.isEmpty ? .failed : .succeeded
+                if output.text.isEmpty {
+                    output.errorMessage = TranslationError.emptyResponse.localizedDescription
+                }
+            }
+        } catch is CancellationError {
+            finishCancellation(providerID: providerID, requestID: requestID)
+        } catch let urlError as URLError where urlError.code == .cancelled {
+            finishCancellation(providerID: providerID, requestID: requestID)
+        } catch {
+            guard activeRequestID == requestID else {
+                return
+            }
+            let translationError = TranslationError.map(error)
+            updateOutput(for: providerID) { output in
+                output.state = .failed
+                output.errorMessage = translationError.localizedDescription
+                output.needsSettings = translationError.suggestsOpeningSettings
+            }
+        }
+
         guard activeRequestID == requestID else {
             return
         }
-        activeRequestID = nil
-        translationTask = nil
-        state = resultText.isEmpty ? .idle : .succeeded
+        translationTasks[providerID] = nil
+        refreshAggregateState()
+    }
+
+    private func finishCancellation(
+        providerID: TranslationProviderID,
+        requestID: UUID
+    ) {
+        guard activeRequestID == requestID else {
+            return
+        }
+        updateOutput(for: providerID) { output in
+            output.state = output.text.isEmpty ? .idle : .succeeded
+        }
     }
 
     private func resetOutput() {
-        resultText = ""
+        copyFeedbackTasks.values.forEach { $0.cancel() }
+        copyFeedbackTasks.removeAll()
+        providerOutputs = Self.emptyProviderOutputs(aiModel: activeAIModel)
         detectedSourceLanguage = nil
         errorMessage = nil
         needsSettings = false
-        didCopyResult = false
-        configurationWarning = nil
         state = .idle
+    }
+
+    private func updateOutput(
+        for provider: TranslationProviderID,
+        _ update: (inout TranslationProviderOutput) -> Void
+    ) {
+        var outputs = providerOutputs
+        var output = outputs[provider] ?? TranslationProviderOutput(provider: provider)
+        update(&output)
+        outputs[provider] = output
+        providerOutputs = outputs
+    }
+
+    private func refreshAggregateState() {
+        let outputs = TranslationProviderID.allCases.map { output(for: $0) }
+        if outputs.contains(where: { $0.state == .translating }) {
+            state = .translating
+            return
+        }
+        if outputs.contains(where: { !$0.text.isEmpty || $0.state == .succeeded }) {
+            state = .succeeded
+        } else if outputs.allSatisfy({ $0.state == .idle }) {
+            state = .idle
+        } else {
+            state = .failed
+        }
+        activeRequestID = nil
+    }
+
+    private static func emptyProviderOutputs(
+        aiModel: String
+    ) -> [TranslationProviderID: TranslationProviderOutput] {
+        Dictionary(uniqueKeysWithValues: TranslationProviderID.allCases.map { provider in
+            var output = TranslationProviderOutput(provider: provider)
+            if provider == .openAICompatible {
+                output.displayModel = aiModel
+            }
+            return (provider, output)
+        })
     }
 }

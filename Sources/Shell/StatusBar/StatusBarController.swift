@@ -84,6 +84,7 @@ final class StatusBarController: NSObject {
         super.init()
 
         configureStatusItem()
+        monitorStatusIconDateChanges()
         registerHotKey(translationHotKeyController, configuration: .selectionTranslation)
         registerHotKey(clipboardHistoryHotKeyController, configuration: .clipboardHistory)
         clipboardHistoryStore.startMonitoring()
@@ -99,13 +100,53 @@ final class StatusBarController: NSObject {
         }
 
         statusItem.menu = nil
-        button.image = CalendarStatusIconRenderer.image(for: Date())
-        button.image?.isTemplate = false
+        updateStatusIcon()
         button.imagePosition = .imageOnly
         button.target = self
         button.action = #selector(handleStatusItemClick(_:))
         button.sendAction(on: [.leftMouseUp, .rightMouseUp])
         button.toolTip = "Invoker Calendar"
+    }
+
+    private func monitorStatusIconDateChanges() {
+        let notificationCenter = NotificationCenter.default
+        let selector = #selector(systemDateDidChange(_:))
+
+        notificationCenter.addObserver(
+            self,
+            selector: selector,
+            name: .NSCalendarDayChanged,
+            object: nil
+        )
+        notificationCenter.addObserver(
+            self,
+            selector: selector,
+            name: .NSSystemClockDidChange,
+            object: nil
+        )
+        notificationCenter.addObserver(
+            self,
+            selector: selector,
+            name: .NSSystemTimeZoneDidChange,
+            object: nil
+        )
+        NSWorkspace.shared.notificationCenter.addObserver(
+            self,
+            selector: selector,
+            name: NSWorkspace.didWakeNotification,
+            object: nil
+        )
+    }
+
+    @objc private func systemDateDidChange(_ notification: Notification) {
+        updateStatusIcon()
+    }
+
+    private func updateStatusIcon() {
+        statusItem.button?.image = CalendarStatusIconRenderer.image(
+            for: Date(),
+            calendar: .autoupdatingCurrent
+        )
     }
 
     @objc private func handleStatusItemClick(_ sender: NSStatusBarButton) {

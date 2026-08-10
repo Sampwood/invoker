@@ -356,6 +356,17 @@ enum TranslationViewState: Equatable {
     case failed
 }
 
+struct TranslationProviderOutput: Equatable {
+    let provider: TranslationProviderID
+    var text = ""
+    var state = TranslationViewState.idle
+    var errorMessage: String?
+    var needsSettings = false
+    var didCopy = false
+    var displayModel: String?
+    var configurationWarning: String?
+}
+
 enum TranslationInlineNotice: Equatable {
     case accessibilityPermissionRequired
     case noSelectedText

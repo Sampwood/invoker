@@ -34,12 +34,6 @@ struct InvokerSettingsView: View {
 
     private var generalSettings: some View {
         Form {
-            Picker("默认翻译服务", selection: $translationSettings.activeProvider) {
-                ForEach(TranslationProviderID.allCases) { provider in
-                    Text(provider.displayName).tag(provider)
-                }
-            }
-
             Picker("首选语言", selection: $translationSettings.preferredLanguage) {
                 ForEach(TranslationLanguage.targetLanguages) { language in
                     Text(language.displayName).tag(language)
@@ -270,7 +264,6 @@ final class SettingsWindowController: NSObject, NSWindowDelegate {
             defer: false
         )
         window.title = "Invoker 设置"
-        window.level = .floating
         window.isReleasedWhenClosed = false
         window.delegate = self
         window.contentView = NSHostingView(
