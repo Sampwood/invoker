@@ -86,7 +86,10 @@ final class ClipboardHistoryPresentationState: ObservableObject {
 struct ClipboardHistoryView: View {
     @ObservedObject var store: ClipboardHistoryStore
     @ObservedObject var presentationState: ClipboardHistoryPresentationState
+    @Environment(\.accessibilityDifferentiateWithoutColor) private var differentiateWithoutColor
     @Environment(\.accessibilityReduceMotion) private var accessibilityReduceMotion
+    @Environment(\.accessibilityReduceTransparency) private var accessibilityReduceTransparency
+    @Environment(\.colorSchemeContrast) private var colorSchemeContrast
     @FocusState private var isSearchFocused: Bool
 
     let applyAction: (ClipboardHistoryItem) -> Void
@@ -94,11 +97,9 @@ struct ClipboardHistoryView: View {
 
     var body: some View {
         let filteredItems = presentationState.filteredItems(from: store.items)
-        let lastPinnedItemID = lastPinnedItemID(in: filteredItems)
 
         ZStack(alignment: .topLeading) {
-            bodyShadow
-            panelBody(filteredItems: filteredItems, lastPinnedItemID: lastPinnedItemID)
+            panelBody(filteredItems: filteredItems)
         }
         .offset(x: ClipboardHistoryMetrics.shadowPadding, y: ClipboardHistoryMetrics.shadowPadding)
         .frame(
@@ -122,52 +123,37 @@ struct ClipboardHistoryView: View {
         }
     }
 
-    private var bodyShadow: some View {
-        RoundedRectangle(cornerRadius: ClipboardHistoryMetrics.bodyCornerRadius, style: .continuous)
-            .fill(Color(nsColor: .windowBackgroundColor))
-            .frame(width: ClipboardHistoryMetrics.bodyWidth, height: ClipboardHistoryMetrics.bodyHeight)
-            .shadow(
-                color: .black.opacity(ClipboardHistoryMetrics.shadowOpacity),
-                radius: ClipboardHistoryMetrics.shadowRadius,
-                x: 0,
-                y: ClipboardHistoryMetrics.shadowYOffset
-            )
-    }
-
-    private func panelBody(
-        filteredItems: [ClipboardHistoryItem],
-        lastPinnedItemID: ClipboardHistoryItem.ID?
-    ) -> some View {
-        VStack(spacing: 0) {
+    private func panelBody(filteredItems: [ClipboardHistoryItem]) -> some View {
+        let shape = RoundedRectangle(
+            cornerRadius: ClipboardHistoryMetrics.bodyCornerRadius,
+            style: .continuous
+        )
+        let panel = VStack(spacing: 0) {
             header(filteredItemCount: filteredItems.count)
-            content(filteredItems: filteredItems, lastPinnedItemID: lastPinnedItemID)
+            content(filteredItems: filteredItems)
         }
         .frame(width: ClipboardHistoryMetrics.bodyWidth, height: ClipboardHistoryMetrics.bodyHeight)
-        .background(Color(nsColor: .windowBackgroundColor))
-        .clipShape(RoundedRectangle(cornerRadius: ClipboardHistoryMetrics.bodyCornerRadius, style: .continuous))
-        .overlay(
-            RoundedRectangle(cornerRadius: ClipboardHistoryMetrics.bodyCornerRadius, style: .continuous)
-                .stroke(
-                    Color.black.opacity(ClipboardHistoryMetrics.bodyBorderOpacity),
-                    lineWidth: ClipboardHistoryMetrics.bodyBorderLineWidth
-                )
+
+        return Group {
+            if accessibilityReduceTransparency {
+                panel.background(Color(nsColor: .windowBackgroundColor), in: shape)
+            } else {
+                panel.glassEffect(.regular, in: shape)
+            }
+        }
+        .clipShape(shape)
+        .shadow(
+            color: .black.opacity(ClipboardHistoryMetrics.shadowOpacity),
+            radius: ClipboardHistoryMetrics.shadowRadius,
+            y: ClipboardHistoryMetrics.shadowYOffset
         )
     }
 
     private func header(filteredItemCount: Int) -> some View {
-        HStack(spacing: 10) {
-            Image(systemName: "clipboard")
-                .font(.system(size: 13, weight: .semibold))
-                .foregroundStyle(Color(nsColor: .controlAccentColor))
-                .frame(width: 28, height: 28)
-                .background(
-                    RoundedRectangle(cornerRadius: 7, style: .continuous)
-                        .fill(Color(nsColor: .controlAccentColor).opacity(0.12))
-                )
-
-            VStack(alignment: .leading, spacing: 2) {
+        HStack(spacing: 12) {
+            VStack(alignment: .leading, spacing: 1) {
                 Text("剪贴板历史")
-                    .font(.system(size: 14, weight: .semibold))
+                    .font(.system(size: 15, weight: .semibold))
                     .foregroundStyle(Color(nsColor: .labelColor))
 
                 Text(countText(filteredItemCount: filteredItemCount))
@@ -175,37 +161,27 @@ struct ClipboardHistoryView: View {
                     .foregroundStyle(Color(nsColor: .secondaryLabelColor))
             }
 
-            Spacer(minLength: 12)
+            Spacer(minLength: 16)
             searchField
-            Spacer(minLength: 12)
 
-            Button(action: clearAction) {
-                Image(systemName: "trash")
-                    .font(.system(size: 12, weight: .medium))
-                    .foregroundStyle(
-                        store.hasUnpinnedItems
-                            ? Color(nsColor: .secondaryLabelColor)
-                            : Color(nsColor: .tertiaryLabelColor)
-                    )
-                    .frame(width: 26, height: 26)
-                    .background(
-                        RoundedRectangle(cornerRadius: 6, style: .continuous)
-                            .fill(Color.black.opacity(store.hasUnpinnedItems ? 0.06 : 0))
-                    )
+            Menu {
+                Button(role: .destructive, action: clearAction) {
+                    Label("清空未置顶历史", systemImage: "trash")
+                }
+                .disabled(!store.hasUnpinnedItems)
+            } label: {
+                Image(systemName: "ellipsis")
+                    .font(.system(size: 13, weight: .semibold))
+                    .frame(width: 30, height: 30)
             }
-            .buttonStyle(.plain)
-            .disabled(!store.hasUnpinnedItems)
-            .help("清空未置顶历史")
-            .accessibilityLabel("清空未置顶的剪贴板历史")
+            .menuStyle(.button)
+            .menuIndicator(.hidden)
+            .fixedSize()
+            .help("更多操作")
+            .accessibilityLabel("更多剪贴板历史操作")
         }
         .frame(height: ClipboardHistoryMetrics.headerHeight, alignment: .center)
         .padding(.horizontal, ClipboardHistoryMetrics.horizontalPadding)
-        .background(Color(nsColor: .controlBackgroundColor))
-        .overlay(alignment: .bottom) {
-            Rectangle()
-                .fill(Color(nsColor: .separatorColor).opacity(0.7))
-                .frame(height: 1)
-        }
     }
 
     private var searchField: some View {
@@ -232,16 +208,12 @@ struct ClipboardHistoryView: View {
                 .accessibilityLabel("清除搜索")
             }
         }
-        .padding(.horizontal, 9)
-        .frame(width: ClipboardHistoryMetrics.searchWidth, height: 30)
-        .background(
-            RoundedRectangle(cornerRadius: 7, style: .continuous)
-                .fill(Color(nsColor: .textBackgroundColor))
-        )
-        .overlay(
-            RoundedRectangle(cornerRadius: 7, style: .continuous)
-                .stroke(Color(nsColor: .separatorColor).opacity(0.8), lineWidth: 1)
-        )
+        .padding(.horizontal, 10)
+        .frame(width: ClipboardHistoryMetrics.searchWidth, height: ClipboardHistoryMetrics.searchHeight)
+        .background(Color(nsColor: .controlBackgroundColor), in: Capsule())
+        .overlay(Capsule().stroke(Color(nsColor: .separatorColor), lineWidth: separatorWidth))
+        .accessibilityElement(children: .contain)
+        .accessibilityAddTraits(.isSearchField)
     }
 
     private func countText(filteredItemCount: Int) -> String {
@@ -263,33 +235,24 @@ struct ClipboardHistoryView: View {
             + " 条最近记录"
     }
 
-    private func content(
-        filteredItems: [ClipboardHistoryItem],
-        lastPinnedItemID: ClipboardHistoryItem.ID?
-    ) -> some View {
+    private func content(filteredItems: [ClipboardHistoryItem]) -> some View {
         HStack(spacing: 0) {
-            historyList(filteredItems: filteredItems, lastPinnedItemID: lastPinnedItemID)
+            historyList(filteredItems: filteredItems)
                 .frame(width: ClipboardHistoryMetrics.listWidth)
-                .background(
-                    Color(nsColor: .controlBackgroundColor)
-                        .opacity(ClipboardHistoryMetrics.listBackgroundOpacity)
-                )
 
             Rectangle()
-                .fill(Color(nsColor: .separatorColor).opacity(0.7))
-                .frame(width: 1)
+                .fill(Color(nsColor: .separatorColor).opacity(separatorOpacity))
+                .frame(width: separatorWidth)
 
             detailPane(filteredItems: filteredItems)
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
+                .background(Color(nsColor: .textBackgroundColor))
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
     }
 
     @ViewBuilder
-    private func historyList(
-        filteredItems: [ClipboardHistoryItem],
-        lastPinnedItemID: ClipboardHistoryItem.ID?
-    ) -> some View {
+    private func historyList(filteredItems: [ClipboardHistoryItem]) -> some View {
         if filteredItems.isEmpty {
             VStack(spacing: 9) {
                 Image(systemName: store.items.isEmpty ? "rectangle.on.rectangle" : "magnifyingglass")
@@ -305,11 +268,21 @@ struct ClipboardHistoryView: View {
             ScrollViewReader { proxy in
                 ScrollView {
                     LazyVStack(alignment: .leading, spacing: ClipboardHistoryMetrics.rowSpacing) {
-                        ForEach(filteredItems) { item in
+                        ForEach(filteredItems.indices, id: \.self) { index in
+                            let item = filteredItems[index]
+
+                            if index == 0 || filteredItems[index - 1].isPinned != item.isPinned {
+                                Text(item.isPinned ? "置顶" : "最近")
+                                    .font(.system(size: 10, weight: .semibold))
+                                    .foregroundStyle(Color(nsColor: .secondaryLabelColor))
+                                    .padding(.horizontal, 8)
+                                    .padding(.top, index == 0 ? 3 : 8)
+                                    .padding(.bottom, 2)
+                            }
+
                             ClipboardHistoryRow(
                                 item: item,
                                 isSelected: presentationState.selectedItemID == item.id,
-                                showsPinnedBoundary: lastPinnedItemID == item.id,
                                 selectAction: {
                                     presentationState.select(item)
                                 },
@@ -366,67 +339,80 @@ struct ClipboardHistoryView: View {
                     .foregroundStyle(Color(nsColor: .secondaryLabelColor))
             }
             .frame(maxWidth: .infinity, maxHeight: .infinity)
-            .background(Color(nsColor: .controlBackgroundColor).opacity(0.35))
         }
     }
 
-    private func lastPinnedItemID(
-        in filteredItems: [ClipboardHistoryItem]
-    ) -> ClipboardHistoryItem.ID? {
-        var lastPinnedItemID: ClipboardHistoryItem.ID?
-        var containsUnpinnedItem = false
-
-        for item in filteredItems {
-            if item.isPinned {
-                lastPinnedItemID = item.id
-            } else {
-                containsUnpinnedItem = true
-            }
-        }
-
-        return containsUnpinnedItem ? lastPinnedItemID : nil
+    private var separatorWidth: CGFloat {
+        colorSchemeContrast == .increased || differentiateWithoutColor ? 1.5 : 1
     }
+
+    private var separatorOpacity: Double {
+        colorSchemeContrast == .increased ? 0.9 : 0.58
+    }
+
 }
 
 private struct ClipboardHistoryDetailView: View {
+    @Environment(\.colorSchemeContrast) private var colorSchemeContrast
+
     let item: ClipboardHistoryItem
     let applyAction: () -> Void
 
     var body: some View {
-        VStack(spacing: 0) {
-            HStack(spacing: 0) {
-                VStack(alignment: .leading, spacing: 3) {
-                    Text(ClipboardHistoryFormatting.formattedDate(item.createdAt))
-                        .font(.system(size: 11))
-                        .foregroundStyle(Color(nsColor: .secondaryLabelColor))
-                        .monospacedDigit()
+        VStack(alignment: .leading, spacing: 0) {
+            HStack(spacing: 10) {
+                Image(systemName: ClipboardHistoryFormatting.systemImage(for: item))
+                    .font(.system(size: 13, weight: .medium))
+                    .foregroundStyle(Color(nsColor: .controlAccentColor))
+                    .frame(width: 30, height: 30)
+                    .background(
+                        Color(nsColor: .controlAccentColor).opacity(0.11),
+                        in: RoundedRectangle(cornerRadius: 8, style: .continuous)
+                    )
 
-                    if let sourceApplication = item.sourceApplication {
-                        ClipboardSourceApplicationLabel(application: sourceApplication)
+                VStack(alignment: .leading, spacing: 2) {
+                    Text(ClipboardHistoryFormatting.kindTitle(for: item))
+                        .font(.system(size: 12.5, weight: .semibold))
+                        .foregroundStyle(Color(nsColor: .labelColor))
+
+                    HStack(spacing: 5) {
+                        if let sourceApplication = item.sourceApplication {
+                            ClipboardSourceApplicationLabel(application: sourceApplication)
+
+                            Text("·")
+                                .foregroundStyle(Color(nsColor: .tertiaryLabelColor))
+                        }
+
+                        Text(ClipboardHistoryFormatting.formattedDate(item.createdAt))
+                            .monospacedDigit()
                     }
+                    .font(.system(size: 10.5))
+                    .foregroundStyle(Color(nsColor: .secondaryLabelColor))
                 }
 
                 Spacer(minLength: 0)
 
                 Button(action: applyAction) {
-                    Label("粘贴", systemImage: "arrow.turn.down.left")
+                    Label("粘贴", systemImage: "clipboard")
                         .font(.system(size: 11, weight: .medium))
                 }
-                .buttonStyle(.borderedProminent)
+                .buttonStyle(.glassProminent)
                 .controlSize(.small)
                 .help("粘贴到原前台应用")
+                .accessibilityLabel("粘贴到原前台应用")
             }
             .frame(height: ClipboardHistoryMetrics.detailHeaderHeight)
-            .padding(.horizontal, 14)
-            .background(Color(nsColor: .controlBackgroundColor))
+            .padding(.horizontal, 18)
 
             Rectangle()
-                .fill(Color(nsColor: .separatorColor).opacity(0.7))
-                .frame(height: 1)
+                .fill(
+                    Color(nsColor: .separatorColor)
+                        .opacity(colorSchemeContrast == .increased ? 0.9 : 0.58)
+                )
+                .frame(height: colorSchemeContrast == .increased ? 1.5 : 1)
 
             detailContent
         }
-        .background(Color(nsColor: .controlBackgroundColor).opacity(0.35))
     }
 
     @ViewBuilder
@@ -440,7 +426,8 @@ private struct ClipboardHistoryDetailView: View {
                     .lineSpacing(3)
                     .textSelection(.enabled)
                     .frame(maxWidth: .infinity, alignment: .topLeading)
-                    .padding(18)
+                    .padding(.horizontal, 24)
+                    .padding(.vertical, 22)
             }
             .scrollIndicators(.automatic)
             .clipboardHistoryScrollIndicatorInset(
@@ -450,15 +437,13 @@ private struct ClipboardHistoryDetailView: View {
             if let data = item.imagePNGData,
                let image = NSImage(data: data) {
                 ZStack {
-                    RoundedRectangle(cornerRadius: 8, style: .continuous)
-                        .fill(Color(nsColor: .textBackgroundColor))
+                    Color(nsColor: .underPageBackgroundColor)
 
                     Image(nsImage: image)
                         .resizable()
                         .scaledToFit()
-                        .padding(20)
+                        .padding(24)
                 }
-                .padding(18)
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
             } else {
                 VStack(spacing: 9) {
@@ -477,7 +462,9 @@ private struct ClipboardHistoryDetailView: View {
 }
 
 private struct ClipboardHistoryRow: View {
+    @Environment(\.accessibilityDifferentiateWithoutColor) private var differentiateWithoutColor
     @Environment(\.accessibilityReduceMotion) private var accessibilityReduceMotion
+    @Environment(\.colorSchemeContrast) private var colorSchemeContrast
     @State private var isHovered = false
     @State private var isPinHovered = false
     @State private var isPinLimitPresented = false
@@ -485,7 +472,6 @@ private struct ClipboardHistoryRow: View {
 
     let item: ClipboardHistoryItem
     let isSelected: Bool
-    let showsPinnedBoundary: Bool
     let selectAction: () -> Void
     let applyAction: () -> Void
     let pinAction: () -> ClipboardPinToggleResult
@@ -496,6 +482,8 @@ private struct ClipboardHistoryRow: View {
                 HStack(spacing: 10) {
                     if item.kind == .image {
                         thumbnail
+                    } else {
+                        typeIcon
                     }
 
                     VStack(alignment: .leading, spacing: 3) {
@@ -505,12 +493,21 @@ private struct ClipboardHistoryRow: View {
                             .lineLimit(1)
                             .multilineTextAlignment(.leading)
 
-                        if let sourceApplication = item.sourceApplication {
-                            Text(sourceApplication.name)
-                                .font(.system(size: 10.5))
-                                .foregroundStyle(Color(nsColor: .secondaryLabelColor))
-                                .lineLimit(1)
+                        HStack(spacing: 4) {
+                            if let sourceApplication = item.sourceApplication {
+                                Text(sourceApplication.name)
+                                    .lineLimit(1)
+
+                                Text("·")
+                                    .foregroundStyle(Color(nsColor: .tertiaryLabelColor))
+                            }
+
+                            Text(ClipboardHistoryFormatting.formattedDate(item.createdAt))
+                                .monospacedDigit()
+                                .fixedSize(horizontal: true, vertical: false)
                         }
+                        .font(.system(size: 10.5))
+                        .foregroundStyle(Color(nsColor: .secondaryLabelColor))
                     }
 
                     Spacer(minLength: 0)
@@ -527,6 +524,7 @@ private struct ClipboardHistoryRow: View {
             )
             .accessibilityLabel(ClipboardHistoryFormatting.accessibilityTitle(for: item))
             .accessibilityHint("单击预览，双击粘贴")
+            .accessibilityAddTraits(isSelected ? .isSelected : [])
 
             pinButton
         }
@@ -539,18 +537,6 @@ private struct ClipboardHistoryRow: View {
             alignment: .leading
         )
         .background(rowBackground)
-        .overlay(alignment: .bottom) {
-            if !isSelected {
-                Rectangle()
-                    .fill(
-                        Color(nsColor: .separatorColor)
-                            .opacity(showsPinnedBoundary ? 0.9 : 0.38)
-                    )
-                    .frame(height: 1)
-                    .padding(.leading, ClipboardHistoryMetrics.rowLeadingPadding)
-                    .padding(.trailing, ClipboardHistoryMetrics.rowTrailingPadding)
-            }
-        }
         .onHover { isHovered = $0 }
     }
 
@@ -569,11 +555,13 @@ private struct ClipboardHistoryRow: View {
                     height: ClipboardHistoryMetrics.pinButtonSize
                 )
                 .background(
-                    RoundedRectangle(cornerRadius: 6, style: .continuous)
-                        .fill(Color.black.opacity(isPinHovered && isPinVisible ? 0.06 : 0))
+                    Circle()
+                        .fill(
+                            Color.primary.opacity(isPinHovered && isPinVisible ? 0.07 : 0)
+                        )
                 )
                 .overlay(
-                    RoundedRectangle(cornerRadius: 6, style: .continuous)
+                    Circle()
                         .stroke(
                             Color(nsColor: .controlAccentColor).opacity(isPinFocused ? 0.85 : 0),
                             lineWidth: 1.5
@@ -642,24 +630,50 @@ private struct ClipboardHistoryRow: View {
         RoundedRectangle(cornerRadius: ClipboardHistoryMetrics.rowCornerRadius, style: .continuous)
             .fill(
                 isSelected
-                    ? Color(nsColor: .controlAccentColor).opacity(0.12)
-                    : Color(nsColor: .textBackgroundColor).opacity(isHovered ? 0.72 : 0)
+                    ? Color(nsColor: .controlAccentColor).opacity(
+                        colorSchemeContrast == .increased ? 0.20 : 0.12
+                    )
+                    : Color.primary.opacity(isHovered ? 0.055 : 0)
             )
             .overlay {
-                RoundedRectangle(cornerRadius: ClipboardHistoryMetrics.rowCornerRadius, style: .continuous)
-                    .stroke(
-                        Color(nsColor: .controlAccentColor).opacity(isSelected ? 0.18 : 0),
-                        lineWidth: 1
-                    )
+                RoundedRectangle(
+                    cornerRadius: ClipboardHistoryMetrics.rowCornerRadius,
+                    style: .continuous
+                )
+                .stroke(
+                    Color(nsColor: .controlAccentColor).opacity(
+                        isSelected ? (colorSchemeContrast == .increased ? 0.72 : 0.34) : 0
+                    ),
+                    lineWidth: colorSchemeContrast == .increased ? 1.5 : 1
+                )
             }
             .overlay(alignment: .leading) {
                 if isSelected {
-                    RoundedRectangle(cornerRadius: 1.5, style: .continuous)
+                    Capsule()
                         .fill(Color(nsColor: .controlAccentColor))
-                        .frame(width: 3, height: 24)
+                        .frame(width: differentiateWithoutColor ? 3 : 2, height: 24)
                         .padding(.leading, 3)
                 }
             }
+            .animation(
+                accessibilityReduceMotion ? nil : .easeOut(duration: 0.14),
+                value: isSelected
+            )
+            .animation(
+                accessibilityReduceMotion ? nil : .easeOut(duration: 0.12),
+                value: isHovered
+            )
+    }
+
+    private var typeIcon: some View {
+        Image(systemName: ClipboardHistoryFormatting.systemImage(for: item))
+            .font(.system(size: 12, weight: .medium))
+            .foregroundStyle(Color(nsColor: .controlAccentColor))
+            .frame(width: 28, height: 28)
+            .background(
+                Color(nsColor: .controlAccentColor).opacity(0.10),
+                in: RoundedRectangle(cornerRadius: 7, style: .continuous)
+            )
     }
 
     @ViewBuilder
@@ -715,6 +729,26 @@ private enum ClipboardHistoryFormatting {
             return item.text ?? ""
         case .image:
             return item.ocrText ?? ""
+        }
+    }
+
+    static func kindTitle(for item: ClipboardHistoryItem) -> String {
+        switch item.kind {
+        case .text: return "文本"
+        case .richText: return "富文本"
+        case .image: return "图片"
+        case .file: return "文件"
+        case .url: return "链接"
+        }
+    }
+
+    static func systemImage(for item: ClipboardHistoryItem) -> String {
+        switch item.kind {
+        case .text: return "text.alignleft"
+        case .richText: return "textformat"
+        case .image: return "photo"
+        case .file: return "doc"
+        case .url: return "link"
         }
     }
 
@@ -788,45 +822,38 @@ private struct ClipboardSourceApplicationLabel: View {
 }
 
 private extension View {
-    @ViewBuilder
     func clipboardHistoryScrollIndicatorInset(_ inset: CGFloat) -> some View {
-        if #available(macOS 14.0, *) {
-            contentMargins(.trailing, inset, for: .scrollIndicators)
-        } else {
-            self
-        }
+        contentMargins(.trailing, inset, for: .scrollIndicators)
     }
 }
 
 enum ClipboardHistoryMetrics {
-    static let bodyWidth: CGFloat = 740
-    static let bodyHeight: CGFloat = 500
-    static let headerHeight: CGFloat = 62
-    static let detailHeaderHeight: CGFloat = 48
-    static let listWidth: CGFloat = 330
-    static let searchWidth: CGFloat = 280
-    static let horizontalPadding: CGFloat = 16
-    static let listVerticalPadding: CGFloat = 8
-    static let listBackgroundOpacity: Double = 0.2
-    static let rowHeight: CGFloat = 50
+    static let bodyWidth: CGFloat = 780
+    static let bodyHeight: CGFloat = 520
+    static let headerHeight: CGFloat = 64
+    static let detailHeaderHeight: CGFloat = 60
+    static let listWidth: CGFloat = 276
+    static let searchWidth: CGFloat = 240
+    static let searchHeight: CGFloat = 32
+    static let horizontalPadding: CGFloat = 18
+    static let listVerticalPadding: CGFloat = 10
+    static let rowHeight: CGFloat = 52
     static let rowSpacing: CGFloat = 2
-    static let listLeadingInset: CGFloat = 12
-    static let listTrailingInset: CGFloat = 14
+    static let listLeadingInset: CGFloat = 10
+    static let listTrailingInset: CGFloat = 12
     static let scrollerTrailingInset: CGFloat = 2
     static let rowLeadingPadding: CGFloat = 12
     static let rowTrailingPadding: CGFloat = 4
-    static let rowCornerRadius: CGFloat = 7
+    static let rowCornerRadius: CGFloat = 8
     static let pinButtonSize: CGFloat = 26
     static let pinSpacing: CGFloat = 6
     static let thumbnailWidth: CGFloat = 40
     static let thumbnailHeight: CGFloat = 30
     static let shadowPadding: CGFloat = 20
-    static let shadowOpacity: Double = 0.16
-    static let shadowRadius: CGFloat = 14
-    static let shadowYOffset: CGFloat = 2
-    static let bodyCornerRadius: CGFloat = 10
-    static let bodyBorderOpacity: Double = 0.22
-    static let bodyBorderLineWidth: CGFloat = CalendarPopoverMetrics.bodyBorderLineWidth
+    static let shadowOpacity: Double = 0.12
+    static let shadowRadius: CGFloat = 11
+    static let shadowYOffset: CGFloat = 4
+    static let bodyCornerRadius: CGFloat = 18
     static let windowWidth: CGFloat = bodyWidth + shadowPadding * 2
     static let windowHeight: CGFloat = bodyHeight + shadowPadding * 2
 }

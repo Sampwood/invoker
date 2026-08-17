@@ -138,8 +138,10 @@ final class StatusBarController: NSObject {
         )
     }
 
-    @objc private func systemDateDidChange(_ notification: Notification) {
-        updateStatusIcon()
+    @objc private nonisolated func systemDateDidChange(_ notification: Notification) {
+        Task { @MainActor [weak self] in
+            self?.updateStatusIcon()
+        }
     }
 
     private func updateStatusIcon() {
