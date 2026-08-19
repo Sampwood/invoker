@@ -246,7 +246,6 @@ struct ClipboardHistoryView: View {
 
             detailPane(filteredItems: filteredItems)
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
-                .background(Color(nsColor: .textBackgroundColor))
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
     }
@@ -353,6 +352,7 @@ struct ClipboardHistoryView: View {
 }
 
 private struct ClipboardHistoryDetailView: View {
+    @Environment(\.accessibilityReduceTransparency) private var accessibilityReduceTransparency
     @Environment(\.colorSchemeContrast) private var colorSchemeContrast
 
     let item: ClipboardHistoryItem
@@ -412,6 +412,8 @@ private struct ClipboardHistoryDetailView: View {
                 .frame(height: colorSchemeContrast == .increased ? 1.5 : 1)
 
             detailContent
+                .frame(maxWidth: .infinity, maxHeight: .infinity)
+                .background(contentBackground)
         }
     }
 
@@ -436,15 +438,11 @@ private struct ClipboardHistoryDetailView: View {
         case .image:
             if let data = item.imagePNGData,
                let image = NSImage(data: data) {
-                ZStack {
-                    Color(nsColor: .underPageBackgroundColor)
-
-                    Image(nsImage: image)
-                        .resizable()
-                        .scaledToFit()
-                        .padding(24)
-                }
-                .frame(maxWidth: .infinity, maxHeight: .infinity)
+                Image(nsImage: image)
+                    .resizable()
+                    .scaledToFit()
+                    .padding(24)
+                    .frame(maxWidth: .infinity, maxHeight: .infinity)
             } else {
                 VStack(spacing: 9) {
                     Image(systemName: "photo.badge.exclamationmark")
@@ -458,6 +456,11 @@ private struct ClipboardHistoryDetailView: View {
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
             }
         }
+    }
+
+    private var contentBackground: Color {
+        Color(nsColor: .windowBackgroundColor)
+            .opacity(accessibilityReduceTransparency ? 1 : 0.12)
     }
 }
 
