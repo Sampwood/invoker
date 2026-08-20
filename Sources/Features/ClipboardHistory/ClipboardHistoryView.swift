@@ -267,8 +267,7 @@ struct ClipboardHistoryView: View {
             ScrollViewReader { proxy in
                 ScrollView {
                     LazyVStack(alignment: .leading, spacing: ClipboardHistoryMetrics.rowSpacing) {
-                        ForEach(filteredItems.indices, id: \.self) { index in
-                            let item = filteredItems[index]
+                        ForEach(Array(filteredItems.enumerated()), id: \.element.id) { index, item in
 
                             if index == 0 || filteredItems[index - 1].isPinned != item.isPinned {
                                 Text(item.isPinned ? "置顶" : "最近")
@@ -292,7 +291,6 @@ struct ClipboardHistoryView: View {
                                     store.togglePin(for: item.id)
                                 }
                             )
-                            .id(item.id)
                         }
                     }
                     .padding(.leading, ClipboardHistoryMetrics.listLeadingInset)
