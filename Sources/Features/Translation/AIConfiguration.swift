@@ -236,6 +236,9 @@ struct CCSwitchAIConfigurationReader: CCSwitchAIConfigurationReading {
             throw AIConfigurationError.invalidCCSwitchProvider
         }
         let codexConfiguration = try CodexProviderTOMLParser().parse(payload.config)
+        let apiKey = payload.auth?.apiKey?.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty == false
+            ? payload.auth?.apiKey
+            : codexConfiguration.experimentalBearerToken
 
         return CCSwitchAIConfiguration(
             providerName: providerName,
@@ -243,7 +246,7 @@ struct CCSwitchAIConfigurationReader: CCSwitchAIConfigurationReading {
             model: codexConfiguration.model,
             wireAPI: codexConfiguration.wireAPI,
             requiresOpenAIAuth: codexConfiguration.requiresOpenAIAuth,
-            apiKey: payload.auth?.apiKey
+            apiKey: apiKey
         )
     }
 }
@@ -254,6 +257,7 @@ struct CodexProviderTOMLConfiguration: Equatable, Sendable {
     let baseURL: String
     let wireAPI: String?
     let requiresOpenAIAuth: Bool
+    let experimentalBearerToken: String?
 }
 
 struct CodexProviderTOMLParser {
@@ -306,7 +310,8 @@ struct CodexProviderTOMLParser {
             model: model,
             baseURL: baseURL,
             wireAPI: provider["wire_api"]?.stringValue,
-            requiresOpenAIAuth: provider["requires_openai_auth"]?.boolValue ?? false
+            requiresOpenAIAuth: provider["requires_openai_auth"]?.boolValue ?? false,
+            experimentalBearerToken: provider["experimental_bearer_token"]?.stringValue
         )
     }
 }

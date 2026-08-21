@@ -14,6 +14,7 @@ final class AIConfigurationTests: XCTestCase {
             base_url = "https://example.test/v1"
             wire_api = "responses"
             requires_openai_auth = true
+            experimental_bearer_token = "config-token"
             """
         )
 
@@ -22,6 +23,7 @@ final class AIConfigurationTests: XCTestCase {
         XCTAssertEqual(configuration.baseURL, "https://example.test/v1")
         XCTAssertEqual(configuration.wireAPI, "responses")
         XCTAssertTrue(configuration.requiresOpenAIAuth)
+        XCTAssertEqual(configuration.experimentalBearerToken, "config-token")
     }
 
     func testUnsupportedWireAPIIsRejected() throws {
@@ -144,6 +146,48 @@ final class AIConfigurationTests: XCTestCase {
         XCTAssertEqual(switched.model, "second-model")
         XCTAssertEqual(switched.apiKey, "second-key")
     }
+
+    func testCCSwitchReaderUsesExperimentalBearerTokenWhenAuthPayloadIsMissing() throws {
+        let directoryURL = FileManager.default.temporaryDirectory
+            .appendingPathComponent("InvokerCCSwitchBearerTokenTests-\(UUID().uuidString)", isDirectory: true)
+        try FileManager.default.createDirectory(at: directoryURL, withIntermediateDirectories: true)
+        defer { try? FileManager.default.removeItem(at: directoryURL) }
+        let databaseURL = directoryURL.appendingPathComponent("cc-switch.db")
+        var database: OpaquePointer?
+        XCTAssertEqual(sqlite3_open(databaseURL.path, &database), SQLITE_OK)
+        let openedDatabase = try XCTUnwrap(database)
+        defer { sqlite3_close(openedDatabase) }
+
+        try executeSQL(
+            """
+            CREATE TABLE providers (
+                id TEXT NOT NULL,
+                app_type TEXT NOT NULL,
+                name TEXT NOT NULL,
+                settings_config TEXT NOT NULL,
+                sort_index INTEGER,
+                is_current INTEGER NOT NULL
+            );
+            """,
+            database: openedDatabase
+        )
+        try insertProvider(
+            id: "bearer",
+            name: "Bearer Provider",
+            model: "terra-model",
+            baseURL: "https://example.test/v1",
+            apiKey: nil,
+            experimentalBearerToken: "config-token",
+            isCurrent: true,
+            database: openedDatabase
+        )
+
+        let configuration = try CCSwitchAIConfigurationReader(databaseURL: databaseURL).currentConfiguration()
+        XCTAssertEqual(configuration.model, "terra-model")
+        XCTAssertEqual(configuration.apiKey, "config-token")
+        let resolved = try configuration.resolvedConfiguration()
+        XCTAssertEqual(resolved.source, .ccSwitch)
+    }
 }
 
 private struct FailingCCSwitchReader: CCSwitchAIConfigurationReading {
@@ -166,7 +210,8 @@ private func insertProvider(
     name: String,
     model: String,
     baseURL: String,
-    apiKey: String,
+    apiKey: String?,
+    experimentalBearerToken: String? = nil,
     isCurrent: Bool,
     database: OpaquePointer
 ) throws {
@@ -177,13 +222,13 @@ private func insertProvider(
     base_url = "\(baseURL)"
     wire_api = "responses"
     requires_openai_auth = true
+    \(experimentalBearerToken.map { "experimental_bearer_token = \"\($0)\"" } ?? "")
     """
-    let data = try JSONSerialization.data(
-        withJSONObject: [
-            "auth": ["OPENAI_API_KEY": apiKey],
-            "config": config,
-        ]
-    )
+    var payload: [String: Any] = ["config": config]
+    if let apiKey {
+        payload["auth"] = ["OPENAI_API_KEY": apiKey]
+    }
+    let data = try JSONSerialization.data(withJSONObject: payload)
     let settingsJSON = try XCTUnwrap(String(data: data, encoding: .utf8))
     let escapedSettings = settingsJSON.replacingOccurrences(of: "'", with: "''")
     let escapedName = name.replacingOccurrences(of: "'", with: "''")
