@@ -419,15 +419,27 @@ private struct ClipboardHistoryDetailView: View {
     private var detailContent: some View {
         switch item.kind {
         case .text, .richText, .file, .url:
+            let preview = ClipboardHistoryFormatting.previewText(
+                ClipboardHistoryFormatting.detailText(for: item),
+                limit: 5000
+            )
             ScrollView {
-                Text(ClipboardHistoryFormatting.detailText(for: item))
-                    .font(.system(size: 13))
-                    .foregroundStyle(Color(nsColor: .labelColor))
-                    .lineSpacing(3)
-                    .textSelection(.enabled)
-                    .frame(maxWidth: .infinity, alignment: .topLeading)
-                    .padding(.horizontal, 24)
-                    .padding(.vertical, 22)
+                VStack(alignment: .leading, spacing: 12) {
+                    Text(preview.text)
+                        .font(.system(size: 13))
+                        .foregroundStyle(Color(nsColor: .labelColor))
+                        .lineSpacing(3)
+                        .textSelection(.enabled)
+                        .frame(maxWidth: .infinity, alignment: .topLeading)
+
+                    if preview.isTruncated {
+                        Text("仅预览前 5000 个字符，粘贴会保留完整内容")
+                            .font(.system(size: 11))
+                            .foregroundStyle(Color(nsColor: .secondaryLabelColor))
+                    }
+                }
+                .padding(.horizontal, 24)
+                .padding(.vertical, 22)
             }
             .scrollIndicators(.automatic)
             .clipboardHistoryScrollIndicatorInset(
@@ -713,7 +725,8 @@ private enum ClipboardHistoryFormatting {
     static func title(for item: ClipboardHistoryItem) -> String {
         switch item.kind {
         case .text, .richText, .file, .url:
-            return item.displayTitle
+            let preview = previewText(item.displayTitle, limit: 200)
+            return preview.text + (preview.isTruncated ? "…" : "")
         case .image:
             return imageDimensions(from: item.imagePNGData) ?? "尺寸未知"
         }
@@ -731,6 +744,12 @@ private enum ClipboardHistoryFormatting {
         case .image:
             return item.ocrText ?? ""
         }
+    }
+
+    static func previewText(_ text: String, limit: Int) -> (text: String, isTruncated: Bool) {
+        let endIndex = text.index(text.startIndex, offsetBy: limit, limitedBy: text.endIndex)
+            ?? text.endIndex
+        return (String(text[..<endIndex]), endIndex != text.endIndex)
     }
 
     static func kindTitle(for item: ClipboardHistoryItem) -> String {
