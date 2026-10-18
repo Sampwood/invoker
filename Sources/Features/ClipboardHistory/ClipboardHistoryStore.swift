@@ -54,8 +54,8 @@ final class ClipboardHistoryStore: ObservableObject {
     init(
         userDefaults: UserDefaults = .standard,
         settings: ClipboardHistorySettingsStore? = nil,
-        pasteboard: ClipboardPasteboardAccessing = SystemClipboardPasteboardAccessor(),
-        sourceApplicationProvider: ClipboardSourceApplicationProviding = WorkspaceClipboardSourceApplicationProvider(),
+        pasteboard: ClipboardPasteboardAccessing? = nil,
+        sourceApplicationProvider: ClipboardSourceApplicationProviding? = nil,
         repository: (any ClipboardHistoryRepository)? = nil,
         ocrRecognizer: any ClipboardOCRRecognizing = VisionClipboardOCRRecognizer(),
         maxItems: Int? = nil,
@@ -67,8 +67,8 @@ final class ClipboardHistoryStore: ObservableObject {
             resolvedSettings.maxHistoryItems = max(1, maxItems)
         }
         self.settings = resolvedSettings
-        self.pasteboard = pasteboard
-        self.sourceApplicationProvider = sourceApplicationProvider
+        self.pasteboard = pasteboard ?? SystemClipboardPasteboardAccessor()
+        self.sourceApplicationProvider = sourceApplicationProvider ?? WorkspaceClipboardSourceApplicationProvider()
         self.ocrRecognizer = ocrRecognizer
         self.pollInterval = pollInterval
 

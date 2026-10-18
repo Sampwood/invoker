@@ -67,6 +67,13 @@
 		1A2B3C4D5E6F700000000168 /* ClipboardHistoryRepository.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1A2B3C4D5E6F700000000171 /* ClipboardHistoryRepository.swift */; };
 		1A2B3C4D5E6F700000000169 /* ClipboardHistorySettings.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1A2B3C4D5E6F700000000172 /* ClipboardHistorySettings.swift */; };
 		1A2B3C4D5E6F700000000170 /* ClipboardOCRService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1A2B3C4D5E6F700000000173 /* ClipboardOCRService.swift */; };
+		1A2B3C4D5E6F700000000174 /* LauncherCommand.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1A2B3C4D5E6F700000000180 /* LauncherCommand.swift */; };
+		1A2B3C4D5E6F700000000175 /* LauncherSearchViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1A2B3C4D5E6F700000000181 /* LauncherSearchViewModel.swift */; };
+		1A2B3C4D5E6F700000000176 /* LauncherView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1A2B3C4D5E6F700000000182 /* LauncherView.swift */; };
+		1A2B3C4D5E6F700000000177 /* LauncherPanelController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1A2B3C4D5E6F700000000183 /* LauncherPanelController.swift */; };
+		1A2B3C4D5E6F700000000185 /* SystemMonitorViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1A2B3C4D5E6F700000000189 /* SystemMonitorViewModel.swift */; };
+		1A2B3C4D5E6F700000000186 /* SystemMonitorView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1A2B3C4D5E6F700000000190 /* SystemMonitorView.swift */; };
+		1A2B3C4D5E6F700000000187 /* SystemMonitorPanelController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1A2B3C4D5E6F700000000191 /* SystemMonitorPanelController.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -141,6 +148,13 @@
 		1A2B3C4D5E6F700000000171 /* ClipboardHistoryRepository.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ClipboardHistoryRepository.swift; sourceTree = "<group>"; };
 		1A2B3C4D5E6F700000000172 /* ClipboardHistorySettings.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ClipboardHistorySettings.swift; sourceTree = "<group>"; };
 		1A2B3C4D5E6F700000000173 /* ClipboardOCRService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ClipboardOCRService.swift; sourceTree = "<group>"; };
+		1A2B3C4D5E6F700000000180 /* LauncherCommand.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LauncherCommand.swift; sourceTree = "<group>"; };
+		1A2B3C4D5E6F700000000181 /* LauncherSearchViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LauncherSearchViewModel.swift; sourceTree = "<group>"; };
+		1A2B3C4D5E6F700000000182 /* LauncherView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LauncherView.swift; sourceTree = "<group>"; };
+		1A2B3C4D5E6F700000000183 /* LauncherPanelController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LauncherPanelController.swift; sourceTree = "<group>"; };
+		1A2B3C4D5E6F700000000189 /* SystemMonitorViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SystemMonitorViewModel.swift; sourceTree = "<group>"; };
+		1A2B3C4D5E6F700000000190 /* SystemMonitorView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SystemMonitorView.swift; sourceTree = "<group>"; };
+		1A2B3C4D5E6F700000000191 /* SystemMonitorPanelController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SystemMonitorPanelController.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
@@ -234,6 +248,8 @@
 				1A2B3C4D5E6F700000000042 /* Calendar */,
 				1A2B3C4D5E6F700000000162 /* ClipboardHistory */,
 				1A2B3C4D5E6F700000000111 /* HotKey */,
+				1A2B3C4D5E6F700000000184 /* Launcher */,
+				1A2B3C4D5E6F700000000192 /* SystemMonitor */,
 				1A2B3C4D5E6F700000000129 /* Translation */,
 				1A2B3C4D5E6F700000000093 /* InputSource */,
 				1A2B3C4D5E6F700000000096 /* Updates */,
@@ -262,6 +278,27 @@
 				1A2B3C4D5E6F700000000095 /* UpdateChecker.swift */,
 			);
 			path = Updates;
+			sourceTree = "<group>";
+		};
+		1A2B3C4D5E6F700000000184 /* Launcher */ = {
+			isa = PBXGroup;
+			children = (
+				1A2B3C4D5E6F700000000180 /* LauncherCommand.swift */,
+				1A2B3C4D5E6F700000000181 /* LauncherSearchViewModel.swift */,
+				1A2B3C4D5E6F700000000182 /* LauncherView.swift */,
+				1A2B3C4D5E6F700000000183 /* LauncherPanelController.swift */,
+			);
+			path = Launcher;
+			sourceTree = "<group>";
+		};
+		1A2B3C4D5E6F700000000192 /* SystemMonitor */ = {
+			isa = PBXGroup;
+			children = (
+				1A2B3C4D5E6F700000000189 /* SystemMonitorViewModel.swift */,
+				1A2B3C4D5E6F700000000190 /* SystemMonitorView.swift */,
+				1A2B3C4D5E6F700000000191 /* SystemMonitorPanelController.swift */,
+			);
+			path = SystemMonitor;
 			sourceTree = "<group>";
 		};
 		1A2B3C4D5E6F700000000093 /* InputSource */ = {
@@ -558,6 +595,13 @@
 				1A2B3C4D5E6F700000000152 /* ClipboardPasteExecutor.swift in Sources */,
 				1A2B3C4D5E6F700000000153 /* ClipboardHistoryView.swift in Sources */,
 				1A2B3C4D5E6F700000000154 /* ClipboardHistoryPanelController.swift in Sources */,
+				1A2B3C4D5E6F700000000174 /* LauncherCommand.swift in Sources */,
+				1A2B3C4D5E6F700000000175 /* LauncherSearchViewModel.swift in Sources */,
+				1A2B3C4D5E6F700000000176 /* LauncherView.swift in Sources */,
+				1A2B3C4D5E6F700000000177 /* LauncherPanelController.swift in Sources */,
+				1A2B3C4D5E6F700000000185 /* SystemMonitorViewModel.swift in Sources */,
+				1A2B3C4D5E6F700000000186 /* SystemMonitorView.swift in Sources */,
+				1A2B3C4D5E6F700000000187 /* SystemMonitorPanelController.swift in Sources */,
 				1A2B3C4D5E6F700000000131 /* TranslationModels.swift in Sources */,
 				1A2B3C4D5E6F700000000132 /* TranslationSettingsStore.swift in Sources */,
 				1A2B3C4D5E6F700000000134 /* TranslationNetworkSupport.swift in Sources */,

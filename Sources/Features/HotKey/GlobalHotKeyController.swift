@@ -24,6 +24,14 @@ struct GlobalHotKeyConfiguration: Equatable {
         shortcutDescription: "Shift + Command + V"
     )
 
+    static let launcher = GlobalHotKeyConfiguration(
+        keyCode: UInt32(kVK_Space),
+        modifiers: UInt32(optionKey),
+        identifier: EventHotKeyID(signature: OSType(0x494E_564B), id: UInt32(4)),
+        displayName: "Launcher",
+        shortcutDescription: "Option + Space"
+    )
+
     static func == (lhs: GlobalHotKeyConfiguration, rhs: GlobalHotKeyConfiguration) -> Bool {
         lhs.keyCode == rhs.keyCode
             && lhs.modifiers == rhs.modifiers

@@ -1,5 +1,6 @@
 import SwiftUI
 
+@MainActor
 struct CalendarPopoverView: View {
     @StateObject private var viewModel = CalendarViewModel()
     @State private var hoveredDayID: CalendarDay.ID?
@@ -12,7 +13,7 @@ struct CalendarPopoverView: View {
     )
     private let weekdaySymbols = ["日", "一", "二", "三", "四", "五", "六"]
 
-    init(presentationState: CalendarPopoverPresentationState = CalendarPopoverPresentationState()) {
+    init(presentationState: CalendarPopoverPresentationState) {
         self.presentationState = presentationState
     }
 

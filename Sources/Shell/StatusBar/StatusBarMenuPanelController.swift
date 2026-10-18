@@ -5,6 +5,7 @@ import SwiftUI
 final class StatusBarMenuPanelController {
     private let translationAction: () -> Void
     private let clipboardHistoryAction: () -> Void
+    private let systemMonitorAction: () -> Void
     private let settingsAction: () -> Void
     private let checkForUpdatesAction: () -> Void
     private var panel: NSPanel?
@@ -15,11 +16,13 @@ final class StatusBarMenuPanelController {
     init(
         translationAction: @escaping () -> Void,
         clipboardHistoryAction: @escaping () -> Void,
+        systemMonitorAction: @escaping () -> Void,
         settingsAction: @escaping () -> Void,
         checkForUpdatesAction: @escaping () -> Void
     ) {
         self.translationAction = translationAction
         self.clipboardHistoryAction = clipboardHistoryAction
+        self.systemMonitorAction = systemMonitorAction
         self.settingsAction = settingsAction
         self.checkForUpdatesAction = checkForUpdatesAction
     }
@@ -77,6 +80,10 @@ final class StatusBarMenuPanelController {
                 clipboardHistoryAction: { [weak self] in
                     self?.close()
                     self?.clipboardHistoryAction()
+                },
+                systemMonitorAction: { [weak self] in
+                    self?.close()
+                    self?.systemMonitorAction()
                 },
                 settingsAction: { [weak self] in
                     self?.close()
