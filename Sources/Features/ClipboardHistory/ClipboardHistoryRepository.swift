@@ -60,6 +60,7 @@ actor SQLiteClipboardHistoryRepository: ClipboardHistoryRepository {
         let payloadHash: String
         let previewPNGData: Data?
         let ocrText: String?
+        let displayText: String?
     }
 
     private let databaseURL: URL
@@ -87,7 +88,8 @@ actor SQLiteClipboardHistoryRepository: ClipboardHistoryRepository {
             try Self.execute("PRAGMA journal_mode = WAL", database: openedDatabase)
             try Self.execute("PRAGMA synchronous = NORMAL", database: openedDatabase)
             try Self.execute(Self.schemaSQL, database: openedDatabase)
-            try Self.execute("PRAGMA user_version = 1", database: openedDatabase)
+            try Self.migrateDisplayText(database: openedDatabase)
+            try Self.execute("PRAGMA user_version = 2", database: openedDatabase)
         } catch {
             throw error
         }
@@ -136,11 +138,11 @@ actor SQLiteClipboardHistoryRepository: ClipboardHistoryRepository {
         let metadata = try loadMetadata(database: database)
         let representations = try loadRepresentations(database: database)
 
-        return metadata.compactMap { stored in
+        return try metadata.compactMap { stored in
             guard let snapshotItems = representations[stored.id], !snapshotItems.isEmpty else {
                 return nil
             }
-            return ClipboardHistoryItem(
+            let item = ClipboardHistoryItem(
                 id: stored.id,
                 createdAt: stored.createdAt,
                 isPinned: stored.isPinned,
@@ -148,8 +150,20 @@ actor SQLiteClipboardHistoryRepository: ClipboardHistoryRepository {
                 sourceApplication: stored.sourceApplication,
                 payloadHash: stored.payloadHash,
                 previewPNGData: stored.previewPNGData,
-                ocrText: stored.ocrText
+                ocrText: stored.ocrText,
+                displayText: stored.displayText
             )
+            if stored.displayText == nil {
+                let statement = try prepare(
+                    "UPDATE history_items SET display_text = ? WHERE id = ? AND display_text IS NULL",
+                    database: database
+                )
+                defer { sqlite3_finalize(statement) }
+                try bind(item.displayText, at: 1, statement: statement)
+                try bind(item.id.uuidString, at: 2, statement: statement)
+                try stepDone(statement, database: database)
+            }
+            return item
         }
     }
 
@@ -185,7 +199,7 @@ actor SQLiteClipboardHistoryRepository: ClipboardHistoryRepository {
     private func loadMetadata(database: OpaquePointer) throws -> [StoredMetadata] {
         let sql = """
         SELECT id, created_at, is_pinned, source_bundle_identifier, source_app_name,
-               source_bundle_path, payload_hash, preview_png, ocr_text
+               source_bundle_path, payload_hash, preview_png, ocr_text, display_text
         FROM history_items
         ORDER BY position ASC
         """
@@ -222,7 +236,8 @@ actor SQLiteClipboardHistoryRepository: ClipboardHistoryRepository {
                     sourceApplication: sourceApplication,
                     payloadHash: payloadHash,
                     previewPNGData: data(at: 7, statement: statement),
-                    ocrText: text(at: 8, statement: statement)
+                    ocrText: text(at: 8, statement: statement),
+                    displayText: text(at: 9, statement: statement)
                 )
             )
         }
@@ -290,8 +305,8 @@ actor SQLiteClipboardHistoryRepository: ClipboardHistoryRepository {
         let sql = """
         INSERT INTO history_items (
             id, position, created_at, is_pinned, source_bundle_identifier,
-            source_app_name, source_bundle_path, payload_hash, preview_png, ocr_text
-        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            source_app_name, source_bundle_path, payload_hash, preview_png, ocr_text, display_text
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
         ON CONFLICT(id) DO UPDATE SET
             position = excluded.position,
             created_at = excluded.created_at,
@@ -301,7 +316,8 @@ actor SQLiteClipboardHistoryRepository: ClipboardHistoryRepository {
             source_bundle_path = excluded.source_bundle_path,
             payload_hash = excluded.payload_hash,
             preview_png = excluded.preview_png,
-            ocr_text = excluded.ocr_text
+            ocr_text = excluded.ocr_text,
+            display_text = excluded.display_text
         """
         let statement = try prepare(sql, database: database)
         defer { sqlite3_finalize(statement) }
@@ -316,6 +332,7 @@ actor SQLiteClipboardHistoryRepository: ClipboardHistoryRepository {
         try bind(item.payloadHash, at: 8, statement: statement)
         try bind(item.previewPNGData, at: 9, statement: statement)
         try bind(item.ocrText, at: 10, statement: statement)
+        try bind(item.displayText, at: 11, statement: statement)
         try stepDone(statement, database: database)
     }
 
@@ -462,6 +479,30 @@ actor SQLiteClipboardHistoryRepository: ClipboardHistoryRepository {
         return Data(bytes: bytes, count: count)
     }
 
+    private static func migrateDisplayText(database: OpaquePointer) throws {
+        var statement: OpaquePointer?
+        let sql = "SELECT name FROM pragma_table_info('history_items') WHERE name = 'display_text'"
+        guard sqlite3_prepare_v2(database, sql, -1, &statement, nil) == SQLITE_OK,
+              let statement
+        else {
+            throw ClipboardHistoryRepositoryError.databaseOperationFailed(
+                String(cString: sqlite3_errmsg(database))
+            )
+        }
+        defer { sqlite3_finalize(statement) }
+
+        switch sqlite3_step(statement) {
+        case SQLITE_ROW:
+            break
+        case SQLITE_DONE:
+            try execute("ALTER TABLE history_items ADD COLUMN display_text TEXT", database: database)
+        default:
+            throw ClipboardHistoryRepositoryError.databaseOperationFailed(
+                String(cString: sqlite3_errmsg(database))
+            )
+        }
+    }
+
     private static let schemaSQL = """
     CREATE TABLE IF NOT EXISTS history_items (
         id TEXT PRIMARY KEY NOT NULL,
@@ -473,7 +514,8 @@ actor SQLiteClipboardHistoryRepository: ClipboardHistoryRepository {
         source_bundle_path TEXT,
         payload_hash TEXT NOT NULL,
         preview_png BLOB,
-        ocr_text TEXT
+        ocr_text TEXT,
+        display_text TEXT
     );
     CREATE INDEX IF NOT EXISTS history_items_position_index
         ON history_items(position);

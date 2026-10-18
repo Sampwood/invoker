@@ -53,7 +53,15 @@ struct ClipboardSnapshot: Codable, Equatable, Hashable, Sendable {
 
     var extractedText: String? {
         let values = items.flatMap { item in
-            item.representations.compactMap { Self.text(from: $0) }
+            let plainText = Self.uniqueNonempty(
+                item.representations
+                    .filter { $0.typeIdentifier == NSPasteboard.PasteboardType.string.rawValue }
+                    .compactMap { Self.string(from: $0.data) }
+            )
+            if !plainText.isEmpty {
+                return plainText
+            }
+            return item.representations.compactMap { Self.text(from: $0) }
         }
         let text = Self.uniqueNonempty(values).joined(separator: "\n")
         return text.isEmpty ? nil : text
@@ -162,6 +170,7 @@ struct ClipboardHistoryItem: Codable, Equatable, Identifiable, Sendable {
     let payloadHash: String
     let previewPNGData: Data?
     let ocrText: String?
+    let displayText: String
     private let cachedSearchableText: String
 
     init(
@@ -172,7 +181,8 @@ struct ClipboardHistoryItem: Codable, Equatable, Identifiable, Sendable {
         sourceApplication: ClipboardSourceApplication? = nil,
         payloadHash: String? = nil,
         previewPNGData: Data? = nil,
-        ocrText: String? = nil
+        ocrText: String? = nil,
+        displayText: String? = nil
     ) {
         self.id = id
         self.createdAt = createdAt
@@ -182,8 +192,10 @@ struct ClipboardHistoryItem: Codable, Equatable, Identifiable, Sendable {
         self.payloadHash = payloadHash ?? snapshot.payloadHash
         self.previewPNGData = previewPNGData
         self.ocrText = ocrText
+        self.displayText = displayText ?? snapshot.extractedText ?? ""
         cachedSearchableText = Self.makeSearchableText(
             snapshot: snapshot,
+            displayText: self.displayText,
             sourceApplication: sourceApplication,
             ocrText: ocrText
         )
@@ -235,7 +247,7 @@ struct ClipboardHistoryItem: Codable, Equatable, Identifiable, Sendable {
     }
 
     var text: String? {
-        snapshot.extractedText
+        displayText.isEmpty ? nil : displayText
     }
 
     var imagePNGData: Data? {
@@ -268,11 +280,12 @@ struct ClipboardHistoryItem: Codable, Equatable, Identifiable, Sendable {
 
     private static func makeSearchableText(
         snapshot: ClipboardSnapshot,
+        displayText: String,
         sourceApplication: ClipboardSourceApplication?,
         ocrText: String?
     ) -> String {
         var components: [String] = [
-            snapshot.extractedText,
+            displayText,
             snapshot.fileNames.joined(separator: " "),
             snapshot.urls.joined(separator: " "),
             sourceApplication?.name,
@@ -340,7 +353,8 @@ struct ClipboardHistoryItem: Codable, Equatable, Identifiable, Sendable {
             sourceApplication: sourceApplication ?? self.sourceApplication,
             payloadHash: payloadHash,
             previewPNGData: previewPNGData,
-            ocrText: ocrText
+            ocrText: ocrText,
+            displayText: displayText
         )
     }
 
@@ -353,7 +367,8 @@ struct ClipboardHistoryItem: Codable, Equatable, Identifiable, Sendable {
             sourceApplication: sourceApplication,
             payloadHash: payloadHash,
             previewPNGData: previewPNGData,
-            ocrText: ocrText
+            ocrText: ocrText,
+            displayText: displayText
         )
     }
 
@@ -366,7 +381,8 @@ struct ClipboardHistoryItem: Codable, Equatable, Identifiable, Sendable {
             sourceApplication: sourceApplication,
             payloadHash: payloadHash,
             previewPNGData: previewPNGData,
-            ocrText: ocrText
+            ocrText: ocrText,
+            displayText: displayText
         )
     }
 
@@ -379,7 +395,8 @@ struct ClipboardHistoryItem: Codable, Equatable, Identifiable, Sendable {
             sourceApplication: sourceApplication,
             payloadHash: payloadHash,
             previewPNGData: previewPNGData,
-            ocrText: ocrText ?? existing.ocrText
+            ocrText: ocrText ?? existing.ocrText,
+            displayText: displayText
         )
     }
 
@@ -419,6 +436,7 @@ struct ClipboardHistoryItem: Codable, Equatable, Identifiable, Sendable {
         case payloadHash
         case previewPNGData
         case ocrText
+        case displayText
     }
 
     init(from decoder: Decoder) throws {
@@ -437,8 +455,11 @@ struct ClipboardHistoryItem: Codable, Equatable, Identifiable, Sendable {
                 ?? snapshot.payloadHash
             previewPNGData = try container.decodeIfPresent(Data.self, forKey: .previewPNGData)
             ocrText = try container.decodeIfPresent(String.self, forKey: .ocrText)
+            displayText = try container.decodeIfPresent(String.self, forKey: .displayText)
+                ?? snapshot.extractedText ?? ""
             cachedSearchableText = Self.makeSearchableText(
                 snapshot: snapshot,
+                displayText: displayText,
                 sourceApplication: sourceApplication,
                 ocrText: ocrText
             )
@@ -469,6 +490,7 @@ struct ClipboardHistoryItem: Codable, Equatable, Identifiable, Sendable {
         payloadHash = legacyItem.payloadHash
         previewPNGData = legacyItem.previewPNGData
         ocrText = nil
+        displayText = legacyItem.displayText
         cachedSearchableText = legacyItem.cachedSearchableText
     }
 
@@ -482,5 +504,6 @@ struct ClipboardHistoryItem: Codable, Equatable, Identifiable, Sendable {
         try container.encode(payloadHash, forKey: .payloadHash)
         try container.encodeIfPresent(previewPNGData, forKey: .previewPNGData)
         try container.encodeIfPresent(ocrText, forKey: .ocrText)
+        try container.encode(displayText, forKey: .displayText)
     }
 }
