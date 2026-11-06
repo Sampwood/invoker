@@ -269,6 +269,17 @@ struct ClipboardHistoryView: View {
             .frame(maxWidth: .infinity, maxHeight: .infinity)
         } else {
             ScrollViewReader { proxy in
+                let scrollToSelection = {
+                    guard let selectedItemID = presentationState.selectedItemID else {
+                        return
+                    }
+                    if selectedItemID == filteredItems.first(where: { !$0.isPinned })?.id {
+                        proxy.scrollTo("recent", anchor: .top)
+                    } else {
+                        proxy.scrollTo(selectedItemID, anchor: .center)
+                    }
+                }
+
                 ScrollView {
                     LazyVStack(alignment: .leading, spacing: ClipboardHistoryMetrics.rowSpacing) {
                         ForEach(Array(filteredItems.enumerated()), id: \.element.id) { index, item in
@@ -280,6 +291,7 @@ struct ClipboardHistoryView: View {
                                     .padding(.horizontal, 8)
                                     .padding(.top, index == 0 ? 3 : 8)
                                     .padding(.bottom, 2)
+                                    .id(item.isPinned ? "pinned" : "recent")
                             }
 
                             ClipboardHistoryRow(
@@ -306,16 +318,16 @@ struct ClipboardHistoryView: View {
                 .clipboardHistoryScrollIndicatorInset(
                     ClipboardHistoryMetrics.scrollerTrailingInset
                 )
-                .onChange(of: presentationState.selectedItemID) { selectedItemID in
-                    guard let selectedItemID else {
-                        return
-                    }
+                .onChange(of: presentationState.focusRequestID, initial: true) { _, _ in
+                    scrollToSelection()
+                }
+                .onChange(of: presentationState.selectedItemID) { _ in
                     guard !accessibilityReduceMotion else {
-                        proxy.scrollTo(selectedItemID, anchor: .center)
+                        scrollToSelection()
                         return
                     }
                     withAnimation(.easeOut(duration: 0.12)) {
-                        proxy.scrollTo(selectedItemID, anchor: .center)
+                        scrollToSelection()
                     }
                 }
             }
