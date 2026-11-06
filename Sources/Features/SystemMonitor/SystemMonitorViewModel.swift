@@ -106,14 +106,15 @@ final class SystemMonitorViewModel: ObservableObject {
         var count = mach_msg_type_number_t(
             MemoryLayout<vm_statistics64_data_t>.stride / MemoryLayout<integer_t>.stride
         )
-        let pageSize = UInt64(vm_kernel_page_size)
+        var pageSize: vm_size_t = 0
+        let pageSizeResult = host_page_size(mach_host_self(), &pageSize)
 
         let result = withUnsafeMutablePointer(to: &statistics) { pointer in
             pointer.withMemoryRebound(to: integer_t.self, capacity: Int(count)) {
                 host_statistics64(mach_host_self(), HOST_VM_INFO64, $0, &count)
             }
         }
-        guard result == KERN_SUCCESS else {
+        guard result == KERN_SUCCESS, pageSizeResult == KERN_SUCCESS else {
             let total = ProcessInfo.processInfo.physicalMemory
             return (0, total, 0)
         }
@@ -122,7 +123,7 @@ final class SystemMonitorViewModel: ObservableObject {
             + UInt64(statistics.inactive_count)
             + UInt64(statistics.wire_count)
             + UInt64(statistics.compressor_page_count)
-        let used = usedPages * pageSize
+        let used = usedPages * UInt64(pageSize)
         let total = ProcessInfo.processInfo.physicalMemory
         return (used, total, total > 0 ? Double(used) / Double(total) : 0)
     }

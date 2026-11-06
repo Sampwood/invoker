@@ -9,7 +9,7 @@ final class ClipboardHistoryPresentationState: ObservableObject {
 
     func prepare(for items: [ClipboardHistoryItem]) {
         query = ""
-        updateSelection(items.first?.id)
+        updateSelection(items.first(where: { !$0.isPinned })?.id ?? items.first?.id)
     }
 
     func requestSearchFocus() {
@@ -39,6 +39,10 @@ final class ClipboardHistoryPresentationState: ObservableObject {
     }
 
     func selectFirstMatch(in items: [ClipboardHistoryItem]) {
+        guard !query.isEmpty else {
+            prepare(for: items)
+            return
+        }
         updateSelection(filteredItems(from: items).first?.id)
     }
 
