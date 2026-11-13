@@ -36,6 +36,14 @@ The app is configured as a menu bar utility through `LSUIElement = YES`, so it d
 
 Invoker does not provide an in-app screenshot action. Use the native macOS shortcuts `Shift + Command + 4` for a selection or `Shift + Command + 5` for the system screenshot toolbar.
 
+## Launcher
+
+Press `Option + Space` to open or close the launcher. Search built-in commands and installed apps by display name or app filename, select with the arrow keys, then press Return or click to open. Running apps are activated; failed launches show a Chinese error message. App results show only their name and icon, without filesystem paths.
+
+Invoker scans `/Applications`, `~/Applications`, and `/System/Applications`, including ordinary subfolders. Hidden entries, nested helpers inside app bundles, other package contents, and directory symlinks are skipped. Apps elsewhere are outside the current search scope. Every opening refreshes the in-memory index in the background; existing results remain searchable and executable while scanning.
+
+An empty search recommends up to five commands and apps based on launcher use in the last 30 days. Matching searches also rank by use count, then most recent use; search results are not limited to five. Without history, recommendations are filled in by name. Only command executions and successful app launches/activations through this launcher count. Usage history is stored locally in UserDefaults and survives restarts; the app index itself is not persisted. Esc, clicking outside, or switching apps closes the panel.
+
 ## Clipboard History
 
 Press `Shift + Command + V` to open clipboard history. Invoker preserves supported plain text, RTF, HTML, file URL, URL, PNG, and TIFF representations, and stores history in `~/Library/Application Support/Invoker/ClipboardHistory.sqlite3`. The default limits are 200 regular items, 50 pinned items, 100 MB in total, and 10 MB per item.

@@ -61,7 +61,7 @@ final class LauncherCommandRegistry {
         return scoredCommands.map { $0.command }
     }
 
-    private func score(_ command: LauncherCommand, for query: String) -> Int? {
+    func score(_ command: LauncherCommand, for query: String) -> Int? {
         let title = command.title
         let normalizedTitle = title.lowercased()
         let normalizedQuery = query.lowercased()

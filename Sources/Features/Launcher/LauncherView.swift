@@ -4,7 +4,7 @@ struct LauncherView: View {
     @ObservedObject var viewModel: LauncherSearchViewModel
     @FocusState private var isSearchFocused: Bool
 
-    let executeAction: (LauncherCommand) -> Void
+    let executeAction: (LauncherSearchResult) -> Void
 
     var body: some View {
         let results = viewModel.results
@@ -13,6 +13,12 @@ struct LauncherView: View {
             searchField
             Divider()
                 .opacity(0.55)
+            if viewModel.isScanning && !results.isEmpty {
+                Text("正在查找应用…")
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+                    .padding(.top, 6)
+            }
             commandList(results)
         }
         .frame(
@@ -53,7 +59,7 @@ struct LauncherView: View {
                 .font(.system(size: 19, weight: .medium))
                 .foregroundStyle(Color(nsColor: .secondaryLabelColor))
 
-            TextField("搜索命令", text: $viewModel.query)
+            TextField("搜索命令或应用", text: $viewModel.query)
                 .textFieldStyle(.plain)
                 .font(.system(size: 20, weight: .regular))
                 .focused($isSearchFocused)
@@ -76,13 +82,13 @@ struct LauncherView: View {
     }
 
     @ViewBuilder
-    private func commandList(_ results: [LauncherCommand]) -> some View {
+    private func commandList(_ results: [LauncherSearchResult]) -> some View {
         if results.isEmpty {
             VStack(spacing: 8) {
                 Image(systemName: "magnifyingglass")
                     .font(.system(size: 24, weight: .light))
                     .foregroundStyle(Color(nsColor: .tertiaryLabelColor))
-                Text("没有匹配的命令")
+                Text(viewModel.isScanning ? "正在查找应用…" : "没有匹配的命令或应用")
                     .font(.system(size: 14))
                     .foregroundStyle(Color(nsColor: .secondaryLabelColor))
             }
@@ -109,14 +115,25 @@ struct LauncherView: View {
         }
     }
 
-    private func commandRow(_ command: LauncherCommand) -> some View {
+    @ViewBuilder
+    private func resultIcon(_ result: LauncherSearchResult) -> some View {
+        if case .application(let application) = result {
+            Image(nsImage: LauncherIconCache.shared.image(for: application))
+                .resizable()
+                .scaledToFit()
+        } else {
+            Image(systemName: result.systemImage)
+        }
+    }
+
+    private func commandRow(_ command: LauncherSearchResult) -> some View {
         let isSelected = viewModel.selectedCommandID == command.id
 
         return Button {
             executeAction(command)
         } label: {
             HStack(spacing: 12) {
-                Image(systemName: command.systemImage)
+                resultIcon(command)
                     .font(.system(size: 16, weight: .medium))
                     .foregroundStyle(
                         isSelected
@@ -142,14 +159,16 @@ struct LauncherView: View {
                         )
                         .lineLimit(1)
 
-                    Text(command.subtitle)
-                        .font(.system(size: 11))
-                        .foregroundStyle(
-                            isSelected
-                                ? Color.white.opacity(0.78)
-                                : Color(nsColor: .secondaryLabelColor)
-                        )
-                        .lineLimit(1)
+                    if !command.subtitle.isEmpty {
+                        Text(command.subtitle)
+                            .font(.system(size: 11))
+                            .foregroundStyle(
+                                isSelected
+                                    ? Color.white.opacity(0.78)
+                                    : Color(nsColor: .secondaryLabelColor)
+                            )
+                            .lineLimit(1)
+                    }
                 }
 
                 Spacer(minLength: 12)

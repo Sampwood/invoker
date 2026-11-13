@@ -23,6 +23,14 @@ final class GlobalHotKeyControllerTests: XCTestCase {
         XCTAssertNotEqual(configuration.identifier.id, GlobalHotKeyConfiguration.selectionTranslation.identifier.id)
     }
 
+    func testLauncherUsesOptionSpaceAndUniqueIdentifier() {
+        let configuration = GlobalHotKeyConfiguration.launcher
+        XCTAssertEqual(configuration.keyCode, UInt32(kVK_Space))
+        XCTAssertEqual(configuration.modifiers, UInt32(optionKey))
+        XCTAssertNotEqual(configuration.identifier.id, GlobalHotKeyConfiguration.selectionTranslation.identifier.id)
+        XCTAssertNotEqual(configuration.identifier.id, GlobalHotKeyConfiguration.clipboardHistory.identifier.id)
+    }
+
     func testMatchingHotKeyIdentifierInvokesAction() {
         var invocationCount = 0
         let controller = GlobalHotKeyController(configuration: .selectionTranslation) {

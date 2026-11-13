@@ -74,6 +74,10 @@
 		1A2B3C4D5E6F700000000185 /* SystemMonitorViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1A2B3C4D5E6F700000000189 /* SystemMonitorViewModel.swift */; };
 		1A2B3C4D5E6F700000000186 /* SystemMonitorView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1A2B3C4D5E6F700000000190 /* SystemMonitorView.swift */; };
 		1A2B3C4D5E6F700000000187 /* SystemMonitorPanelController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1A2B3C4D5E6F700000000191 /* SystemMonitorPanelController.swift */; };
+		ABCD00000000000000001000 /* LauncherApplication.swift in Sources */ = {isa = PBXBuildFile; fileRef = ABCD00000000000000000000; };
+		ABCD00000000000000001001 /* LauncherUsageStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = ABCD00000000000000000001; };
+		ABCD00000000000000001002 /* LauncherSearchResult.swift in Sources */ = {isa = PBXBuildFile; fileRef = ABCD00000000000000000002; };
+		ABCD00000000000000002000 = {isa = PBXBuildFile; fileRef = ABCD00000000000000002001; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -155,6 +159,10 @@
 		1A2B3C4D5E6F700000000189 /* SystemMonitorViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SystemMonitorViewModel.swift; sourceTree = "<group>"; };
 		1A2B3C4D5E6F700000000190 /* SystemMonitorView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SystemMonitorView.swift; sourceTree = "<group>"; };
 		1A2B3C4D5E6F700000000191 /* SystemMonitorPanelController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SystemMonitorPanelController.swift; sourceTree = "<group>"; };
+		ABCD00000000000000000000 /* LauncherApplication.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LauncherApplication.swift; sourceTree = "<group>"; };
+		ABCD00000000000000000001 /* LauncherUsageStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LauncherUsageStore.swift; sourceTree = "<group>"; };
+		ABCD00000000000000000002 /* LauncherSearchResult.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LauncherSearchResult.swift; sourceTree = "<group>"; };
+		ABCD00000000000000002001 = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LauncherTests.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
@@ -283,6 +291,9 @@
 		1A2B3C4D5E6F700000000184 /* Launcher */ = {
 			isa = PBXGroup;
 			children = (
+				ABCD00000000000000000000 /* LauncherApplication.swift */,
+				ABCD00000000000000000001 /* LauncherUsageStore.swift */,
+				ABCD00000000000000000002 /* LauncherSearchResult.swift */,
 				1A2B3C4D5E6F700000000180 /* LauncherCommand.swift */,
 				1A2B3C4D5E6F700000000181 /* LauncherSearchViewModel.swift */,
 				1A2B3C4D5E6F700000000182 /* LauncherView.swift */,
@@ -376,6 +387,7 @@
 		1A2B3C4D5E6F700000000066 /* Features */ = {
 			isa = PBXGroup;
 			children = (
+				ABCD00000000000000002002 /* Launcher */,
 				1A2B3C4D5E6F700000000067 /* Calendar */,
 				1A2B3C4D5E6F700000000163 /* ClipboardHistory */,
 				1A2B3C4D5E6F700000000112 /* HotKey */,
@@ -455,6 +467,7 @@
 			name = Products;
 			sourceTree = "<group>";
 		};
+		ABCD00000000000000002002 = {isa = PBXGroup; children = (ABCD00000000000000002001,); path = Launcher; sourceTree = "<group>"; };
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
@@ -595,6 +608,9 @@
 				1A2B3C4D5E6F700000000152 /* ClipboardPasteExecutor.swift in Sources */,
 				1A2B3C4D5E6F700000000153 /* ClipboardHistoryView.swift in Sources */,
 				1A2B3C4D5E6F700000000154 /* ClipboardHistoryPanelController.swift in Sources */,
+				ABCD00000000000000001000 /* LauncherApplication.swift in Sources */,
+				ABCD00000000000000001001 /* LauncherUsageStore.swift in Sources */,
+				ABCD00000000000000001002 /* LauncherSearchResult.swift in Sources */,
 				1A2B3C4D5E6F700000000174 /* LauncherCommand.swift in Sources */,
 				1A2B3C4D5E6F700000000175 /* LauncherSearchViewModel.swift in Sources */,
 				1A2B3C4D5E6F700000000176 /* LauncherView.swift in Sources */,
@@ -620,6 +636,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				ABCD00000000000000002000 /* LauncherTests.swift in Sources */,
 				1A2B3C4D5E6F700000000002 /* CalendarViewModelTests.swift in Sources */,
 				1A2B3C4D5E6F700000000043 /* CalendarDisplayFormatterTests.swift in Sources */,
 				1A2B3C4D5E6F700000000057 /* CalendarMonthOutlineBuilderTests.swift in Sources */,

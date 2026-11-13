@@ -11,8 +11,8 @@ final class LauncherPanelController: NSObject, NSWindowDelegate {
     private var resignActiveObserver: NSObjectProtocol?
     private var isClosing = false
 
-    init(registry: LauncherCommandRegistry) {
-        viewModel = LauncherSearchViewModel(registry: registry)
+    init(viewModel: LauncherSearchViewModel) {
+        self.viewModel = viewModel
         super.init()
     }
 
@@ -87,9 +87,21 @@ final class LauncherPanelController: NSObject, NSWindowDelegate {
         return panel
     }
 
-    private func execute(_ command: LauncherCommand) {
+    private func execute(_ result: LauncherSearchResult) {
         close()
-        command.action()
+        let viewModel = viewModel
+        Task {
+            do {
+                try await viewModel.execute(result)
+            } catch {
+                let alert = NSAlert()
+                alert.messageText = "无法打开「\(result.title)」"
+                alert.informativeText = "应用可能已移动、不可访问或被系统拒绝启动，请重新搜索后重试。"
+                alert.addButton(withTitle: "好")
+                NSApp.activate(ignoringOtherApps: true)
+                alert.runModal()
+            }
+        }
     }
 
     private func handleKeyDown(_ event: NSEvent) -> Bool {
