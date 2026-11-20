@@ -102,7 +102,10 @@ final class StatusBarController: NSObject {
         )
     ])
     private lazy var launcherPanelController = LauncherPanelController(
-        viewModel: LauncherSearchViewModel(registry: launcherRegistry)
+        viewModel: LauncherSearchViewModel(
+            registry: launcherRegistry,
+            exchangeRateKeys: translationSettings.$twelveDataAPIKey
+        )
     )
     private lazy var settingsWindowController = SettingsWindowController(
         translationSettings: translationSettings,

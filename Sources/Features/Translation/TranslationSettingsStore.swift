@@ -80,6 +80,12 @@ final class TranslationSettingsStore: ObservableObject {
         }
     }
 
+    @Published var twelveDataAPIKey: String {
+        didSet {
+            persistSecrets()
+        }
+    }
+
     @Published private(set) var persistenceErrorMessage: String?
     @Published private(set) var ccSwitchPreview: CCSwitchConfigurationPreview?
     @Published private(set) var ccSwitchErrorMessage: String?
@@ -132,6 +138,7 @@ final class TranslationSettingsStore: ObservableObject {
         )
         aiAPIKey = secretLoad.secrets.aiAPIKey
         deepLAuthKey = secretLoad.secrets.deepLAuthKey
+        twelveDataAPIKey = secretLoad.secrets.twelveDataAPIKey
         persistenceErrorMessage = secretLoad.errorMessage
         canPersistSecrets = secretLoad.canPersist
 
@@ -248,7 +255,7 @@ final class TranslationSettingsStore: ObservableObject {
 
         do {
             try secretStore.save(
-                TranslationSecrets(aiAPIKey: aiAPIKey, deepLAuthKey: deepLAuthKey)
+                TranslationSecrets(aiAPIKey: aiAPIKey, deepLAuthKey: deepLAuthKey, twelveDataAPIKey: twelveDataAPIKey)
             )
             persistenceErrorMessage = nil
         } catch {

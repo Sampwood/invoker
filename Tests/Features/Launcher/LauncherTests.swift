@@ -1,5 +1,6 @@
 import AppKit
 import Carbon
+import Combine
 import XCTest
 @testable import Invoker
 
@@ -14,6 +15,159 @@ final class LauncherTests: XCTestCase {
     }
     private func app(_ name: String, path: String? = nil) -> LauncherApplication {
         LauncherApplication(url: URL(fileURLWithPath: path ?? "/Applications/\(name).app"), title: name)
+    }
+
+    func testArithmeticAppearsBeforeMatchesAndInvalidInputSearchesNormally() {
+        let model = LauncherSearchViewModel(
+            registry: LauncherCommandRegistry(commands: [command("100*2"), command("1Password")]),
+            usage: LauncherUsageStore(defaults: defaults()), scan: { [] }
+        )
+        model.query = "100*2"
+        XCTAssertEqual(model.results.map(\.title), ["200", "100*2"])
+        XCTAssertEqual(model.selectedCommand()?.title, "200")
+
+        for (query, result) in [("2+3*4", "14"), ("(2+3)*0.5", "2.5"), (" -2 * 3 ", "-6")] {
+            model.query = query
+            XCTAssertEqual(model.results.map(\.title), [result])
+        }
+
+        for query in ["100*", "100"] {
+            model.query = query
+            XCTAssertEqual(model.results.map(\.title), ["100*2"])
+        }
+        model.query = "1/0"
+        XCTAssertTrue(model.results.isEmpty)
+        model.query = "1Password"
+        XCTAssertEqual(model.results.map(\.title), ["1Password"])
+    }
+
+    func testCalculationCopiesThroughKeyboardAndResultAction() throws {
+        let usage = LauncherUsageStore(defaults: defaults())
+        let model = LauncherSearchViewModel(registry: LauncherCommandRegistry(), usage: usage, scan: { [] })
+        var copies: [String] = []
+        let controller = LauncherPanelController(viewModel: model, copyCalculation: { value in
+            copies.append(value)
+            return true
+        })
+
+        for keyCode in [kVK_Return, kVK_ANSI_KeypadEnter] {
+            model.query = "100*2"
+            let event = try XCTUnwrap(NSEvent.keyEvent(
+                with: .keyDown, location: .zero, modifierFlags: [], timestamp: 0,
+                windowNumber: 0, context: nil, characters: "\r",
+                charactersIgnoringModifiers: "\r", isARepeat: false, keyCode: UInt16(keyCode)
+            ))
+            XCTAssertTrue(controller.handleKeyDown(event))
+            XCTAssertTrue(model.query.isEmpty)
+        }
+
+        controller.execute(.calculation(value: "6.68", quoteTime: Date()))
+        XCTAssertEqual(copies, ["200", "200", "6.68"])
+        XCTAssertTrue(usage.snapshot().isEmpty)
+    }
+
+    func testExchangeRateRequestAndCacheAreScopedToTheKey() async throws {
+        var now = ContinuousClock.now
+        var requests: [URLRequest] = []
+        let client = TwelveDataExchangeRates(load: { request in
+            requests.append(request)
+            return try rateResponse(request, body: #"{"symbol":"USD/CNY","rate":6.6789,"timestamp":1760000000}"#)
+        }, now: { now })
+
+        let quote = try await client.quote(for: "rate-fixture")
+        XCTAssertEqual(quote.rate, Decimal(string: "6.6789"))
+        XCTAssertEqual(quote.timestamp, 1_760_000_000)
+        let request = try XCTUnwrap(requests.first)
+        XCTAssertEqual(request.url?.absoluteString, "https://api.twelvedata.com/exchange_rate?symbol=USD%2FCNY")
+        XCTAssertEqual(request.value(forHTTPHeaderField: "Authorization"), "apikey rate-fixture")
+
+        now += .seconds(59)
+        _ = try await client.quote(for: "rate-fixture")
+        XCTAssertEqual(requests.count, 1)
+        now += .seconds(1)
+        _ = try await client.quote(for: "rate-fixture")
+        _ = try await client.quote(for: "replacement-fixture")
+        XCTAssertEqual(requests.count, 3)
+        XCTAssertNil(client.cachedQuote(for: "rate-fixture"))
+        XCTAssertEqual(requests.last?.value(forHTTPHeaderField: "Authorization"), "apikey replacement-fixture")
+    }
+
+    func testExchangeRateRejectsErrorsAndInvalidQuotes() async {
+        let cases: [(Int, String, TwelveDataExchangeRates.LookupError)] = [
+            (401, "", .invalidKey), (403, "", .accessDenied), (429, "", .rateLimited),
+            (200, #"{"code":429,"status":"error"}"#, .rateLimited),
+            (200, #"{"symbol":"USD/CNH","rate":6.67,"timestamp":1760000000}"#, .unavailable),
+            (200, #"{"symbol":"USD/CNY","rate":0,"timestamp":1760000000}"#, .unavailable),
+            (200, #"{"symbol":"USD/CNY","rate":6.67,"timestamp":0}"#, .unavailable),
+        ]
+        for (status, body, expected) in cases {
+            let client = TwelveDataExchangeRates(load: { try rateResponse($0, status: status, body: body) })
+            do {
+                _ = try await client.quote(for: "rate-fixture")
+                XCTFail("Invalid responses must not produce a quote")
+            } catch {
+                XCTAssertEqual(error as? TwelveDataExchangeRates.LookupError, expected)
+            }
+            XCTAssertNil(client.cachedQuote(for: "rate-fixture"))
+        }
+    }
+
+    func testDollarConversionUsesLatestAmountAndIgnoresLateResponse() async throws {
+        let key = RateKeyFixture()
+        let requests = AsyncStream<URLRequest>.makeStream()
+        var iterator = requests.stream.makeAsyncIterator()
+        var finish: CheckedContinuation<(Data, URLResponse), Error>?
+        let client = TwelveDataExchangeRates(load: { request in
+            try await withCheckedThrowingContinuation { continuation in
+                finish = continuation
+                requests.continuation.yield(request)
+            }
+        })
+        let model = LauncherSearchViewModel(
+            registry: LauncherCommandRegistry(commands: [command("1Password")]),
+            usage: LauncherUsageStore(defaults: defaults()), exchangeRateKeys: key.$value,
+            exchangeRates: client, scan: { [] }
+        )
+
+        model.query = "$1"
+        await model.waitForExchangeRateLookup()
+        XCTAssertNotNil(model.exchangeRateStatus)
+        XCTAssertNil(model.selectedCommand())
+        XCTAssertNil(finish)
+
+        key.value = "rate-fixture"
+        let firstRequest = await iterator.next()
+        let request = try XCTUnwrap(firstRequest)
+        XCTAssertNotNil(model.exchangeRateStatus)
+        XCTAssertNil(model.selectedCommand())
+        model.query = "$12.50"
+        let firstResponse = try rateResponse(request, body: #"{"symbol":"USD/CNY","rate":6.6789,"timestamp":1760000000}"#)
+        try XCTUnwrap(finish).resume(returning: firstResponse)
+        await model.waitForExchangeRateLookup()
+        XCTAssertEqual(model.selectedCommand()?.title, "¥83.49")
+        XCTAssertFalse(try XCTUnwrap(model.selectedCommand()).subtitle.isEmpty)
+        XCTAssertNil(model.exchangeRateStatus)
+
+        model.query = "$1"
+        XCTAssertEqual(model.selectedCommand()?.title, "¥6.68")
+        key.value = "replacement-fixture"
+        let nextRequest = await iterator.next()
+        let replacement = try XCTUnwrap(nextRequest)
+        XCTAssertEqual(replacement.value(forHTTPHeaderField: "Authorization"), "apikey replacement-fixture")
+        XCTAssertNil(model.selectedCommand())
+
+        model.query = "1Password"
+        let nextResponse = try rateResponse(replacement, body: #"{"symbol":"USD/CNY","rate":6.5,"timestamp":1760000001}"#)
+        try XCTUnwrap(finish).resume(returning: nextResponse)
+        await model.waitForExchangeRateLookup()
+        XCTAssertEqual(model.results.map(\.title), ["1Password"])
+        XCTAssertEqual(model.selectedCommand()?.title, "1Password")
+        XCTAssertNil(model.exchangeRateStatus)
+
+        key.value = ""
+        model.query = "$1"
+        XCTAssertNotNil(model.exchangeRateStatus)
+        XCTAssertNil(model.selectedCommand())
     }
 
     func testFiveRecommendationsFitWhileScanning() {
@@ -310,6 +464,16 @@ final class LauncherTests: XCTestCase {
         XCTAssertEqual(apps.count, 3)
         XCTAssertEqual(Set(apps.map(\.title)), Set(["Display", "Other"]))
     }
+}
+
+private func rateResponse(_ request: URLRequest, status: Int = 200, body: String) throws -> (Data, URLResponse) {
+    let url = try XCTUnwrap(request.url)
+    let response = try XCTUnwrap(HTTPURLResponse(url: url, statusCode: status, httpVersion: nil, headerFields: nil))
+    return (Data(body.utf8), response)
+}
+
+private final class RateKeyFixture {
+    @Published var value = ""
 }
 
 private actor ScanGate {

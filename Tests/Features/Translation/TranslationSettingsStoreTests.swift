@@ -42,6 +42,33 @@ final class TranslationSettingsStoreTests: XCTestCase {
         XCTAssertThrowsError(try store.load())
     }
 
+    func testTwelveDataKeyCanBeChangedAndClearedInAnExistingConfig() throws {
+        let directory = FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString)
+        defer { try? FileManager.default.removeItem(at: directory) }
+        try FileManager.default.createDirectory(at: directory, withIntermediateDirectories: true)
+        let file = directory.appendingPathComponent("config.json")
+        let original = TranslationSecrets(aiAPIKey: "fixture-ai-token", deepLAuthKey: "fixture-deepl-token")
+        let legacyJSON = ["ai_api_key": original.aiAPIKey, "deepl_auth_key": original.deepLAuthKey]
+        try JSONEncoder().encode(legacyJSON).write(to: file)
+        let secretStore = TranslationSecretFileStore(fileURL: file)
+        let suite = "TwelveDataSettingsTests-\(UUID().uuidString)"
+        let defaults = try XCTUnwrap(UserDefaults(suiteName: suite))
+        defer { defaults.removePersistentDomain(forName: suite) }
+        let settings = TranslationSettingsStore(
+            userDefaults: defaults, secretStore: secretStore, ccSwitchReader: UnavailableCCSwitchReader()
+        )
+
+        XCTAssertEqual(settings.twelveDataAPIKey, "")
+        for key in ["rate-fixture", "replacement-fixture", ""] {
+            settings.twelveDataAPIKey = key
+            XCTAssertEqual(try secretStore.load(), TranslationSecrets(
+                aiAPIKey: original.aiAPIKey, deepLAuthKey: original.deepLAuthKey, twelveDataAPIKey: key
+            ))
+        }
+        let permissions = try FileManager.default.attributesOfItem(atPath: file.path)[.posixPermissions] as? NSNumber
+        XCTAssertEqual(permissions?.intValue, 0o600)
+    }
+
     func testSecretsAreStoredInConfigFileAndNeverInUserDefaults() throws {
         let suiteName = "TranslationSettingsStoreTests-\(UUID().uuidString)"
         let defaults = try XCTUnwrap(UserDefaults(suiteName: suiteName))

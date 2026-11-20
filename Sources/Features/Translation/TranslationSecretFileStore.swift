@@ -3,23 +3,27 @@ import Foundation
 struct TranslationSecrets: Codable, Equatable, Sendable {
     var aiAPIKey: String
     var deepLAuthKey: String
+    var twelveDataAPIKey: String
 
     static let empty = TranslationSecrets(aiAPIKey: "", deepLAuthKey: "")
 
     enum CodingKeys: String, CodingKey {
         case aiAPIKey = "ai_api_key"
         case deepLAuthKey = "deepl_auth_key"
+        case twelveDataAPIKey = "twelve_data_api_key"
     }
 
-    init(aiAPIKey: String, deepLAuthKey: String) {
+    init(aiAPIKey: String, deepLAuthKey: String, twelveDataAPIKey: String = "") {
         self.aiAPIKey = aiAPIKey
         self.deepLAuthKey = deepLAuthKey
+        self.twelveDataAPIKey = twelveDataAPIKey
     }
 
     init(from decoder: Decoder) throws {
         let container = try decoder.container(keyedBy: CodingKeys.self)
         aiAPIKey = try container.decodeIfPresent(String.self, forKey: .aiAPIKey) ?? ""
         deepLAuthKey = try container.decodeIfPresent(String.self, forKey: .deepLAuthKey) ?? ""
+        twelveDataAPIKey = try container.decodeIfPresent(String.self, forKey: .twelveDataAPIKey) ?? ""
     }
 }
 

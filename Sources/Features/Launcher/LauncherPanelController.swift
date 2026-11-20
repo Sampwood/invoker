@@ -5,14 +5,23 @@ import SwiftUI
 @MainActor
 final class LauncherPanelController: NSObject, NSWindowDelegate {
     private let viewModel: LauncherSearchViewModel
+    private let copyCalculation: (String) -> Bool
     private var panel: LauncherPanel?
     private var localEventMonitor: Any?
     private var globalEventMonitor: Any?
     private var resignActiveObserver: NSObjectProtocol?
     private var isClosing = false
 
-    init(viewModel: LauncherSearchViewModel) {
+    init(
+        viewModel: LauncherSearchViewModel,
+        copyCalculation: @escaping (String) -> Bool = { value in
+            let pasteboard = NSPasteboard.general
+            pasteboard.clearContents()
+            return pasteboard.setString(value, forType: .string)
+        }
+    ) {
         self.viewModel = viewModel
+        self.copyCalculation = copyCalculation
         super.init()
     }
 
@@ -48,6 +57,7 @@ final class LauncherPanelController: NSObject, NSWindowDelegate {
         defer { isClosing = false }
         removeDismissHandlers()
         panel?.orderOut(nil)
+        viewModel.dismiss()
     }
 
     func windowDidResignKey(_ notification: Notification) {
@@ -87,7 +97,12 @@ final class LauncherPanelController: NSObject, NSWindowDelegate {
         return panel
     }
 
-    private func execute(_ result: LauncherSearchResult) {
+    func execute(_ result: LauncherSearchResult) {
+        if case .calculation(let value, _) = result {
+            if copyCalculation(value) { close() }
+            return
+        }
+
         close()
         let viewModel = viewModel
         Task {
@@ -104,7 +119,7 @@ final class LauncherPanelController: NSObject, NSWindowDelegate {
         }
     }
 
-    private func handleKeyDown(_ event: NSEvent) -> Bool {
+    func handleKeyDown(_ event: NSEvent) -> Bool {
         switch Int(event.keyCode) {
         case Int(kVK_UpArrow):
             viewModel.moveSelection(by: -1)

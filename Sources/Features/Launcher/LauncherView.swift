@@ -85,8 +85,8 @@ struct LauncherView: View {
     private func resultsPanel(_ results: [LauncherSearchResult]) -> some View {
         VStack(spacing: 0) {
             commandList(results)
-            if viewModel.isScanning && scanStatusDelayElapsed && !results.isEmpty {
-                Text("正在查找应用…")
+            if !results.isEmpty, let status = viewModel.exchangeRateStatus ?? scanStatus {
+                Text(status)
                     .font(.system(size: 11))
                     .foregroundStyle(Color(nsColor: .secondaryLabelColor))
                     .frame(height: LauncherMetrics.scanStatusHeight)
@@ -97,6 +97,10 @@ struct LauncherView: View {
             height: LauncherMetrics.resultsHeight,
             alignment: .top
         )
+    }
+
+    private var scanStatus: String? {
+        viewModel.isScanning && scanStatusDelayElapsed ? "正在查找应用…" : nil
     }
 
     private var searchField: some View {
@@ -139,7 +143,7 @@ struct LauncherView: View {
                     .font(.system(size: 24, weight: .light))
                     .foregroundStyle(Color(nsColor: .tertiaryLabelColor))
                     .accessibilityHidden(true)
-                Text(viewModel.isScanning ? "正在查找应用…" : "没有匹配的命令或应用")
+                Text(viewModel.exchangeRateStatus ?? (viewModel.isScanning ? "正在查找应用…" : "没有匹配的命令或应用"))
                     .font(.system(size: 14))
                     .foregroundStyle(Color(nsColor: .secondaryLabelColor))
             }

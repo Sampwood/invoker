@@ -45,6 +45,16 @@ struct InvokerSettingsView: View {
                     Text(language.displayName).tag(language)
                 }
             }
+
+            Section("汇率") {
+                SecureField("Twelve Data API Key", text: $translationSettings.twelveDataAPIKey)
+
+                if let error = translationSettings.persistenceErrorMessage {
+                    Text(error)
+                        .foregroundStyle(.red)
+                        .font(.caption)
+                }
+            }
         }
         .formStyle(.grouped)
     }
