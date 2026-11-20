@@ -173,7 +173,11 @@ final class LauncherTests: XCTestCase {
     func testFiveRecommendationsFitWhileScanning() {
         let listHeight = LauncherMetrics.rowHeight * 5
             + LauncherMetrics.rowSpacing * 4
-            + LauncherMetrics.listVerticalPadding * 2
+            + LauncherMetrics.listVerticalPadding
+        XCTAssertGreaterThanOrEqual(
+            LauncherMetrics.resultsHeight,
+            listHeight + LauncherMetrics.listVerticalPadding
+        )
         XCTAssertGreaterThanOrEqual(
             LauncherMetrics.resultsHeight,
             listHeight + LauncherMetrics.scanStatusHeight

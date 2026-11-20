@@ -83,10 +83,12 @@ struct LauncherView: View {
     }
 
     private func resultsPanel(_ results: [LauncherSearchResult]) -> some View {
-        VStack(spacing: 0) {
-            commandList(results)
-            if !results.isEmpty, let status = viewModel.exchangeRateStatus ?? scanStatus {
-                Text(status)
+        let footer = results.isEmpty ? nil : (viewModel.exchangeRateStatus ?? scanStatus)
+
+        return VStack(spacing: 0) {
+            commandList(results, showsFooter: footer != nil)
+            if let footer {
+                Text(footer)
                     .font(.system(size: 11))
                     .foregroundStyle(Color(nsColor: .secondaryLabelColor))
                     .frame(height: LauncherMetrics.scanStatusHeight)
@@ -136,7 +138,7 @@ struct LauncherView: View {
     }
 
     @ViewBuilder
-    private func commandList(_ results: [LauncherSearchResult]) -> some View {
+    private func commandList(_ results: [LauncherSearchResult], showsFooter: Bool) -> some View {
         if results.isEmpty {
             VStack(spacing: 8) {
                 Image(systemName: "magnifyingglass")
@@ -157,7 +159,8 @@ struct LauncherView: View {
                                 .id(command.id)
                         }
                     }
-                    .padding(.vertical, LauncherMetrics.listVerticalPadding)
+                    .padding(.top, LauncherMetrics.listVerticalPadding)
+                    .padding(.bottom, showsFooter ? 0 : LauncherMetrics.listVerticalPadding)
                     .padding(.horizontal, LauncherMetrics.listHorizontalPadding)
                 }
                 .onChange(of: viewModel.scrollRequestID) {
@@ -281,13 +284,13 @@ struct LauncherView: View {
 
 enum LauncherMetrics {
     static let bodyWidth: CGFloat = 680
-    static let bodyHeight: CGFloat = 430
+    static let bodyHeight: CGFloat = 394
     static let cornerRadius: CGFloat = 24
     static let searchHeight: CGFloat = 64
     static let surfaceSpacing: CGFloat = 8
     static let resultsHeight: CGFloat = bodyHeight - searchHeight - surfaceSpacing
-    static let scanStatusHeight: CGFloat = 24
-    static let rowHeight: CGFloat = 58
+    static let scanStatusHeight: CGFloat = 16
+    static let rowHeight: CGFloat = 56
     static let rowSpacing: CGFloat = 4
     static let rowCornerRadius: CGFloat = rowHeight / 2
     static let horizontalPadding: CGFloat = 20
