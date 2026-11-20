@@ -1,0 +1,163 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {};
+	objectVersion = 56;
+	objects = {
+		A00000000000000000000001 = {
+			isa = PBXProject;
+			attributes = {
+				BuildIndependentTargetsInParallel = 1;
+				LastUpgradeCheck = 2630;
+				TargetAttributes = {
+					A00000000000000000000010 = {CreatedOnToolsVersion = 26.3;};
+					A00000000000000000000011 = {CreatedOnToolsVersion = 26.3; TestTargetID = A00000000000000000000010;};
+				};
+			};
+			buildConfigurationList = A00000000000000000000020;
+			compatibilityVersion = "Xcode 14.0";
+			developmentRegion = en;
+			knownRegions = (en, Base,);
+			mainGroup = A00000000000000000000002;
+			productRefGroup = A00000000000000000000003;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (A00000000000000000000010, A00000000000000000000011,);
+		};
+		A00000000000000000000002 = {
+			isa = PBXGroup;
+			children = (
+				A00000000000000000000030,
+				A00000000000000000000031,
+				A00000000000000000000004,
+				A00000000000000000000003,
+			);
+			sourceTree = "<group>";
+		};
+		A00000000000000000000003 = {
+			isa = PBXGroup;
+			children = (A00000000000000000000032, A00000000000000000000033,);
+			name = Products;
+			sourceTree = "<group>";
+		};
+		A00000000000000000000004 = {
+			isa = PBXGroup;
+			children = (
+				A00000000000000000000040, A00000000000000000000041,
+				A00000000000000000000042, A00000000000000000000043,
+				A00000000000000000000044, A00000000000000000000045,
+				A00000000000000000000046,
+			);
+			name = Launcher;
+			path = ../Sources/Features/Launcher;
+			sourceTree = "<group>";
+		};
+		A00000000000000000000030 = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Host/InvokerUITestHost.swift; sourceTree = "<group>";};
+		A00000000000000000000031 = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LauncherUITests.swift; sourceTree = "<group>";};
+		A00000000000000000000032 = {isa = PBXFileReference; explicitFileType = wrapper.application; path = InvokerUITestHost.app; sourceTree = BUILT_PRODUCTS_DIR;};
+		A00000000000000000000033 = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; path = InvokerUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR;};
+		A00000000000000000000040 = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LauncherApplication.swift; sourceTree = "<group>";};
+		A00000000000000000000041 = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LauncherCommand.swift; sourceTree = "<group>";};
+		A00000000000000000000042 = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LauncherSearchViewModel.swift; sourceTree = "<group>";};
+		A00000000000000000000043 = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LauncherSearchResult.swift; sourceTree = "<group>";};
+		A00000000000000000000044 = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LauncherUsageStore.swift; sourceTree = "<group>";};
+		A00000000000000000000045 = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LauncherView.swift; sourceTree = "<group>";};
+		A00000000000000000000046 = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LauncherPanelController.swift; sourceTree = "<group>";};
+		A00000000000000000000050 = {isa = PBXBuildFile; fileRef = A00000000000000000000030;};
+		A00000000000000000000051 = {isa = PBXBuildFile; fileRef = A00000000000000000000031;};
+		A00000000000000000000060 = {isa = PBXBuildFile; fileRef = A00000000000000000000040;};
+		A00000000000000000000061 = {isa = PBXBuildFile; fileRef = A00000000000000000000041;};
+		A00000000000000000000062 = {isa = PBXBuildFile; fileRef = A00000000000000000000042;};
+		A00000000000000000000063 = {isa = PBXBuildFile; fileRef = A00000000000000000000043;};
+		A00000000000000000000064 = {isa = PBXBuildFile; fileRef = A00000000000000000000044;};
+		A00000000000000000000065 = {isa = PBXBuildFile; fileRef = A00000000000000000000045;};
+		A00000000000000000000066 = {isa = PBXBuildFile; fileRef = A00000000000000000000046;};
+		A00000000000000000000010 = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = A00000000000000000000021;
+			buildPhases = (A00000000000000000000070, A00000000000000000000072, A00000000000000000000074,);
+			buildRules = ();
+			dependencies = ();
+			name = InvokerUITestHost;
+			productName = InvokerUITestHost;
+			productReference = A00000000000000000000032;
+			productType = "com.apple.product-type.application";
+		};
+		A00000000000000000000011 = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = A00000000000000000000022;
+			buildPhases = (A00000000000000000000071, A00000000000000000000073, A00000000000000000000075,);
+			buildRules = ();
+			dependencies = (A00000000000000000000080,);
+			name = InvokerUITests;
+			productName = InvokerUITests;
+			productReference = A00000000000000000000033;
+			productType = "com.apple.product-type.bundle.ui-testing";
+		};
+		A00000000000000000000070 = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				A00000000000000000000050,
+				A00000000000000000000060, A00000000000000000000061,
+				A00000000000000000000062, A00000000000000000000063,
+				A00000000000000000000064, A00000000000000000000065,
+				A00000000000000000000066,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		A00000000000000000000071 = {isa = PBXSourcesBuildPhase; buildActionMask = 2147483647; files = (A00000000000000000000051,); runOnlyForDeploymentPostprocessing = 0;};
+		A00000000000000000000072 = {isa = PBXFrameworksBuildPhase; buildActionMask = 2147483647; files = (); runOnlyForDeploymentPostprocessing = 0;};
+		A00000000000000000000073 = {isa = PBXFrameworksBuildPhase; buildActionMask = 2147483647; files = (); runOnlyForDeploymentPostprocessing = 0;};
+		A00000000000000000000074 = {isa = PBXResourcesBuildPhase; buildActionMask = 2147483647; files = (); runOnlyForDeploymentPostprocessing = 0;};
+		A00000000000000000000075 = {isa = PBXResourcesBuildPhase; buildActionMask = 2147483647; files = (); runOnlyForDeploymentPostprocessing = 0;};
+		A00000000000000000000080 = {isa = PBXTargetDependency; target = A00000000000000000000010; targetProxy = A00000000000000000000081;};
+		A00000000000000000000081 = {
+			isa = PBXContainerItemProxy;
+			containerPortal = A00000000000000000000001;
+			proxyType = 1;
+			remoteGlobalIDString = A00000000000000000000010;
+			remoteInfo = InvokerUITestHost;
+		};
+		A00000000000000000000020 = {isa = XCConfigurationList; buildConfigurations = (A00000000000000000000090,); defaultConfigurationIsVisible = 0; defaultConfigurationName = Debug;};
+		A00000000000000000000021 = {isa = XCConfigurationList; buildConfigurations = (A00000000000000000000091,); defaultConfigurationIsVisible = 0; defaultConfigurationName = Debug;};
+		A00000000000000000000022 = {isa = XCConfigurationList; buildConfigurations = (A00000000000000000000092,); defaultConfigurationIsVisible = 0; defaultConfigurationName = Debug;};
+		A00000000000000000000090 = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CLANG_ENABLE_MODULES = YES;
+				CODE_SIGN_IDENTITY = "-";
+				CODE_SIGN_STYLE = Manual;
+				DEVELOPMENT_TEAM = "";
+				GENERATE_INFOPLIST_FILE = YES;
+				MACOSX_DEPLOYMENT_TARGET = 26.0;
+				ONLY_ACTIVE_ARCH = YES;
+				SDKROOT = macosx;
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+				SWIFT_VERSION = 6.0;
+			};
+			name = Debug;
+		};
+		A00000000000000000000091 = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				INFOPLIST_KEY_CFBundleDisplayName = "Invoker UI Test Host";
+				LD_RUNPATH_SEARCH_PATHS = ("$(inherited)", "@executable_path/../Frameworks",);
+				PRODUCT_BUNDLE_IDENTIFIER = com.sampwood.invoker.uitesthost;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+			};
+			name = Debug;
+		};
+		A00000000000000000000092 = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				LD_RUNPATH_SEARCH_PATHS = ("$(inherited)", "@executable_path/../Frameworks", "@loader_path/../Frameworks",);
+				PRODUCT_BUNDLE_IDENTIFIER = com.sampwood.invoker.uitests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				TEST_TARGET_NAME = InvokerUITestHost;
+			};
+			name = Debug;
+		};
+	};
+	rootObject = A00000000000000000000001;
+}

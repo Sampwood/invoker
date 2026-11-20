@@ -59,7 +59,7 @@ final class LauncherPanelController: NSObject, NSWindowDelegate {
     }
 
     private func makePanel() -> LauncherPanel {
-        let size = NSSize(width: LauncherMetrics.width, height: LauncherMetrics.height)
+        let size = NSSize(width: LauncherMetrics.windowWidth, height: LauncherMetrics.windowHeight)
         let panel = LauncherPanel(
             contentRect: NSRect(origin: .zero, size: size),
             styleMask: [.borderless, .nonactivatingPanel],
@@ -134,8 +134,8 @@ final class LauncherPanelController: NSObject, NSWindowDelegate {
         let visibleFrame = screen?.visibleFrame ?? .zero
 
         return CGPoint(
-            x: visibleFrame.midX - LauncherMetrics.width / 2,
-            y: visibleFrame.midY - LauncherMetrics.height / 2
+            x: visibleFrame.midX - LauncherMetrics.windowWidth / 2,
+            y: visibleFrame.midY - LauncherMetrics.windowHeight / 2
         )
     }
 

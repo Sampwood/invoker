@@ -15,6 +15,59 @@ final class LauncherTests: XCTestCase {
         LauncherApplication(url: URL(fileURLWithPath: path ?? "/Applications/\(name).app"), title: name)
     }
 
+    func testFiveRecommendationsFitWhileScanning() {
+        let listHeight = LauncherMetrics.rowHeight * 5
+            + LauncherMetrics.rowSpacing * 4
+            + LauncherMetrics.listVerticalPadding * 2
+        XCTAssertGreaterThanOrEqual(
+            LauncherMetrics.resultsHeight,
+            listHeight + LauncherMetrics.scanStatusHeight
+        )
+    }
+
+    func testHoverSelectionDoesNotRequestScrolling() {
+        let model = LauncherSearchViewModel(
+            registry: LauncherCommandRegistry(commands: (0..<12).map { command("Item\($0)") }),
+            usage: LauncherUsageStore(defaults: defaults()), scan: { [] }
+        )
+        model.query = "Item"
+        let items = model.results
+        let initialScroll = model.scrollRequestID
+
+        model.select(items[4])
+        XCTAssertEqual(model.selectedCommand()?.id, items[4].id)
+        XCTAssertEqual(model.scrollRequestID, initialScroll,
+                       "Hover must not cause the list to move under the pointer.")
+
+        model.moveSelection(by: 1)
+        XCTAssertEqual(model.selectedCommand()?.id, items[5].id)
+        XCTAssertNotEqual(model.scrollRequestID, initialScroll)
+        let keyboardScroll = model.scrollRequestID
+
+        model.select(items[8])
+        XCTAssertEqual(model.scrollRequestID, keyboardScroll)
+        model.moveSelection(by: -3)
+        XCTAssertEqual(model.selectedCommand()?.id, items[5].id)
+        XCTAssertNotEqual(model.scrollRequestID, keyboardScroll,
+                          "Returning to an earlier keyboard target must still reveal it.")
+
+        model.select(items[0])
+        let beforeQuery = model.scrollRequestID
+        model.query = " Item "
+        XCTAssertEqual(model.selectedCommand()?.id, items[0].id)
+        XCTAssertNotEqual(model.scrollRequestID, beforeQuery,
+                          "A new query must reveal the first result even when its ID is unchanged.")
+
+        let beforeBoundary = model.scrollRequestID
+        model.moveSelection(by: -1)
+        XCTAssertEqual(model.selectedCommand()?.id, items[0].id)
+        XCTAssertNotEqual(model.scrollRequestID, beforeBoundary,
+                          "A boundary key must reveal a selection scrolled away manually.")
+        model.query = "no matching fixture"
+        model.moveSelection(by: 1)
+        XCTAssertNil(model.selectedCommand())
+    }
+
     func testUsageWindowPersistenceAndCorruptFallback() {
         let storage = defaults()
         var date = Date(timeIntervalSince1970: 10_000_000)

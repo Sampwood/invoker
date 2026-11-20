@@ -9,6 +9,7 @@ final class LauncherSearchViewModel: ObservableObject {
     private let launcher: any LauncherApplicationLaunching
     @Published var query = "" { didSet { selectFirstMatch() } }
     @Published private(set) var selectedCommandID: String?
+    @Published private(set) var scrollRequestID = UUID()
     @Published private(set) var focusRequestID = UUID()
     @Published private(set) var applications: [LauncherApplication] = []
     @Published private(set) var isScanning = false
@@ -66,7 +67,6 @@ final class LauncherSearchViewModel: ObservableObject {
 
     func prepare() {
         query = ""
-        selectFirstMatch()
         requestSearchFocus()
         refresh()
     }
@@ -88,7 +88,10 @@ final class LauncherSearchViewModel: ObservableObject {
     func waitForRefresh() async { await refreshTask?.value }
     func requestSearchFocus() { focusRequestID = UUID() }
     func select(_ result: LauncherSearchResult) { selectedCommandID = result.id }
-    func selectFirstMatch() { selectedCommandID = results.first?.id }
+    func selectFirstMatch() {
+        selectedCommandID = results.first?.id
+        scrollRequestID = UUID()
+    }
     func reconcileSelection() {
         if let selectedCommandID, results.contains(where: { $0.id == selectedCommandID }) { return }
         selectFirstMatch()
@@ -98,6 +101,7 @@ final class LauncherSearchViewModel: ObservableObject {
         guard !items.isEmpty else { selectedCommandID = nil; return }
         let index = items.firstIndex { $0.id == selectedCommandID } ?? 0
         selectedCommandID = items[min(max(index + offset, 0), items.count - 1)].id
+        scrollRequestID = UUID()
     }
     func selectedCommand() -> LauncherSearchResult? {
         results.first { $0.id == selectedCommandID }
