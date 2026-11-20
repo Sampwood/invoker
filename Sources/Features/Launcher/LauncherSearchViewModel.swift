@@ -15,6 +15,7 @@ final class LauncherSearchViewModel: ObservableObject {
     @Published private(set) var isScanning = false
     @Published private var usageRevision = 0
     private var refreshTask: Task<Void, Never>?
+    private var pinyinByTitle: [String: String] = [:]
 
     init(registry: LauncherCommandRegistry,
          usage: LauncherUsageStore = LauncherUsageStore(),
@@ -30,14 +31,19 @@ final class LauncherSearchViewModel: ObservableObject {
 
     var results: [LauncherSearchResult] {
         let query = query.trimmingCharacters(in: .whitespacesAndNewlines)
+        let pinyinQuery = compactPinyin(query)
+        let canMatchPinyin = !pinyinQuery.isEmpty && pinyinQuery.allSatisfy {
+            $0.isASCII && ($0.isLetter || $0.isNumber)
+        }
         let history = usage.snapshot()
         let candidates = registry.commands.map(LauncherSearchResult.command)
             + applications.map(LauncherSearchResult.application)
         let scored: [(item: LauncherSearchResult, score: Int)] = candidates.compactMap { item in
             if query.isEmpty { return (item, 0) }
+            let score: Int?
             switch item {
             case .command(let command):
-                return registry.score(command, for: query).map { (item, $0) }
+                score = registry.score(command, for: query)
             case .application(let application):
                 let scores = [application.title, application.fileName].compactMap { name -> Int? in
                     if name.lowercased() == query.lowercased() { return 0 }
@@ -45,8 +51,11 @@ final class LauncherSearchViewModel: ObservableObject {
                     if name.localizedCaseInsensitiveContains(query) { return 2 }
                     return nil
                 }
-                return scores.min().map { (item, $0) }
+                score = scores.min()
             }
+            if let score { return (item, score) }
+            guard canMatchPinyin else { return nil }
+            return pinyinScore(for: item.title, query: pinyinQuery).map { (item, $0) }
         }
         let sorted = scored.sorted { lhs, rhs in
             let a = history[lhs.item.id] ?? [], b = history[rhs.item.id] ?? []
@@ -63,6 +72,21 @@ final class LauncherSearchViewModel: ObservableObject {
             return lhs.item.id < rhs.item.id
         }.map(\.item)
         return query.isEmpty ? Array(sorted.prefix(5)) : sorted
+    }
+
+    private func pinyinScore(for title: String, query: String) -> Int? {
+        if pinyinByTitle[title] == nil {
+            let transliterated = title.applyingTransform(.mandarinToLatin, reverse: false) ?? title
+            pinyinByTitle[title] = transliterated == title ? "" : compactPinyin(transliterated)
+        }
+        guard let pinyin = pinyinByTitle[title], pinyin.hasPrefix(query) else { return nil }
+        return pinyin == query ? 6 : 7
+    }
+
+    private func compactPinyin(_ text: String) -> String {
+        text.folding(options: .diacriticInsensitive, locale: nil)
+            .lowercased()
+            .filter { !$0.isWhitespace && $0 != "'" && $0 != "’" }
     }
 
     func prepare() {

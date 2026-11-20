@@ -8,6 +8,7 @@ struct LauncherView: View {
     @Environment(\.colorSchemeContrast) private var colorSchemeContrast
     @FocusState private var isSearchFocused: Bool
     @State private var lastPointerLocation: CGPoint?
+    @State private var scanStatusDelayElapsed = false
 
     let executeAction: (LauncherSearchResult) -> Void
 
@@ -46,6 +47,13 @@ struct LauncherView: View {
             isSearchFocused = true
             lastPointerLocation = NSEvent.mouseLocation
         }
+        .task(id: viewModel.isScanning) {
+            scanStatusDelayElapsed = false
+            guard viewModel.isScanning else { return }
+            try? await Task.sleep(for: .milliseconds(250))
+            guard !Task.isCancelled else { return }
+            scanStatusDelayElapsed = true
+        }
     }
 
     private func glassSurface<Content: View, Surface: Shape>(
@@ -76,13 +84,13 @@ struct LauncherView: View {
 
     private func resultsPanel(_ results: [LauncherSearchResult]) -> some View {
         VStack(spacing: 0) {
-            if viewModel.isScanning && !results.isEmpty {
+            commandList(results)
+            if viewModel.isScanning && scanStatusDelayElapsed && !results.isEmpty {
                 Text("正在查找应用…")
                     .font(.system(size: 11))
                     .foregroundStyle(Color(nsColor: .secondaryLabelColor))
                     .frame(height: LauncherMetrics.scanStatusHeight)
             }
-            commandList(results)
         }
         .frame(
             width: LauncherMetrics.bodyWidth,

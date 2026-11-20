@@ -1,4 +1,5 @@
 import AppKit
+import Carbon
 import XCTest
 @testable import Invoker
 
@@ -23,6 +24,36 @@ final class LauncherTests: XCTestCase {
             LauncherMetrics.resultsHeight,
             listHeight + LauncherMetrics.scanStatusHeight
         )
+    }
+
+    func testLauncherDoesNotInterceptReturnWhileInputIsMarked() throws {
+        let frame = NSRect(x: 0, y: 0, width: 200, height: 40)
+        let panel = LauncherPanel(contentRect: frame, styleMask: [.borderless, .nonactivatingPanel],
+                                  backing: .buffered, defer: false)
+        let editor = NSTextView(frame: frame)
+        panel.contentView = editor
+        XCTAssertTrue(panel.makeFirstResponder(editor))
+        editor.setMarkedText("ji", selectedRange: NSRange(location: 2, length: 0),
+                             replacementRange: NSRange(location: NSNotFound, length: 0))
+        XCTAssertTrue(editor.hasMarkedText())
+
+        var interceptedKeys = 0
+        panel.keyDownHandler = { _ in
+            interceptedKeys += 1
+            return true
+        }
+        let enter = try XCTUnwrap(NSEvent.keyEvent(
+            with: .keyDown, location: .zero, modifierFlags: [], timestamp: 0,
+            windowNumber: panel.windowNumber, context: nil, characters: "\r",
+            charactersIgnoringModifiers: "\r", isARepeat: false, keyCode: UInt16(kVK_Return)
+        ))
+
+        panel.sendEvent(enter)
+        XCTAssertEqual(interceptedKeys, 0)
+
+        editor.unmarkText()
+        panel.sendEvent(enter)
+        XCTAssertEqual(interceptedKeys, 1)
     }
 
     func testHoverSelectionDoesNotRequestScrolling() {
@@ -124,6 +155,54 @@ final class LauncherTests: XCTestCase {
         model.query = "日历"
         model.moveSelection(by: 10)
         XCTAssertEqual(model.selectedCommand()?.id, application.id)
+    }
+
+    func testSearchFindsSystemAppsByChineseNameAndFilename() async throws {
+        let languages = [Locale.Language(identifier: "zh-Hans-CN")]
+        let urls = [
+            URL(fileURLWithPath: "/System/Applications/Calculator.app"),
+            URL(fileURLWithPath: "/System/Applications/Utilities/Screen Sharing.app")
+        ]
+        let applications = try urls.map { url in
+            try XCTUnwrap(LauncherApplicationScanner.application(at: url, preferredLanguages: languages))
+        }
+        let model = LauncherSearchViewModel(
+            registry: LauncherCommandRegistry(),
+            usage: LauncherUsageStore(defaults: defaults()),
+            scan: { applications }
+        )
+        model.prepare()
+        await model.waitForRefresh()
+
+        for (application, title) in zip(applications, ["计算器", "屏幕共享"]) {
+            model.query = title
+            XCTAssertEqual(model.results.map(\.id), [application.id])
+            XCTAssertEqual(model.results.first?.title, title)
+            model.query = application.fileName
+            XCTAssertEqual(model.results.map(\.id), [application.id])
+        }
+    }
+
+    func testSearchMatchesPinyinForAppsAndCommands() async {
+        let calculator = app("计算器", path: "/Applications/Calculator.app")
+        let screenSharing = app("屏幕共享", path: "/Applications/Screen Sharing.app")
+        let literalMatch = app("Jisuanqi")
+        let model = LauncherSearchViewModel(
+            registry: LauncherCommandRegistry(commands: [command("打开日历")]),
+            usage: LauncherUsageStore(defaults: defaults()),
+            scan: { [calculator, screenSharing, literalMatch] }
+        )
+        model.prepare()
+        await model.waitForRefresh()
+
+        model.query = "jisuanqi"
+        XCTAssertEqual(model.results.map(\.id), [literalMatch.id, calculator.id])
+        model.query = " PING MU "
+        XCTAssertEqual(model.results.map(\.id), [screenSharing.id])
+        model.query = "dakai ri li"
+        XCTAssertEqual(model.selectedCommand()?.title, "打开日历")
+        model.query = "jqq"
+        XCTAssertTrue(model.results.isEmpty)
     }
 
     func testRefreshKeepsCacheAndUsesLatestQuery() async throws {

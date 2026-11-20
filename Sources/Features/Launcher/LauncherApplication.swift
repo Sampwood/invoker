@@ -38,16 +38,25 @@ struct LauncherApplicationScanner: Sendable {
         return applications.values.sorted { $0.url.path < $1.url.path }
     }
 
-    static func application(at url: URL) -> LauncherApplication? {
+    static func application(
+        at url: URL,
+        preferredLanguages: [Locale.Language] = Locale.preferredLanguages.map(Locale.Language.init(identifier:))
+    ) -> LauncherApplication? {
         let resolved = url.resolvingSymlinksInPath().standardizedFileURL
         guard let bundle = Bundle(url: resolved),
               bundle.infoDictionary?["CFBundlePackageType"] as? String == "APPL",
               let executable = bundle.executableURL,
               FileManager.default.fileExists(atPath: executable.path) else { return nil }
         let keys = ["CFBundleDisplayName", "CFBundleName"]
-        let names = keys.map { bundle.localizedInfoDictionary?[$0] as? String }
-            + keys.map { bundle.infoDictionary?[$0] as? String }
-        let name = names.compactMap { $0 }.first { !$0.isEmpty }
+        // Read application names in the user's languages independently of Invoker's localization.
+        let localizedNames = keys.compactMap { key -> String? in
+            let name = bundle.localizedString(forKey: key, value: nil, table: "InfoPlist", localizations: preferredLanguages)
+            return name == key ? nil : name
+        }
+        let names = localizedNames
+            + keys.compactMap { bundle.localizedInfoDictionary?[$0] as? String }
+            + keys.compactMap { bundle.infoDictionary?[$0] as? String }
+        let name = names.first { !$0.isEmpty }
             ?? resolved.deletingPathExtension().lastPathComponent
         return LauncherApplication(url: resolved, title: name)
     }

@@ -192,7 +192,7 @@ final class LauncherUITests: XCTestCase {
         XCTAssertTrue(search.waitForExistence(timeout: 10))
         let window = app.dialogs.containing(searchPredicate).firstMatch
         let scanning = window.staticTexts["正在查找应用…"]
-        XCTAssertTrue(scanning.exists)
+        XCTAssertTrue(scanning.waitForExistence(timeout: 5))
         XCTAssertEqual(window.buttons.count, 5)
         for row in window.buttons.allElementsBoundByIndex {
             XCTAssertTrue(window.frame.contains(row.frame))
@@ -209,6 +209,7 @@ final class LauncherUITests: XCTestCase {
             NSPredicate(format: "label BEGINSWITH %@", "Fixture Calendar")
         ).firstMatch
         XCTAssertTrue(calendar.isSelected)
+        let rowTopWhileScanning = calendar.frame.minY
         let typed = XCTAttachment(screenshot: window.screenshot())
         typed.name = "launcher-scanning-typed-query"
         typed.lifetime = .keepAlways
@@ -221,6 +222,7 @@ final class LauncherUITests: XCTestCase {
         wait(for: [finished], timeout: 5)
         XCTAssertEqual(search.value as? String, "90001")
         XCTAssertTrue(calendar.isSelected)
+        XCTAssertEqual(calendar.frame.minY, rowTopWhileScanning, accuracy: 1)
         XCTAssertFalse(FileManager.default.fileExists(
             atPath: dataDirectory.appendingPathComponent("last-action.txt").path
         ))

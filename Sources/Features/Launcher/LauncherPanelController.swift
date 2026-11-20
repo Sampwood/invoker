@@ -191,7 +191,7 @@ final class LauncherPanelController: NSObject, NSWindowDelegate {
 }
 
 @MainActor
-private final class LauncherPanel: NSPanel {
+final class LauncherPanel: NSPanel {
     var keyDownHandler: ((NSEvent) -> Bool)?
 
     override var canBecomeKey: Bool {
@@ -199,7 +199,9 @@ private final class LauncherPanel: NSPanel {
     }
 
     override func sendEvent(_ event: NSEvent) {
-        if event.type == .keyDown, keyDownHandler?(event) == true {
+        if event.type == .keyDown,
+           (firstResponder as? NSTextInputClient)?.hasMarkedText() != true,
+           keyDownHandler?(event) == true {
             return
         }
         super.sendEvent(event)
